@@ -6,7 +6,7 @@ Using TCR and expression for graph embedding
 ### Introduction
 Single-cell sequencing is now a integral tool in the field of immunology and oncology that allows researchers to couple RNA quantification and other modalities, 
 like immune cell receptor profiling at the level of an individual cell. Towards this end, we developed the [scRepertoire](https://github.com/ncborcherding/scRepertoire) 
-R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality as a variable in trajectory analyses. To this end, here we develop the basis of combining clonal and expression analysis into a single trajectory-like projections. 
+R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality in embedding of single-cells and in trajectory analyses. To this end, here we develop the basis of combining clonal and expression analyses to facilitate dimensional reduction and trajectory inference. 
 
 ## More details to follow as I work on this project
 
