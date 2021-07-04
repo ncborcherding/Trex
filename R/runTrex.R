@@ -4,7 +4,7 @@
 runTrex <- function(sc, 
                    chains = "both", 
                    edit.method = "lv",
-                   AA.propeties = c("AF", "KF", "other"),
+                   AA.properties = c("AF", "KF", "other"),
                    c.trim = 0,
                    n.trim = 0,
                    threshold = 0.85,
@@ -15,6 +15,9 @@ runTrex <- function(sc,
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     multi.network <- distanceMatrix(TCR, c.trim, n.trim, threshold)
     
+    print("Calculating the Amino Acid Properties...")
+    AA.knn <- aaProperty(TCR, c.trim, n.trim, threshold, AA.propertiess)
+    multi.network <- add.to.network(multi.network, AA.knn, names(TCR)) 
     
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
@@ -42,5 +45,6 @@ runTrex <- function(sc,
         rownames(tmpscore) <- barcodes
         sc <- add.meta.data(sc, tmpscore)
     }
-
+    print("Multiplexing Nodes into single graph...")
+    adj.matrix <- multiplex.network(multi.network)
 }

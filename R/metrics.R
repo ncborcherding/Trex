@@ -162,14 +162,23 @@ betaDistance <- function(getTCR) {
 
 
 aaProperty <- function(TCR, 
-                       c.trim = 0,
-                       n.trim = 0) { 
+                       c.trim = c.trim,
+                       n.trim = n.trim, 
+                       AA.properties = AA.properties) { 
   aa.score <- list()
+  
   reference <- read.delim("./data/aa_props.tsv")
+  col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
+  other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
+  if ("other" %in% AA.properties | AA.properties == "all") {
+    column.ref <- sort(c(col.ref, other.ref))
+  } else {
+    column.ref <- sort(col.ref)
+  }
   for (i in seq_along(TCR)) {
     membership <- TCR[[i]]
-    score <- as.data.frame(matrix(ncol = 29, nrow = length(unique(membership[,"barcode"]))))
-    colnames(score) <- c("barcodes", colnames(reference)[2:29])
+    score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
+    colnames(score) <- c("barcodes", colnames(reference)[column.ref])
     score$barcodes <- unique(membership[,"barcode"])
     cells <- unique(score$barcode)
     for (j in seq_len(length(cells))) {
@@ -179,10 +188,20 @@ aaProperty <- function(TCR,
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
-      score[j,2:29] <- colSums(int[,2:29])/length(refer)
-      #score[j,2:29] <- colMedians(as.matrix(int[,2:29]))
+      score[j,col.ref] <- colSums(int[,col.ref])/length(refer)
     } 
-    aa.score[[i]] <- score
+    dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
+    max <- max(dist)
+    dist <- (max-dist)/max
+    knn.matrix <- matrix(ncol=ncol(dist), nrow=nrow(dist), 0)
+    rownames(knn.matrix) <- names
+    colnames(knn.matrix) <- names
+    for (m in 1:nrow(dist)) {
+      matches <- which(dist[m,] > threshold)
+      knn.matrix[m,matches] <- 1
+      knn.matrix[matches,m] <- 1
+    }
+    aa.score[[i]] <- knn.matrix
   }
   return(aa.score)
 }

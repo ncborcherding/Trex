@@ -22,11 +22,14 @@ gene.to.knn <- function(tmpscore) {
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
   names.list <- names(network)
-  network[[length + 1]] <- new.knn
-  names(network) <- c(names.list, name)
+  for (i in seq_along(list(new.knn))) {
+    network[[length + i]] <- new.knn
+    names(network) <- c(names.list, name)
+  }
   return(network)
-  
 }
+
+
 add.meta.data <- function(sc, meta) {
 if (inherits(x=sc, what ="Seurat")) { 
   col.name <- names(meta) %||% colnames(meta)
@@ -99,3 +102,33 @@ checkSingleObject <- function(sc) {
             'SummarizedExperiment', make sure you are using
             the correct data.") }
 }
+
+
+library(muxViz)
+multiplex.network <- function(multi.network) {
+  layers <- length(multi.network)
+  layerCouplingStrength <- 1
+  networkOfLayersType <- "categorical"
+  isDirected <- FALSE
+  nodeTensor <- list() 
+  g.list <- list() 
+  for (l in 1:layers) {
+    #Generate the layers
+    g.list[[l]] <- graph_from_adjacency_matrix(master.list[[l]], mode = "undirected")
+    #Get the list of adjacency matrices which build the multiplex
+    nodeTensor[[l]] <- get.adjacency(g.list[[l]])
+  }
+  layerTensor <- BuildLayersTensor(Layers=Llyers, OmegaParameter=layerCouplingStrength,
+                                   MultisliceType=networkOfLayersType)
+  M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
+  N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
+  N <- get.adjacency(N)
+}
+
+
+
+
+
+
+
+#T
