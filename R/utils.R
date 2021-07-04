@@ -9,7 +9,7 @@ Jaccard = function (x, y) {
   return (M.11 / (M.11 + M.10 + M.01))
 }
 
-getTCR <- function(tmp) {
+getTCR <- function(tmp, chains) {
   chains <- list(one = c("TCR1","cdr3_aa1"), two = c("TCR2","cdr3_aa2"))
   TCR <- NULL
   for (i in 1:2) {
