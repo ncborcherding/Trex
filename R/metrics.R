@@ -10,169 +10,75 @@
 #barcodes - corresponding cell names from the single cell object used to filter
 
 library(stringdist)
-distanceMatrix <- function(combined, 
-                           method = "lv",
-                           group = NULL, 
-                           threshold = 0.8, 
-                           matrix.return = "jaccard", 
-                           c.trim = 3,
-                           n.trim = 3, 
-                           barcodes = NULL) {
-  if (!is.data.frame(combined)) {
-    comb <- combined
-  } else {
-    comb <- list(combined)
-  }
-  if (!is.null(barcodes)) {
-    for (x in seq_along(comb)) {
-      comb[[x]] <- comb[[x]][comb[[x]][,1] %in% barcodes,]
-    }
-  }
-  
-  return.matrix <- list()
-  if (!is.null(group)) {
-    tmp2 <- NULL
-    comb <- NULL
-    for(x in seq_along(group)) {
-      samples <- unlist(group[x])
-      for (y in seq_along(samples)) {
-        tmp <- combined[[samples[y]]]
-        tmp2 <- rbind(tmp2,tmp)
-      }
-      comb[[x]] <- tmp2
-    }
-    names(comb) <- names(group)
-  }
-  for (i in seq_along(comb)) {
-    sub <- comb[[i]]
-    TCR <- getTCR(sub)
+distanceMatrix <- function(TCR, 
+                           edit.method = "lv",
+                           threshold = threshold, 
+                           c.trim = c.trim,
+                           n.trim = n.trim) {
+knn.return <- list()
+length.check <- min(nchar(TCR[[i]]$cdr3_aa))
+  for (i in seq_along(TCR)) {
     if (c.trim == 0 & n.trim == 0){
-      TRA <- TCR[[1]]$Var1
-      TRB <- TCR[[2]]$Var1
+      TR <- TCR[[i]]$cdr3_aa
     } else {
-      TRA <- trim(TCR[[1]]$Var1, c.trim, n.trim)
-      TRB <- trim(TCR[[2]]$Var1, c.trim, n.trim)
+      TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
+    }
+  barcodes <- TCR[[i]]$barcode
+  length <- nchar(as.character(TR))
+  length.check <- min(length)
+  if (length.check < n.trim + c.trim + 3) {
+    print("Current trim strategy leaves less than 3 AA residues calucations, please consider 
+        prefilter short cdr3 aa sequences
+        or reset the trimming parameters")
+    if (length.check < n.trim + c.trim) {
+      stop("Unable to perform edit distance calculations, a cdr3 AA sequence is shorted than
+           the trimming parameters")
     }
   }
-  TRA <- as.matrix(stringdistmatrix(TRA, method = method)) #Distance Matrix for TRA
-  TRB <- as.matrix(stringdistmatrix(TRB, method = method))
-  matrix.list <- list(TRA, TRB)
-  #####################################
-  #Calculate Normalized Distance Matrix
-  ######################################
-  #What we need now is the relative distance of the cdr3 sequence from each cell for both TCRA and TCRB
+  TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
   #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
-  adj.matrix.list <- list()
-  for (j in seq_along(matrix.list)) {
-    matrix <- matrix.list[[j]]
-    length <- nchar(as.character(TCR[[j]]$Var1))
-    medianlength <- median(nchar(as.character(TCR[[j]]$Var)))
-    out_matrix <- matrix(ncol = ncol(matrix), nrow=ncol(matrix))
-    for (k in seq_len(ncol(matrix))) {
-      for (l in seq_len(nrow(matrix))) {
-        if (length[k] - length[l] >= round(medianlength/1.5)) {
-          out_matrix[k,l] <- 1 - (matrix[k,l]/(max(length[k], length[l])))
-          out_matrix[l,k] <- 1 - (matrix[l,k]/(max(length[k], length[l])))
+  medianlength <- median(na.omit(length))
+  out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
+    for (k in seq_len(ncol(TR))) {
+      for (l in seq_len(nrow(TR))) {
+        if (is.na(length[l]) | is.na(length[k])) {
+          out_matrix[k,l] <- NA
+          out_matrix[l,k] <- NA
         } else {
-          out_matrix[k,l] <- 1 - (matrix[k,l]/((length[k]+ length[l])/2))
-          out_matrix[l,k] <- 1 - (matrix[l,k]/((length[k]+ length[l])/2))
-        }
-        
+          if (length[k] - length[l] >= round(medianlength/1.5)) {
+            out_matrix[k,l] <- 1 - (TR[k,l]/(max(length[k], length[l])))
+            out_matrix[l,k] <- 1 - (TR[l,k]/(max(length[k], length[l])))
+          } else {
+            out_matrix[k,l] <- 1 - (TR[k,l]/((length[k]+ length[l])/2))
+            out_matrix[l,k] <- 1 - (TR[l,k]/((length[k]+ length[l])/2))
+          }
+      }
       }
     }
-    adj.matrix.list[[j]] <- out_matrix 
-    rownames(adj.matrix.list[[j]]) <- TCR[[i]]$barcode
-    colnames(adj.matrix.list[[j]]) <- TCR[[i]]$barcode
-  }
-  if (matrix.return == "TRA") {
-    if(length(comb) > 1) {
-      return.matrix[[i]] <- adj.matrix.list[[1]]
-      next()
-    } else {
-      return.matrix <- adj.matrix.list[[1]]
-      return(return.matrix)
-    }
-  } else if (matrix.return == "TRB") {
-    if(length(comb) > 1) {
-      return.matrix[[i]] <- adj.matrix.list[[2]]
-      next()
-    } else {
-      return.matrix <- adj.matrix.list[[2]]
-      return(return.matrix)
-    }
-  }
-  #######################################
-  #Reference both genes to create network
-  #######################################
-  #Like above, this is going to return of adjacency matrix - with 0 and 1s, but it is going to combine the TCRA and TCRB
-  #adjacency matrix into a single adjacency matrix using the overlap of TCRA and TCRB - so to get a 1, both the TCRA and TCRB
-  #have to be greater than 0.8
-  TCRA_barcodes <- rownames(adj.matrix.list[[1]]) #ensure barcodes for TCRA are unique (this is probably superfluous)
-  TCRB_barcodes <- rownames(adj.matrix.list[[2]]) #ensure barcodes for TCRB are unique (this is probably superfluous)
-  unique_barcodes <- unique(TCRA_barcodes, TCRB_barcodes)
-  final_matrix <- matrix(ncol=length(unique_barcodes), nrow=length(unique_barcodes), 0)
+    out_matrix  <- TCR[[i]]$barcode
+    out_matrix <- TCR[[i]]$barcode
+  #Converting relative edit distance to adjacency matrix
+  out_matrix[out_matrix >= threshold] <- 1
   
-  rownames(final_matrix) <- unique_barcodes
-  colnames(final_matrix) <- unique_barcodes
-  final_matrix <- (adj.matrix.list[[1]] + adj.matrix.list[[2]])/2
-  
-  if (matrix.return == "MED") {
-    if(length(comb) > 1) {
-      return.matrix[[i]] <- final_matrix
-      next()
-    } else {
-      return.matrix <- final_matrix
-      return(return.matrix)
-    }
-  }
-  
-  jaccard_matrix <- matrix(ncol=ncol(final_matrix), nrow=nrow(final_matrix), 0)
-  knn.matrix <- matrix(ncol=ncol(final_matrix), nrow=nrow(final_matrix), 0)
+  knn.matrix <- matrix(ncol=ncol(out_matrix), nrow=nrow(out_matrix), 0)
   for (m in 1:nrow(knn.matrix)){
     # find closes neighbors - not technically nearest neighbor
-    matches <- which(final_matrix[m,] > threshold) #all neighbors with > 0.8 edit similarity
+    matches <- which(out_matrix[m,] > threshold) #all neighbors with > 0.8 edit similarity
     knn.matrix[m,matches] <- 1
     knn.matrix[matches,m] <- 1
   } 
-  rownames(knn.matrix) <- rownames(final_matrix)
-  colnames(knn.matrix) <- colnames(final_matrix)
-  if (matrix.return == "nn") {
-    if(length(comb) > 1) {
-      return.matrix[[i]] <- knn.matrix
-      next()
-    } else {
-      return.matrix <- knn.matrix
-      return(return.matrix)
-    }
+  rownames(knn.matrix) <- TCR[[i]]$barcode
+  colnames(knn.matrix) <- TCR[[i]]$barcode
+  knn.return[[i]] <- knn.matrix
   }
-  #Here we calculate the Jaccard Index for each row of the knn.matrix - 
-  #looking at the difference between intersection and union of each match
-  for(m in 1:nrow(knn.matrix)) {
-    matches <- which(knn.matrix[m,] > 0)
-    for (n in matches) {
-      val <- Jaccard(knn.matrix[m,], knn.matrix[n,])
-      jaccard_matrix[m,n] <- val
-      jaccard_matrix[n,m] <- val
-    }
-    rownames(jaccard_matrix) <- rownames(final_matrix)
-    colnames(jaccard_matrix) <- colnames(final_matrix)
-  }
-  if (matrix.return == "jaccard") {
-    if(length(comb) > 1) {
-      return.matrix[[i]] <- jaccard_matrix
-      next()
-    } else {
-      return.matrix <- jaccard_matrix
-      return(return.matrix)
-    }
-  }
-  
+return(knn.return)
 }
 
 
-#Chains for MAIT and INKT cells
-scoreMAIT <- function(getTCR, species = NULL) {
-  membership <- bind_rows(getTCR)
+#Chains for MAIT cells
+#' @importFrom dplyr bind_rows
+scoreMAIT <- function(TCR, species = NULL) {
+  membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV1", j = "TRAJ33", length = 12), 
                human = list(v = "TRAV1-2", j = c("TRAJ33", "TRAJ20", "TRAJ12"), length = 12))
   score <- data.frame("barcode" = unique(membership[,"barcode"]), score = 0)
@@ -189,9 +95,10 @@ scoreMAIT <- function(getTCR, species = NULL) {
   }
   return(score)
 }
-
-scoreINKT <- function(getTCR, species = NULL) {
-  membership <- bind_rows(getTCR)
+#Chains for INKT cells
+#' @importFrom dplyr bind_rows
+scoreINKT <- function(TCR, species = NULL) {
+  membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV11", j = "TRAJ18", length = 15), 
                human = list(v = "TRAV10", j = c("TRAJ18", "TRBV25"), length = c(14,15,16)))
   score <- data.frame("barcode" = unique(membership[,"barcode"]), score = 0)

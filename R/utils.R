@@ -9,18 +9,93 @@ Jaccard = function (x, y) {
   return (M.11 / (M.11 + M.10 + M.01))
 }
 
-getTCR <- function(tmp, chains) {
-  chains <- list(one = c("TCR1","cdr3_aa1"), two = c("TCR2","cdr3_aa2"))
+gene.to.knn <- function(tmpscore) {
+  names <- tmpscore$barcode
+  knn.matrix <- matrix(ncol=length(names), nrow=length(names), 0)
+  rownames(knn.matrix) <- names
+  colnames(knn.matrix) <- names
+  match <- which(tmpscore > 0)
+  knn.matrix[match,match] <- 1
+  return(knn.matrix)
+}
+
+add.to.network <- function(network, new.knn, name) {
+  length <- length(network)
+  names.list <- names(network)
+  network[[length + 1]] <- new.knn
+  names(network) <- c(names.list, name)
+  return(network)
+  
+}
+add.meta.data <- function(sc, meta) {
+if (inherits(x=sc, what ="Seurat")) { 
+  col.name <- names(meta) %||% colnames(meta)
+  sc[[col.name]] <- meta
+} else {
+  rownames <- rownames(colData(sc))
+  colData(sc) <- cbind(colData(sc), meta[rownames,])[, union(colnames(colData(sc)),  colnames(meta))]
+  rownames(colData(sc)) <- rownames  
+}
+}
+  
+#' Function to pull and organize TCR depending on the chain selected
+#' @importFrom stringr str_split
+getTCR <- function(sc, chains) {
+  meta <- grabMeta(sc)
+  tmp <- data.frame(barcode = rownames(meta), 
+                    str_split(meta[,"CTaa"], "_", simplify = TRUE), 
+                    str_split(meta[,"CTgene"], "_", simplify = TRUE))
+  if (chains %in% c("TRA", "TRD", "Heavy")) {
+    pos <- list(c(2,4))
+    }
+  else if (chains %in% c("TRB", "TRG", "Light")) {
+    pos <- list(c(3,5))
+  } else {
+    pos <- list(one = c(2,4), two = c(3,5))
+  }
+  
   TCR <- NULL
-  for (i in 1:2) {
-    sub <- as.data.frame(tmp[,c("barcode", chains[[i]])])
-    colnames(sub) <- c("barcode", "TCR", "cdr3_aa")
+  for (i in seq_along(list)) {
+    sub <- as.data.frame(tmp[,c(1,pos[[i]])])
+    colnames(sub) <- c("barcode", "cdr3_aa", "genes")
     
-    sub$v <- str_split(sub$TCR, "[.]", simplify = T)[,1]
-    sub$j <- str_split(sub$TCR, "[.]", simplify = T)[,2]
-    colnames(sub)[3] <- "Var1"
+    sub$v <- str_split(sub$genes, "[.]", simplify = T)[,1]
+    sub$j <- str_split(sub$genes, "[.]", simplify = T)[,2]
     TCR[[i]] <- sub
     sub <- NULL
   }
   return(TCR)
+}
+
+#This is to grab the meta data from a seurat or SCE object
+#' @importFrom SingleCellExperiment colData 
+grabMeta <- function(sc) {
+  if (inherits(x=sc, what ="Seurat")) {
+    meta <- data.frame(sc[[]], slot(sc, "active.ident"))
+    if ("cluster" %in% colnames(meta)) {
+      colnames(meta)[length(meta)] <- "cluster.active.ident"
+    } else {
+      colnames(meta)[length(meta)] <- "cluster"
+    }
+  }
+  else if (inherits(x=sc, what ="SummarizedExperiment")){
+    meta <- data.frame(colData(sc))
+    rownames(meta) <- sc@colData@rownames
+    clu <- which(colnames(meta) == "ident")
+    if ("cluster" %in% colnames(meta)) {
+      colnames(meta)[clu] <- "cluster.active.idents"
+    } else {
+      colnames(meta)[clu] <- "cluster"
+    }
+  }
+  return(meta)
+}
+
+#This is to check the single-cell expression object
+checkSingleObject <- function(sc) {
+  if (!inherits(x=sc, what ="Seurat") & 
+      !inherits(x=sc, what ="SummarizedExperiment")){
+    stop("Object indicated is not of class 'Seurat' or 
+            'SummarizedExperiment', make sure you are using
+            the correct data.") }
 }
