@@ -10,67 +10,62 @@
 #barcodes - corresponding cell names from the single cell object used to filter
 
 library(stringdist)
-distanceMatrix <- function(TCR, 
+distanceMatrix <- function(TCR.list, 
                            edit.method = "lv",
-                           threshold = threshold, 
-                           c.trim = c.trim,
-                           n.trim = n.trim) {
-knn.return <- list()
-length.check <- min(nchar(TCR[[i]]$cdr3_aa))
-  for (i in seq_along(TCR)) {
-    if (c.trim == 0 & n.trim == 0){
-      TR <- TCR[[i]]$cdr3_aa
-    } else {
-      TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
-    }
-  barcodes <- TCR[[i]]$barcode
-  length <- nchar(as.character(TR))
-  length.check <- min(length)
-  if (length.check < n.trim + c.trim + 3) {
-    print("Current trim strategy leaves less than 3 AA residues calucations, please consider 
-        prefilter short cdr3 aa sequences
-        or reset the trimming parameters")
-    if (length.check < n.trim + c.trim) {
-      stop("Unable to perform edit distance calculations, a cdr3 AA sequence is shorted than
-           the trimming parameters")
-    }
-  }
-  TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
-  #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
-  medianlength <- median(na.omit(length))
-  out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
-    for (k in seq_len(ncol(TR))) {
-      for (l in seq_len(nrow(TR))) {
-        if (is.na(length[l]) | is.na(length[k])) {
-          out_matrix[k,l] <- NA
-          out_matrix[l,k] <- NA
-        } else {
-          if (length[k] - length[l] >= round(medianlength/1.5)) {
-            out_matrix[k,l] <- 1 - (TR[k,l]/(max(length[k], length[l])))
-            out_matrix[l,k] <- 1 - (TR[l,k]/(max(length[k], length[l])))
-          } else {
-            out_matrix[k,l] <- 1 - (TR[k,l]/((length[k]+ length[l])/2))
-            out_matrix[l,k] <- 1 - (TR[l,k]/((length[k]+ length[l])/2))
-          }
-      }
-      }
-    }
-    out_matrix  <- TCR[[i]]$barcode
-    out_matrix <- TCR[[i]]$barcode
-  #Converting relative edit distance to adjacency matrix
-  out_matrix[out_matrix >= threshold] <- 1
+                           edit.threshold = threshold, 
+                           ctrim = c.trim,
+                           ntrim = n.trim) {
+  knn.return <- list()
   
-  knn.matrix <- matrix(ncol=ncol(out_matrix), nrow=nrow(out_matrix), 0)
-  for (m in 1:nrow(knn.matrix)){
-    # find closes neighbors - not technically nearest neighbor
-    matches <- which(out_matrix[m,] > threshold) #all neighbors with > 0.8 edit similarity
-    knn.matrix[m,matches] <- 1
-    knn.matrix[matches,m] <- 1
-  } 
-  rownames(knn.matrix) <- TCR[[i]]$barcode
-  colnames(knn.matrix) <- TCR[[i]]$barcode
-  knn.return[[i]] <- knn.matrix
-  }
+    for (i in seq_along(TCR.list)) {
+      if (ctrim == 0 & ntrim == 0){
+        TR <- TCR.list[[i]]$cdr3_aa
+      } else {
+        TR<- trim(TCR.list[[i]]$cdr3_aa, ctrim, ntrim)
+      }
+    barcodes <- TCR.list[[i]]$barcode
+    length <- nchar(na.omit(as.character(TR)))
+    length.check <- min(length)
+    if (length.check < ntrim + ctrim + 3 && ntrim + ctrim > 0) {
+      print("Current trim strategy leaves less than 3 AA residues calculations, please consider
+          prefilter short cdr3 aa sequences or changing the trimming parameters")
+      if (length.check < ntrim + ctrim) {
+        stop("Unable to perform edit distance calculations, atleast one cdr3 AA sequence is
+        shorter than the trimming parameters")
+      }
+    }
+    TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
+    #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
+    medianlength <- median(na.omit(length))
+    out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
+      for (k in seq_len(ncol(TR))) {
+        for (l in seq_len(nrow(TR))) {
+          if (is.na(length[l]) | is.na(length[k])) {
+            out_matrix[k,l] <- NA
+            out_matrix[l,k] <- NA
+          } else {
+            if (length[k] - length[l] >= round(medianlength/1.5)) {
+              out_matrix[k,l] <- 1 - (TR[k,l]/(max(length[k], length[l])))
+              out_matrix[l,k] <- 1 - (TR[l,k]/(max(length[k], length[l])))
+            } else {
+              out_matrix[k,l] <- 1 - (TR[k,l]/((length[k]+ length[l])/2))
+              out_matrix[l,k] <- 1 - (TR[l,k]/((length[k]+ length[l])/2))
+            }
+        }
+        }
+      }
+    
+    knn.matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
+    for (m in 1:nrow(knn.matrix)){
+      # find closes neighbors - not technically nearest neighbor
+      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors with > 0.8 edit similarity
+      knn.matrix[m,matches] <- 1
+      knn.matrix[matches,m] <- 1
+    } 
+    rownames(knn.matrix) <- TCR.list[[i]]$barcode
+    colnames(knn.matrix) <- TCR.list[[i]]$barcode
+    knn.return[[i]] <- knn.matrix
+    }
 return(knn.return)
 }
 
