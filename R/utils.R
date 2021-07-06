@@ -29,7 +29,8 @@ add.to.network <- function(network, new.knn, name) {
   return(network)
 }
 
-
+#' @importFrom rlang %||%
+#' @importFrom SummarizedExperiment coldata 'coldata<-'
 add.meta.data <- function(sc, meta) {
 if (inherits(x=sc, what ="Seurat")) { 
   col.name <- names(meta) %||% colnames(meta)
@@ -39,6 +40,7 @@ if (inherits(x=sc, what ="Seurat")) {
   colData(sc) <- cbind(colData(sc), meta[rownames,])[, union(colnames(colData(sc)),  colnames(meta))]
   rownames(colData(sc)) <- rownames  
 }
+  return(sc)
 }
   
 #' Function to pull and organize TCR depending on the chain selected
@@ -50,20 +52,19 @@ getTCR <- function(sc, chains) {
                     str_split(meta[,"CTgene"], "_", simplify = TRUE))
   if (chains %in% c("TRA", "TRD", "Heavy")) {
     pos <- list(c(2,4))
-    }
-  else if (chains %in% c("TRB", "TRG", "Light")) {
+  } else if (chains %in% c("TRB", "TRG", "Light")) {
     pos <- list(c(3,5))
   } else {
     pos <- list(one = c(2,4), two = c(3,5))
   }
-  
   TCR <- NULL
-  for (i in seq_along(list)) {
+  for (i in seq_along(pos)) {
     sub <- as.data.frame(tmp[,c(1,pos[[i]])])
     colnames(sub) <- c("barcode", "cdr3_aa", "genes")
     
     sub$v <- str_split(sub$genes, "[.]", simplify = T)[,1]
     sub$j <- str_split(sub$genes, "[.]", simplify = T)[,2]
+    sub[sub == ""] <- NA
     TCR[[i]] <- sub
     sub <- NULL
   }

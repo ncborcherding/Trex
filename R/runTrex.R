@@ -38,7 +38,6 @@ runTrex <- function(sc,
         AA.knn <- aaProperty(TCR, c.trim, n.trim, threshold, AA.propertiess)
         multi.network <- add.to.network(multi.network, AA.knn, names(TCR)) 
     }
-    
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
         tmpscore <- scoreINKT(TCR, species = species)

@@ -18,22 +18,21 @@ distanceMatrix <- function(TCR.list,
   knn.return <- list()
   
     for (i in seq_along(TCR.list)) {
-      if (ctrim == 0 & ntrim == 0){
-        TR <- TCR.list[[i]]$cdr3_aa
-      } else {
-        TR<- trim(TCR.list[[i]]$cdr3_aa, ctrim, ntrim)
-      }
-    barcodes <- TCR.list[[i]]$barcode
-    length <- nchar(na.omit(as.character(TR)))
-    length.check <- min(length)
-    if (length.check < ntrim + ctrim + 3 && ntrim + ctrim > 0) {
-      print("Current trim strategy leaves less than 3 AA residues calculations, please consider
-          prefilter short cdr3 aa sequences or changing the trimming parameters")
-      if (length.check < ntrim + ctrim) {
-        stop("Unable to perform edit distance calculations, atleast one cdr3 AA sequence is
-        shorter than the trimming parameters")
-      }
-    }
+      TR<- trim(TCR.list[[i]]$cdr3_aa, ctrim, ntrim)
+      barcodes <- TCR.list[[i]]$barcode
+      length <- nchar(na.omit(as.character(TR)))
+      length.check <- min(length)
+      #Need to work on this warning - still activating despirte function working
+      if (length.check < (ntrim + ctrim + 3) && (ntrim + ctrim) > 0) 
+        warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
+        than 3 AA residues calculations, please consider
+            prefiltering short cdr3 AA sequences or changing the trimming parameters"))
+      if (length.check < (ntrim + ctrim)) 
+          stop(strwrap(prefix = " ", initial = "", "Unable to perform edit distance 
+          calculations, at least one cdr3 AA sequence is
+          shorter than the trimming parameters"))
+        
+      
     TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
     #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
     medianlength <- median(na.omit(length))
