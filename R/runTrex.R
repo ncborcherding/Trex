@@ -36,7 +36,7 @@ runTrex <- function(sc,
     if (unique(c("AF", "KF", "other") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
         AA.knn <- aaProperty(TCR, c.trim, n.trim, AA.properties)
-        multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), "_AA")) 
+        multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), ".AA")) 
     }
     if (add.INKT) {
         print("Calculating the INKT gene usage...")

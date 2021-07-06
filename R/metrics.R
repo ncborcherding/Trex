@@ -65,6 +65,7 @@ distanceMatrix <- function(TCR.list,
     colnames(knn.matrix) <- TCR.list[[i]]$barcode
     knn.return[[i]] <- knn.matrix
     }
+  names(knn.return) <- paste0(names(TCR.list), ".edit")
 return(knn.return)
 }
 

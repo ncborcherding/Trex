@@ -25,10 +25,12 @@ gene.to.knn <- function(tmpscore) {
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
   names.list <- names(network)
-  for (i in seq_along(list(new.knn))) {
-    network[length + i] <- new.knn
-    names(network) <- c(names.list, name)
+  if(is(new.knn)[1] != "list") { list(new.knn) }
+  for (i in seq_along(new.knn)) {
+    network[[length + i]] <- new.knn[[i]]
+    
   }
+  names(network) <- c(names.list, name)
   return(network)
 }
 
@@ -53,11 +55,13 @@ getTCR <- function(sc, chains) {
   tmp <- data.frame(barcode = rownames(meta), 
                     str_split(meta[,"CTaa"], "_", simplify = TRUE), 
                     str_split(meta[,"CTgene"], "_", simplify = TRUE))
-  if (chains %in% c("TRA", "TRD")) {
-    pos <- list(c(2,4))
-  } else if (chains %in% c("TRB", "TRG")) {
-    pos <- list(c(3,5))
-  } else {
+  if (length(chains) == 1) {
+    if (chains %in% c("TRA", "TRD")) {
+      pos <- list(c(2,4))
+    } else if (chains %in% c("TRB", "TRG")) {
+      pos <- list(c(3,5))
+    }
+    } else {
     pos <- list(one = c(2,4), two = c(3,5))
     ch.1 <- grep("TRB|TRA",sc[[]]$CTgene[1])
     if (ch.1 == 1) {

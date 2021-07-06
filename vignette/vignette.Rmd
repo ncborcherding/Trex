@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r}
-  reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
+reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 x <- runTrex(tmp)
 ```
 
