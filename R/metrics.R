@@ -23,10 +23,10 @@ distanceMatrix <- function(TCR.list,
       length <- nchar(na.omit(as.character(TR)))
       length.check <- min(length)
       #Need to work on this warning - still activating despirte function working
-      if (length.check < (ntrim + ctrim + 3) && (ntrim + ctrim) > 0) 
+      if (length.check < (ntrim + ctrim + 3) && ctrim != 0 && ntrim != 0) { 
         warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
         than 3 AA residues calculations, please consider
-            prefiltering short cdr3 AA sequences or changing the trimming parameters"))
+            prefiltering short cdr3 AA sequences or changing the trimming parameters"))}
       if (length.check < (ntrim + ctrim)) 
           stop(strwrap(prefix = " ", initial = "", "Unable to perform edit distance 
           calculations, at least one cdr3 AA sequence is
