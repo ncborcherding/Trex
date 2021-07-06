@@ -44,12 +44,12 @@ runTrex <- function(sc,
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
             multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            barcodes <- tmpscore$barcode
+            tmpscore <- as.data.frame(tmpscore[,2])
+            colnames(tmpscore) <- "IKNT.score"
+            rownames(tmpscore) <- barcodes
+            sc <- add.meta.data(sc, tmpscore)
         }
-        barcodes <- tmpscore$barcode
-        tmpscore <- as.data.frame(tmpscore[,2])
-        colnames(tmpscore) <- "IKNT.score"
-        rownames(tmpscore) <- barcodes
-        sc <- add.meta.data(sc, tmpscore)
     }
     if (add.MAIT) {
         print("Calculating the MAIT gene usage...")
@@ -57,13 +57,14 @@ runTrex <- function(sc,
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
             multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            barcodes <- tmpscore$barcode
+            tmpscore <- as.data.frame(tmpscore[,2])
+            colnames(tmpscore) <- "MAIT.score"
+            rownames(tmpscore) <- barcodes
+            sc <- add.meta.data(sc, tmpscore)
         }
-        barcodes <- tmpscore$barcode
-        tmpscore <- as.data.frame(tmpscore[,2])
-        colnames(tmpscore) <- "MAIT.score"
-        rownames(tmpscore) <- barcodes
-        sc <- add.meta.data(sc, tmpscore)
     }
-    print("Multiplexing Nodes into single graph...")
-    adj.matrix <- multiplex.network(multi.network)
+    return(multi.network)
+    #print("Multiplexing Nodes into single graph...")
+    #adj.matrix <- multiplex.network(multi.network)
 }

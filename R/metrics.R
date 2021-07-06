@@ -160,8 +160,6 @@ aaProperty <- function(TCR,
                        ntrim = n.trim, 
                        AA.properties = AA.properties) { 
   aa.score <- list()
-  
-  reference <- read.delim("./data/aa_props.tsv")
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
   if ("other" %in% AA.properties | "all" %in% AA.properties) {

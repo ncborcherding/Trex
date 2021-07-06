@@ -1,0 +1,12 @@
+---
+title: "Running from Trex"
+author: "Nick Borcherding"
+date: "7/6/2021"
+output: html_document
+---
+
+```{r}
+  reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
+x <- runTrex(tmp)
+```
+
