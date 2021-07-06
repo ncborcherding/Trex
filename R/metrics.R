@@ -154,31 +154,32 @@ betaDistance <- function(getTCR) {
   return(score)
 }
 
-
+#' @importFrom amap Dist
 aaProperty <- function(TCR, 
-                       c.trim = c.trim,
-                       n.trim = n.trim, 
+                       ctrim = c.trim,
+                       ntrim = n.trim, 
                        AA.properties = AA.properties) { 
   aa.score <- list()
   
   reference <- read.delim("./data/aa_props.tsv")
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
-  if ("other" %in% AA.properties | AA.properties == "all") {
+  if ("other" %in% AA.properties | "all" %in% AA.properties) {
     column.ref <- sort(c(col.ref, other.ref))
   } else {
     column.ref <- sort(col.ref)
   }
   for (i in seq_along(TCR)) {
     membership <- TCR[[i]]
+    names <- membership$barcode
     score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
     colnames(score) <- c("barcodes", colnames(reference)[column.ref])
     score$barcodes <- unique(membership[,"barcode"])
     cells <- unique(score$barcode)
     for (j in seq_len(length(cells))) {
-      tmp.CDR <- membership[membership$barcode == cells[j],]$Var1
+      tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
       if (c.trim != 0 | n.trim != 0){
-        tmp.CDR <- trim(tmp.CDR, ctrim = c.trim, ntrim = n.trim)
+        tmp.CDR <- trim(tmp.CDR, ctrim = ctrim, ntrim = ntrim)
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]

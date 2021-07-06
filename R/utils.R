@@ -2,6 +2,8 @@ trim <- function(x, ctrim = c.trim, ntrim = n.trim) {
   substring(x, ctrim, nchar(x)-ntrim)
 }
 
+aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
+
 Jaccard = function (x, y) {
   M.11 = sum(x == 1 & y == 1)
   M.10 = sum(x == 1 & y == 0)
@@ -19,6 +21,7 @@ gene.to.knn <- function(tmpscore) {
   return(knn.matrix)
 }
 
+'%!in%' <- Negate("%in%")
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
   names.list <- names(network)

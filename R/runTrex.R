@@ -33,10 +33,11 @@ runTrex <- function(sc,
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     multi.network <- distanceMatrix(TCR, edit.method, c.trim, n.trim, threshold)
     
-    if (AA.properties %in% c("AF", "KF", "other")) {
+    if (noquote(paste(vapply(AA.properties, FUN = aa.eval, FUN.VALUE = logical(1)), collapse = " | "))) 
+    if (as.logical(paste(AA.properties %in% c("AF", "KF", "other"), collapse = " | "))){
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, threshold, AA.propertiess)
-        multi.network <- add.to.network(multi.network, AA.knn, names(TCR)) 
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, AA.properties)
+        multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), "_AA")) 
     }
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
