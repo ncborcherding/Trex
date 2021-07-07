@@ -6,6 +6,10 @@ output: html_document
 ---
 
 ```{r}
+library(stringr)
+library(stringdist)
+library(amap)
+library(dplyr)
 reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 x <- runTrex(tmp)
 ```

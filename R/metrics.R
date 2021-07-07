@@ -185,16 +185,16 @@ aaProperty <- function(TCR,
       score[j,col.ref] <- colSums(int[,col.ref])/length(refer)
     } 
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
-    max <- max(dist)
+    max <- max(dist, na.rm = TRUE)
     dist <- (max-dist)/max
-    knn.matrix <- matrix(ncol=ncol(dist), nrow=nrow(dist), 0)
-    rownames(knn.matrix) <- names
-    colnames(knn.matrix) <- names
+    knn.matrix <- matrix(ncol=ncol(dist), nrow=nrow(dist))
     for (m in 1:nrow(dist)) {
       matches <- which(dist[m,] > threshold)
       knn.matrix[m,matches] <- 1
       knn.matrix[matches,m] <- 1
     }
+    rownames(knn.matrix) <- names
+    colnames(knn.matrix) <- names
     aa.score[[i]] <- knn.matrix
   }
   return(aa.score)
