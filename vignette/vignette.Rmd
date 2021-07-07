@@ -10,6 +10,7 @@ library(stringr)
 library(stringdist)
 library(amap)
 library(dplyr)
+library(muxViz)
 reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 igraph <- runTrex(tmp)
 ```
@@ -40,5 +41,7 @@ wnn  <- FindMultiModalNeighbors(
   dims.list = list(1:30, 1:25), 
   modality.weight.name = "RNA.weight"
 )
+
+plot_multiplex(g.list, layer.colors = viridis::viridis_pal(option = "H")(4))
 ```
 
