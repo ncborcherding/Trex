@@ -182,7 +182,7 @@ aaProperty <- function(TCR,
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
-      score[j,col.ref] <- colSums(int[,col.ref])/length(refer)
+      score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
     } 
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)

@@ -120,19 +120,20 @@ checkSingleObject <- function(sc) {
 
 library(muxViz)
 multiplex.network <- function(multi.network) {
+  Nodes <- nrow(multi.network[[1]])
   layers <- length(multi.network)
   layerCouplingStrength <- 1
   networkOfLayersType <- "categorical"
   isDirected <- FALSE
   nodeTensor <- list() 
   g.list <- list() 
-  for (l in 1:layers) {
+  for (l in seq_len(layers)) {
     #Generate the layers
-    g.list[[l]] <- graph_from_adjacency_matrix(master.list[[l]], mode = "undirected")
+    g.list[[l]] <- graph_from_adjacency_matrix(multi.network[[l]], mode = "undirected")
     #Get the list of adjacency matrices which build the multiplex
     nodeTensor[[l]] <- get.adjacency(g.list[[l]])
   }
-  layerTensor <- BuildLayersTensor(Layers=Llyers, OmegaParameter=layerCouplingStrength,
+  layerTensor <- BuildLayersTensor(Layers=layers, OmegaParameter=layerCouplingStrength,
                                    MultisliceType=networkOfLayersType)
   M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)

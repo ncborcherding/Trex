@@ -64,7 +64,7 @@ runTrex <- function(sc,
             sc <- add.meta.data(sc, tmpscore)
         }
     }
-    return(multi.network)
-    #print("Multiplexing Nodes into single graph...")
-    #adj.matrix <- multiplex.network(multi.network)
+    print("Multiplexing Nodes into single graph...")
+    graph <- multiplex.network(multi.network)
+    return(graph)
 }
