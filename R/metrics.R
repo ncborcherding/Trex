@@ -164,9 +164,9 @@ aaProperty <- function(TCR,
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
   if ("other" %in% AA.properties | "all" %in% AA.properties) {
-    column.ref <- sort(c(col.ref, other.ref))
+    column.ref <- unique(sort(c(col.ref, other.ref)))
   } else {
-    column.ref <- sort(col.ref)
+    column.ref <- unique(sort(col.ref))
   }
   for (i in seq_along(TCR)) {
     membership <- TCR[[i]]

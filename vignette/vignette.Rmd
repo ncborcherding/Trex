@@ -13,6 +13,10 @@ library(dplyr)
 library(muxViz)
 reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 igraph <- runTrex(tmp)
+
+meta <- tmp[[]]
+meta <- meta[!is.na(meta$cloneType),]
+tmp <- subset(tmp, cells = rownames(meta))
 ```
 
 
@@ -26,12 +30,15 @@ Issues:
 
 Things I have Tried:
 - Change the ARPACK to call largest algebraic value (not helpful)
+- Change the assay call in DimReduction creation of Trex
+- What happens with lower thresholds vs higher thresholds? - Changes the vector not the eigen values
+-Remove non-T cells? Still mixing of CD4 and CD8 T cells (this might change wehn adding additional metrixs)
 
 Guess
 - Change nature of multiplexed list
-    - What hapens with lower thresholds vs higher thresholds?
     - What if threhsold is emilimated and graphs are made by raw distance calc?
     - Any change if we remove the diagnols?
+
     
 ```{r}
 N <- simplify(igraph)
@@ -39,18 +46,18 @@ eigen <- spectrum(N,
                  which = list(howmany = 30), 
                  algorithm = "arpack")
 
+
 SCG <- scg(N, ev = 1, nt = 2)
 #ProjectionMatrix <- magic....(not done yet)
 
 ProjectionMatrix <- eigen$vectors
 rownames(ProjectionMatrix) <- rownames(tmp[[]])
-rownmaes(multi.network[[1]])
+
 #Making essientially a pca out of the sparse matrix
 Trex <- CreateDimReducObject(
     embeddings = ProjectionMatrix,
     loadings = ProjectionMatrix,
     projected = ProjectionMatrix,
-    assay = "RNA",
     stdev = rep(0, ncol(ProjectionMatrix)),
     key = "Trex",
     jackstraw = NULL,
@@ -83,8 +90,12 @@ DimPlot(tmp, reduction = 'rna.umap')
 FeaturePlot(tmp, reduction = 'rna.umap', features = "CD3G")
 DimPlot(tmp, reduction = 'trex.umap')
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD3G")
+FeaturePlot(tmp, reduction = 'trex.umap', features = "CD4")
+FeaturePlot(tmp, reduction = 'trex.umap', features = "CD8A")
 DimPlot(tmp, reduction = 'wnn.umap')
 FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD3G")
 FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD14")
+FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD4")
+FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD8A")
 ```
 

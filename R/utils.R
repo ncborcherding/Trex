@@ -137,7 +137,6 @@ multiplex.network <- function(multi.network) {
                                    MultisliceType=networkOfLayersType)
   M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
-  N <- get.adjacency(N)
 }
 
 
