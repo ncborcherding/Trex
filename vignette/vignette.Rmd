@@ -15,12 +15,36 @@ reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 igraph <- runTrex(tmp)
 ```
 
+
+#Notes:
+
+As of right now the following works to produce PCA that can be added to the seurat object and perform WNN on
+
+Issues: 
+1. Eigen vectors after 1d are not helpful
+2. The WNN actually adds T cells to non-T cell and non T cells form two majory clusters that are a mix of T/B/and myeloid
+
+Things I have Tried:
+- Change the ARPACK to call largest algebraic value (not helpful)
+
+Guess
+- Change nature of multiplexed list
+    - What hapens with lower thresholds vs higher thresholds?
+    - What if threhsold is emilimated and graphs are made by raw distance calc?
+    - Any change if we remove the diagnols?
+    
 ```{r}
 N <- simplify(igraph)
 eigen <- spectrum(N, 
-                 which = 20, 
+                 which = list(howmany = 30), 
                  algorithm = "arpack")
+
+SCG <- scg(N, ev = 1, nt = 2)
 #ProjectionMatrix <- magic....(not done yet)
+
+ProjectionMatrix <- eigen$vectors
+rownames(ProjectionMatrix) <- rownames(tmp[[]])
+rownmaes(multi.network[[1]])
 #Making essientially a pca out of the sparse matrix
 Trex <- CreateDimReducObject(
     embeddings = ProjectionMatrix,
@@ -28,20 +52,39 @@ Trex <- CreateDimReducObject(
     projected = ProjectionMatrix,
     assay = "RNA",
     stdev = rep(0, ncol(ProjectionMatrix)),
-    key = NULL,
+    key = "Trex",
     jackstraw = NULL,
     misc = list()
   )
 tmp@reductions[["Trex"]] <- Trex
 
-
+tmp <- FindNeighbors(tmp)
+tmp <- FindNeighbors(tmp, reduction = "Trex")
 wnn  <- FindMultiModalNeighbors(
   tmp, 
   reduction.list = list("pca", "Trex"), 
-  dims.list = list(1:30, 1:25), 
+  dims.list = list(1:30, 1:10), 
   modality.weight.name = "RNA.weight"
 )
 
-plot_multiplex(g.list, layer.colors = viridis::viridis_pal(option = "H")(4))
+tmp <- RunUMAP(wnn, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+tmp <- RunUMAP(tmp, reduction = 'pca', dims = 1:30, assay = 'RNA', 
+              reduction.name = 'rna.umap', reduction.key = 'rnaUMAP_')
+tmp <- RunUMAP(tmp, reduction = 'Trex', dims = 1:30, 
+              reduction.name = 'trex.umap', reduction.key = 'trexUMAP_')
+tmp <- FindClusters(tmp, graph.name = "wsnn", algorithm = 3, resolution = 2, verbose = FALSE)
+
+DimPlot(tmp)
+DefaultAssay(tmp)
+FeaturePlot(tmp, features = "CD4")
+DimPlot(tmp, group.by = "cloneType")
+
+DimPlot(tmp, reduction = 'rna.umap')
+FeaturePlot(tmp, reduction = 'rna.umap', features = "CD3G")
+DimPlot(tmp, reduction = 'trex.umap')
+FeaturePlot(tmp, reduction = 'trex.umap', features = "CD3G")
+DimPlot(tmp, reduction = 'wnn.umap')
+FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD3G")
+FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD14")
 ```
 
