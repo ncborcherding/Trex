@@ -99,6 +99,10 @@ plot(eigen$vectors[,4], eigen$vectors[,2])
 ProjectionMatrix <- eigen$vectors[,1:30]
 rownames(ProjectionMatrix) <- rownames(tmp[[]])
 
+unwanted_genes <- "^IGHV*|^IGHJ*|^IGHD*|^IGKV*|^IGLV*|^TRBV*|^TRBD*|^TRBJ*|^TRDV*|^TRDD*|^TRDJ*|^TRAV*|^TRAJ*|^TRGV*|^TRGJ*"
+remove_genes <- tmp[["RNA"]]@var.features %in% unwanted_genes
+tmp[["RNA"]]@var.features = tmp[["RNA"]]@var.features[!remove_genes]
+
 #Making essientially a pca out of the sparse matrix
 Trex <- CreateDimReducObject(
     embeddings = ProjectionMatrix,

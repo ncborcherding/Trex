@@ -29,6 +29,7 @@ runTrex <- function(sc,
                    add.INKT = TRUE,
                    add.MAIT = TRUE, 
                    species = "human") {
+    #Add Filtering step
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     multi.network <- distanceMatrix(TCR, edit.method, c.trim, n.trim, threshold)
