@@ -11,6 +11,8 @@ library(stringdist)
 library(amap)
 library(dplyr)
 library(muxViz)
+library(igraph)
+tmp <- readRDS("~/Documents/GitHub/Trex/Sample11_seuratObject.rds")
 reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 igraph <- runTrex(tmp)
 
@@ -19,6 +21,19 @@ meta <- meta[!is.na(meta$cloneType),]
 tmp <- subset(tmp, cells = rownames(meta))
 ```
 
+```{r}
+# Create a graph adjacency based on correlation distances between genes in  pairwise fashion.
+g <- graph.adjacency(
+  multi.network[[1]],
+  mode="undirected",
+  weighted=TRUE,
+  diag=FALSE
+)
+g <- simplify(g)
+eigen <- spectrum(g, 
+                 which = list(howmany = 30), 
+                 algorithm = "arpack")
+```
 
 #Notes:
 
@@ -26,6 +41,7 @@ As of right now the following works to produce PCA that can be added to the seur
 
 Issues: 
 1. Eigen vectors after 1d are not helpful
+ - So this is not the case the first eigenvector actually is representative of the large issue of NA values vs non-NA-value, eliminating the first eigen dimension recovers the better seperation of clones
 2. The WNN actually adds T cells to non-T cell and non T cells form two majory clusters that are a mix of T/B/and myeloid
 
 Things I have Tried:
@@ -45,12 +61,13 @@ N <- simplify(igraph)
 eigen <- spectrum(N, 
                  which = list(howmany = 30), 
                  algorithm = "arpack")
+plot(eigen$vectors[,4], eigen$vectors[,2])
 
 
 SCG <- scg(N, ev = 1, nt = 2)
 #ProjectionMatrix <- magic....(not done yet)
 
-ProjectionMatrix <- eigen$vectors
+ProjectionMatrix <- eigen$vectors[,2:30]
 rownames(ProjectionMatrix) <- rownames(tmp[[]])
 
 #Making essientially a pca out of the sparse matrix
@@ -70,16 +87,16 @@ tmp <- FindNeighbors(tmp, reduction = "Trex")
 wnn  <- FindMultiModalNeighbors(
   tmp, 
   reduction.list = list("pca", "Trex"), 
-  dims.list = list(1:30, 1:10), 
+  dims.list = list(1:30, 1:20), 
   modality.weight.name = "RNA.weight"
 )
 
 tmp <- RunUMAP(wnn, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
 tmp <- RunUMAP(tmp, reduction = 'pca', dims = 1:30, assay = 'RNA', 
               reduction.name = 'rna.umap', reduction.key = 'rnaUMAP_')
-tmp <- RunUMAP(tmp, reduction = 'Trex', dims = 1:30, 
+tmp <- RunUMAP(tmp, reduction = 'Trex', dims = 1:20, 
               reduction.name = 'trex.umap', reduction.key = 'trexUMAP_')
-tmp <- FindClusters(tmp, graph.name = "wsnn", algorithm = 3, resolution = 2, verbose = FALSE)
+tmp <- FindClusters(tmp, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
 
 DimPlot(tmp)
 DefaultAssay(tmp)

@@ -34,6 +34,11 @@ distanceMatrix <- function(TCR.list,
         
       
     TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
+    knn.return[[i]] <- TR
+   }
+  names(knn.return) <- paste0(names(TCR.list), ".edit")
+  return(knn.return)
+}
     #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
     medianlength <- median(na.omit(length))
     out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
@@ -187,6 +192,12 @@ aaProperty <- function(TCR,
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)
     dist <- (max-dist)/max
+    
+    aa.score[[i]] <- dist
+  }
+    names(aa.score) <- paste0(names(aa.score), ".edit")
+ return(aa.score)
+}
     knn.matrix <- matrix(ncol=ncol(dist), nrow=nrow(dist))
     for (m in 1:nrow(dist)) {
       matches <- which(dist[m,] > threshold)

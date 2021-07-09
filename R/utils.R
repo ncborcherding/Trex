@@ -139,10 +139,3 @@ multiplex.network <- function(multi.network) {
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
 }
 
-
-
-
-
-
-
-#T
