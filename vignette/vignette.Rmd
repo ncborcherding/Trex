@@ -24,7 +24,7 @@ tmp <- subset(tmp, cells = rownames(meta))
 ```{r}
 # Create a graph adjacency based on correlation distances between genes in  pairwise fashion.
 g <- graph.adjacency(
-  multi.network[[1]],
+  igraph[[1]],
   mode="undirected",
   weighted=TRUE,
   diag=FALSE
@@ -33,6 +33,35 @@ g <- simplify(g)
 eigen <- spectrum(g, 
                  which = list(howmany = 30), 
                  algorithm = "arpack")
+
+g_mst <- mst(g)
+nodeTensor <- get.adjacency(g_mst)
+nodeTensor[1:20,1:20]
+plot(g_mst)
+
+make.knn.graph<-function(D,k){
+  # calculate euclidean distances between cells
+  dist<-as.matrix(dist(D))
+  # make a list of edges to k nearest neighbors for each cell
+  edges <- mat.or.vec(0,2)
+  for (i in 1:nrow(dist)){
+    # find closes neighbours
+    matches <- setdiff(order(dist[i,],decreasing = F)[1:(k+1)],i)
+    # add edges in both directions
+    edges <- rbind(edges,cbind(rep(i,k),matches))  
+    edges <- rbind(edges,cbind(matches,rep(i,k)))  
+  }
+  # create a graph from the edgelist
+  graph <- graph_from_edgelist(edges,directed=F)
+  V(graph)$frame.color <- NA
+  # make a layout for visualizing in 2D
+  set.seed(1)
+  g.layout<-layout_with_fr(graph)
+  return(list(graph=graph,layout=g.layout))        
+}
+
+library(FNN)
+x <- get.knn(multi.network[[1]], k = 30)
 ```
 
 #Notes:
@@ -64,10 +93,10 @@ eigen <- spectrum(N,
 plot(eigen$vectors[,4], eigen$vectors[,2])
 
 
-SCG <- scg(N, ev = 1, nt = 2)
+#SCG <- scg(N, ev = 1, nt = 2)
 #ProjectionMatrix <- magic....(not done yet)
 
-ProjectionMatrix <- eigen$vectors[,2:30]
+ProjectionMatrix <- eigen$vectors[,1:30]
 rownames(ProjectionMatrix) <- rownames(tmp[[]])
 
 #Making essientially a pca out of the sparse matrix
@@ -99,20 +128,23 @@ tmp <- RunUMAP(tmp, reduction = 'Trex', dims = 1:20,
 tmp <- FindClusters(tmp, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
 
 DimPlot(tmp)
-DefaultAssay(tmp)
 FeaturePlot(tmp, features = "CD4")
 DimPlot(tmp, group.by = "cloneType")
 
 DimPlot(tmp, reduction = 'rna.umap')
 FeaturePlot(tmp, reduction = 'rna.umap', features = "CD3G")
+FeaturePlot(tmp, reduction = 'rna.umap', features = "CD4")
+FeaturePlot(tmp, reduction = 'rna.umap', features = "CD8A")
 DimPlot(tmp, reduction = 'trex.umap')
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD3G")
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD4")
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD8A")
 DimPlot(tmp, reduction = 'wnn.umap')
 FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD3G")
-FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD14")
 FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD4")
 FeaturePlot(tmp, reduction = 'wnn.umap', features = "CD8A")
+FeaturePlot(tmp, reduction = 'wnn.umap', features = "FOXP3")
+DimPlot(tmp, reduction = 'wnn.umap', group.by = "cloneType")
+DimPlot(tmp, reduction = 'wnn.umap')
 ```
 
