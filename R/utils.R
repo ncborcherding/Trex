@@ -108,6 +108,12 @@ grabMeta <- function(sc) {
   return(meta)
 }
 
+quiet <- function(x) {
+  sink(tempfile())
+  on.exit(sink())
+  invisible(force(x))
+}
+
 #This is to check the single-cell expression object
 checkSingleObject <- function(sc) {
   if (!inherits(x=sc, what ="Seurat") & 
@@ -139,3 +145,24 @@ multiplex.network <- function(multi.network) {
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
 }
 
+#' @importFrom FNN knn.index
+get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
+  knn.matrix <- matrix(ncol = nrow(TCR[[i]]), nrow= nrow(TCR[[i]]))
+  if (nearest.method == "threshold") {
+    for (m in seq_len(nrow(knn.matrix))){
+      # find closes neighbors - not technically nearest neighbor
+      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors with > 0.8 edit similarity
+      knn.matrix[m,matches] <- 1
+      knn.matrix[matches,m] <- 1
+    }
+    }else if (nearest.method == "nn") {
+      matches <- knn.index(out_matrix[m,],k = near.neighbor)
+      for (m in seq_len(nrow(matches))) {
+        knn.matrix[m,matches] <- 1
+        knn.matrix[matches,m] <- 1
+      }
+    } 
+    rownames(knn.matrix) <- TCR[[i]]$barcode
+    colnames(knn.matrix) <- TCR[[i]]$barcode
+    return(knn.matrix)
+  }

@@ -10,24 +10,26 @@
 #barcodes - corresponding cell names from the single cell object used to filter
 
 library(stringdist)
-distanceMatrix <- function(TCR.list, 
+distanceMatrix <- function(TCR, 
                            edit.method = "lv",
+                           nearest.method = nearest.method,
+                           near.neighbor = near.neighbor,
                            edit.threshold = threshold, 
-                           ctrim = c.trim,
-                           ntrim = n.trim) {
+                           c.trim = c.trim,
+                           n.trim = n.trim) {
   knn.return <- list()
   
     for (i in seq_along(TCR.list)) {
-      TR<- trim(TCR.list[[i]]$cdr3_aa, ctrim, ntrim)
-      barcodes <- TCR.list[[i]]$barcode
+      TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
+      barcodes <- TCR[[i]]$barcode
       length <- nchar(na.omit(as.character(TR)))
       length.check <- min(length)
       #Need to work on this warning - still activating despirte function working
-      if (length.check < (ntrim + ctrim + 3) && ctrim != 0 && ntrim != 0) { 
+      if (length.check < (n.trim + c.trim + 3) && c.trim != 0 && n.trim != 0) { 
         warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
         than 3 AA residues calculations, please consider
             prefiltering short cdr3 AA sequences or changing the trimming parameters"))}
-      if (length.check < (ntrim + ctrim)) 
+      if (length.check < (n.trim + c.trim)) 
           stop(strwrap(prefix = " ", initial = "", "Unable to perform edit distance 
           calculations, at least one cdr3 AA sequence is
           shorter than the trimming parameters"))
@@ -58,19 +60,10 @@ distanceMatrix <- function(TCR.list,
         }
         }
       }
-    
-    knn.matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
-    for (m in 1:nrow(knn.matrix)){
-      # find closes neighbors - not technically nearest neighbor
-      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors with > 0.8 edit similarity
-      knn.matrix[m,matches] <- 1
-      knn.matrix[matches,m] <- 1
-    } 
-    rownames(knn.matrix) <- TCR.list[[i]]$barcode
-    colnames(knn.matrix) <- TCR.list[[i]]$barcode
+    knn.matrix<- get.knn(TCR, i, nearest.method, near.neighbor, edit.threshold)
     knn.return[[i]] <- knn.matrix
     }
-  names(knn.return) <- paste0(names(TCR.list), ".edit")
+  names(knn.return) <- paste0(names(TCR), ".edit")
 return(knn.return)
 }
 
@@ -164,6 +157,9 @@ betaDistance <- function(getTCR) {
 aaProperty <- function(TCR, 
                        ctrim = c.trim,
                        ntrim = n.trim, 
+                       nearest.method = nearest.method,
+                       near.neighbor = near.neighbor,
+                       edit.threshold = threshold,
                        AA.properties = AA.properties) { 
   aa.score <- list()
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
@@ -188,6 +184,7 @@ aaProperty <- function(TCR,
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
       score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
+      list[[j]] <- t(int)
     } 
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)
@@ -195,9 +192,77 @@ aaProperty <- function(TCR,
     
 #    aa.score[[i]] <- dist
 #  }
-#    names(aa.score) <- paste0(names(aa.score), ".edit")
+#    names(aa.scorex) <- paste0(names(aa.score), ".edit")
 # return(aa.score)
 #}
+    knn.matrix<- get.knn(TCR, i, nearest.method, near.neighbor, edit.threshold)
+    aa.score[[i]] <- knn.matrix
+    aa.score[[i]] <- knn.matrix
+  }
+  return(aa.score)
+}
+
+library(rowr)
+aaAutoEncoder <- function(TCR, 
+                       ctrim = c.trim,
+                       ntrim = n.trim, 
+                       AA.properties = AA.properties) { 
+  quiet(h2o.init())
+  h2o.no_progress()
+  aa.score <- list()
+  col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
+  other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
+  if ("other" %in% AA.properties | "all" %in% AA.properties) {
+    column.ref <- unique(sort(c(col.ref, other.ref)))
+  } else {
+    column.ref <- unique(sort(col.ref))
+  }
+  for (i in seq_along(TCR)) {
+    membership <- TCR[[i]]
+    length <- max(nchar(membership$cdr3_aa))
+    names <- membership$barcode
+    
+    cells <- unique(membership$barcode)
+    list <- NULL
+    for (j in seq_len(length(cells))) {
+      tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
+      if (c.trim != 0 | n.trim != 0){
+        tmp.CDR <- trim(tmp.CDR, ctrim = ctrim, ntrim = ntrim)
+      }
+      refer <- unlist(strsplit(tmp.CDR, ""))
+      int <- reference[match(refer, reference$aa),]
+      #score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
+
+      #full <- matrix(nrow = (80-nrow(int)), ncol = 28)
+      #colnames(full) <- colnames(int[,2:29])
+      #z <- rbind(int[,2:29], full)
+      z <- as.h2o(int)
+      ae1 <- h2o.deeplearning(
+        x = seq_along(z), 
+        training_frame = z,
+        autoencoder = TRUE,
+        hidden = c(100,50,30, 1, 30 ,50,100), 
+        activation = "Tanh",
+        seed = 123,
+        verbose = FALSE
+    )
+    w1 <- as.matrix(h2o.deepfeatures(ae1, z, layer=4))
+    if (j == 1) {
+      score <- w1
+    } else {
+      score <-  cbind.fill(score, w1, fill = NA)
+    }
+    }
+    
+    dist <- as.matrix(Dist(t(score), method = "pearson"))
+    max <- max(dist, na.rm = TRUE)
+    dist <- (max-dist)/max
+    
+    #    aa.score[[i]] <- dist
+    #  }
+    #    names(aa.score) <- paste0(names(aa.score), ".edit")
+    # return(aa.score)
+    #}
     knn.matrix <- matrix(ncol=ncol(dist), nrow=nrow(dist))
     for (m in 1:nrow(dist)) {
       matches <- which(dist[m,] > threshold)
