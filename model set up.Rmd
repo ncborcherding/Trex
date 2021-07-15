@@ -1,0 +1,83 @@
+---
+title: "setting"
+author: "Nick Borcherding"
+date: "7/15/2021"
+output: html_document
+---
+
+```{r}
+reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
+meta <- readRDS("~/Documents/GitHub/utility/data/processedData/meta.rds")
+cdr3 <- unique(na.omit(meta$CTaa)) #remove NA and duplicates
+cdr3 <- cdr3[!grepl("_NA|NA_", cdr3)] #remove without TRA or TRB
+TRA <- stringr::str_split(cdr3, "_", simplify = T)[,1]
+TRB <- stringr::str_split(cdr3, "_", simplify = T)[,2]
+set.seed(123)
+train <- sample(length(TRA), 100000)
+TRA.train <- TRA[train]
+TRB.train <- TRB[train]
+
+AA.properties = "af"
+col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
+column.ref <- unique(sort(col.ref))
+    
+max <- max(nchar(TRA), nchar(TRB))
+TRA.AAf <- list()
+    for (j in seq_len(length(TRA.train))) {
+      tmp.CDR <- TRA.train[j]
+      refer <- unlist(strsplit(tmp.CDR, ""))
+      refer <- c(refer, rep(NA, max - length(refer)))
+      int <- reference[match(refer, reference$aa),]
+      TRA.AAf[[j]] <- int[,2:29]
+    } 
+
+TRB.AAf <- list()
+    for (j in seq_len(length(TRB.train))) {
+      tmp.CDR <- TRB.train[j]
+      refer <- unlist(strsplit(tmp.CDR, ""))
+      refer <- c(refer, rep(NA, max - length(refer)))
+      int <- reference[match(refer, reference$aa),]
+      TRB.AAf[[j]] <- int[,2:29]
+    } 
+test <- TRA.AAf[1:1000]
+z <- as.h2o(test)
+
+hyper_grid <- list(hidden = list(
+  c(50), 
+  c(100), 
+  c(300, 100, 300), 
+  c(50,25, 50), 
+  c(100, 50, 100), 
+  c(250, 100, 50, 100, 250), 
+  c(100,50,30, 1, 30 ,50,100)))
+
+
+ae2 <- h2o.deeplearning(
+    x = seq_along(z),
+  training_frame = z,
+  autoencoder = TRUE,
+  hidden = c(100,50,30, 1, 30 ,50,100), 
+  activation = "Tanh",
+)
+
+
+
+ae_grid <- h2o.grid(
+  algorithm = "deeplearning",
+  x = seq_along(z), 
+  training_frame = z,
+  autoencoder = TRUE,
+  grid_id = "autoencoder_grid", 
+  hyper_params = hyper_grid,
+  activation = "Tanh",
+  seed = 123
+  
+)
+
+ae_grid@summary_table
+
+h2o.getGrid("autoencoder_grid", sort_by = "mse")
+
+
+```
+

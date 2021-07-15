@@ -48,9 +48,9 @@ runTrex <- function(sc,
     if (unique(c("AF", "KF", "other") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
         if(AA.method == "mean") {
-            AA.knn <- aaProperty(TCR, c.trim, n.trim, AA.properties)
+            AA.knn <- aaProperty(TCR, c.trim, n.trim, AA.properties, nearest.method, threshold, near.neighbor)
         } else if (AA.method == "auto") {
-            AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, AA.properties)
+            AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, AA.properties, nearest.method, threshold, near.neighbor)
         }
         multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), ".AA")) 
     }

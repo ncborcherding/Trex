@@ -19,7 +19,7 @@ distanceMatrix <- function(TCR,
                            n.trim = n.trim) {
   knn.return <- list()
   
-    for (i in seq_along(TCR.list)) {
+    for (i in seq_along(TCR)) {
       TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
       barcodes <- TCR[[i]]$barcode
       length <- nchar(na.omit(as.character(TR)))
@@ -36,12 +36,8 @@ distanceMatrix <- function(TCR,
         
       
     TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
-#    knn.return[[i]] <- TR
-#   }
-#  names(knn.return) <- paste0(names(TCR.list), ".edit")
-#  return(knn.return)
-#}
-    #This converts the distance matrices calculated above to a normalized value based on the length of the cdr3 sequence.
+    #This converts the distance matrices calculated above to a normalized 
+    #value based on the length of the cdr3 sequence.
     medianlength <- median(na.omit(length))
     out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
       for (k in seq_len(ncol(TR))) {
@@ -184,17 +180,10 @@ aaProperty <- function(TCR,
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
       score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
-      list[[j]] <- t(int)
     } 
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)
     dist <- (max-dist)/max
-    
-#    aa.score[[i]] <- dist
-#  }
-#    names(aa.scorex) <- paste0(names(aa.score), ".edit")
-# return(aa.score)
-#}
     knn.matrix<- get.knn(TCR, i, nearest.method, near.neighbor, edit.threshold)
     aa.score[[i]] <- knn.matrix
     aa.score[[i]] <- knn.matrix
@@ -273,5 +262,6 @@ aaAutoEncoder <- function(TCR,
     colnames(knn.matrix) <- names
     aa.score[[i]] <- knn.matrix
   }
+  names(aa.score) <- paste0(names(TCR), ".edit")
   return(aa.score)
 }
