@@ -26,7 +26,7 @@ TRA.AAf <- list()
     for (j in seq_len(length(TRA.train))) {
       tmp.CDR <- TRA.train[j]
       refer <- unlist(strsplit(tmp.CDR, ""))
-      refer <- c(refer, rep(NA, max - length(refer)))
+      refer <- c(refer, rep(NA, (max + 10) - length(refer)))
       int <- reference[match(refer, reference$aa),]
       TRA.AAf[[j]] <- int[,2:29]
     } 
@@ -35,45 +35,145 @@ TRB.AAf <- list()
     for (j in seq_len(length(TRB.train))) {
       tmp.CDR <- TRB.train[j]
       refer <- unlist(strsplit(tmp.CDR, ""))
-      refer <- c(refer, rep(NA, max - length(refer)))
+      refer <- c(refer, rep(NA, (max + 10) - length(refer)))
       int <- reference[match(refer, reference$aa),]
-      TRB.AAf[[j]] <- int[,2:29]
+      TRB.AAf[[j]] <- t(int[,2:29])
     } 
-test <- TRA.AAf[1:1000]
-z <- as.h2o(test)
+
+h2o.no_progress()
+test <- TRA.AAf[1:10000]
+af.tra <- list()
+kf.tra <- list()
+afkf.tra <- list()
+other.tra <- list()
+afother.tra <- list()
+kfother.tra <- list()
+all.tra <- list()
+for (i in seq_along(test)) {
+  x <- t(test[[i]])
+  colnames(x) <- paste0("aa.", seq_len(ncol(x)))
+  all[[i]] <- as.h2o(x)
+  af.tra[[i]] <- as.h2o(x[af,])
+  kf.tra[[i]] <- as.h2o(x[kf,])
+  other.tra[[i]] <- as.h2o[x[other,]]
+  afkf.tra[[i]] <- as.h2o(x[c(af,kf),])
+  afother.tra[[i]] <- as.h2o(x[c(af,other),])
+  kfother.tra[[i]] <- as.h2o(x[c(kf, other),])
+}
+#test2 <- NULL
+#for ( i in seq_along(test)) {
+  #test[[i]]$sequence <- TRA[[i]]
+#  test[[i]] <- as.h2o(test[[i]])
+#}
+
+#test2 <- h2o.rbind(test)
+library(h2o)
+h2o.init()
+#z <- as.h2o(test2)
 
 hyper_grid <- list(hidden = list(
-  c(50), 
-  c(100), 
+  c(50, 1, 50), 
+ c(100, 1, 100), 
   c(300, 100, 300), 
-  c(50,25, 50), 
-  c(100, 50, 100), 
-  c(250, 100, 50, 100, 250), 
+  c(50,25,1,25, 50), 
+ c(100, 50, 100), 
+  c(250, 100, 50, 25, 1, 25, 100, 250), 
   c(100,50,30, 1, 30 ,50,100)))
 
+#z <- as.h2o(test)
 
+#ae <- h2o.deeplearning(
+    #x = seq_len(nrow(z)),
+#training_frame = z,
+#  autoencoder = TRUE,
+#  hidden = 2, 
+#  activation = "Tanh",
+#  set.seed(123), 
+#  epochs = 50, 
+#  ignore_const_cols = TRUE
+#)
+#Things to add
+  #1) Loop through af, kf, other, af+kf, af+other, kf + other and all
+  #2) Find where to extract the specific hidden layer in predict
+  #3) Find hidden layer strategy that predicts best MSE
+af <- 1:5
+kf <- 12:21
+other <- c(6:11,22:28)
+
+
+for (i in seq_along(test)) {
+  z <- t(test[[i]])
+  colnames(z) <- paste0("aa.", seq_len(ncol(z)))
+  z <- as.h2o(z)  
+  if (i == 1) {
+    ae1 <- h2o.deeplearning(
+      x = seq_along(z), 
+      training_frame = z,
+      autoencoder = TRUE,
+      hidden = c(100,50,30, 1, 30 ,50,100), 
+      activation = "Tanh",
+      seed = 123, 
+      epochs = 50
+    )
+  }else {
+      ae1 <- h2o.deeplearning(
+      x = seq_along(z), 
+      training_frame = z,
+      autoencoder = TRUE,
+      hidden = c(100,50,30, 1, 30 ,50,100), 
+      activation = "Tanh",
+      seed = 123, 
+      epochs = 50,
+      pretrained_autoencoder = "ae1"
+    )
+  }
+}
+
+ae1 <- h2o.deeplearning(
+      x = seq_along(z), 
+      training_frame = z,
+      autoencoder = TRUE,
+      hidden = c(100,50,30, 1, 30 ,50,100), 
+      activation = "Tanh",
+      seed = 123, 
+      epochs = 50
+    )
+
+
+x <- t(TRA.AAf[[10001]])
+colnames(x) <- paste0("aa.", seq_len(ncol(x)))
+x <- as.h2o(x)
+
+perf <- h2o.performance(ae1)
+pred <- h2o.predict(ae2, newdata = x)
+for (i in seq_along(test)) {
+  z <- t(test[[i]])
+  colnames(z) <- paste0("aa.", seq_len(ncol(z)))
+  z <- as.h2o(z)  
+  ae_grid <- h2o.grid(
+    algorithm = "deeplearning",
+    x = seq_along(z), 
+    training_frame = z,
+    autoencoder = TRUE,
+    grid_id = "autoencoder_grid", 
+    hyper_params = hyper_grid,
+    activation = "Tanh",
+    seed = 123, 
+)
+}
+test2 <-h2o.rbind(test)
 ae2 <- h2o.deeplearning(
-    x = seq_along(z),
-  training_frame = z,
-  autoencoder = TRUE,
-  hidden = c(100,50,30, 1, 30 ,50,100), 
-  activation = "Tanh",
-)
-
-
-
-ae_grid <- h2o.grid(
-  algorithm = "deeplearning",
-  x = seq_along(z), 
-  training_frame = z,
-  autoencoder = TRUE,
-  grid_id = "autoencoder_grid", 
-  hyper_params = hyper_grid,
-  activation = "Tanh",
-  seed = 123
-  
-)
-
+      x = seq_along(test2), 
+      training_frame = test2,
+      autoencoder = TRUE,
+      hidden = c(100, 50, 25, 1, 25, 50, 100), 
+      activation = "Tanh",
+      seed = 123, 
+      epochs = 50
+    )
+pred <- h2o.predict(ae2, newdata = x)
+ 
+ 
 ae_grid@summary_table
 
 h2o.getGrid("autoencoder_grid", sort_by = "mse")
