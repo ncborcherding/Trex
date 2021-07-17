@@ -156,8 +156,12 @@ get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
       knn.matrix[matches,m] <- 1
     }
     }else if (nearest.method == "nn") {
-      matches <- knn.index(out_matrix[m,],k = near.neighbor)
+      matches <- knn.index(out_matrix,k = near.neighbor)
       for (m in seq_len(nrow(matches))) {
+        neigh.check <- which(out_matrix[m,] == 1)
+        if (length(neigh.check) > near.neighbor) {
+          matches <- sample(neigh.check, near.neighbor)
+        }
         knn.matrix[m,matches] <- 1
         knn.matrix[matches,m] <- 1
       }
