@@ -36,7 +36,7 @@ Check out this [vignette](https://ncborcherding.github.io/vignettes/Trex.html) f
 
 ## Eigen value matrix
 
-The Trex algorithm iteratively corrects PCA embeddings. To input your own low dimensional embeddings directly, set `do_pca=FALSE`. Harmony is packaged with a small dataset 
+The Trex algorithm iteratively corrects PCA embeddings. To input your own low dimensional embeddings directly, set `do_pca=FALSE`. Harmony is packaged with a small dataset. If single-cell objects are not filtered for T cells with TCR,  `calculatemaTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
 
 ```r
 library(Trex)
@@ -45,10 +45,31 @@ my_trex <- calculatemaTrex(singleObject)
 
 ## Seurat 
 
-You can run Trex within your Seurat or SingleCellExperiemt workflow. 
+You can run Trex within your Seurat or SingleCellExperiemt workflow. **Importantly** `runTrex()` will automatically filter single-cells that do not contain TCR information in the meta data of the single-cell object. 
 
 ```r
-seuratObj <- runTrex(seuratObj, "Trex")
+seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
+                   chains = "both", #Use of "TRA", "TRB" or "both"
+                   edit.method = "lv", #Calculate edit distance methods
+                   AA.properties = c("AF", "KF", "other"), 
+                   AA.method = "auto", #Use "auto" for auto-encoder or 
+                   #"mean" for mean properties across cdr3 sequence
+                   reduction.name = "Trex", #Name designation for 
+                   #the values to be added to the single-cell object
+                   c.trim = 0, #Amino Acid Residues to trim from the start of the cdr3 sequence
+                   n.trim = 0, #Amino Acid Residues to trim from the end of the cdr3 sequence
+                   nearest.method = "threshold", #Use "threshold" to find related clonotypes above threshold or 
+                   #"nn" for nearest neighbor by normalized distances
+                   threshold = 0.85, #The normalized threshold to use where 1 = clone
+                   near.neighbor = NULL, #The number of nearest neighbors to 
+                   #use in generating an adjacency matrix
+                   add.INKT = TRUE, #Add a additional layer for invariant natural 
+                   #killer T cells based on genes
+                   add.MAIT = TRUE, #Add a additional layer for Mucosal-associated 
+                   #invariant T cells based on genes
+                   species = "human") #Indicate "human" or "mouse" for gene-based metrics
+                   
+seuratObj_Tonly <- runTrex(seuratObj, reduction.name = "Trex")
 ```
 
 From here, you can generate a tSNE/UMAP using the Trex values, similar to the PCA values based on variable gene expression.
