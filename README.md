@@ -12,13 +12,18 @@ R package to assist in the interaction of immune receptor and gene expression se
 
 Trex has been tested on R versions >= 4.0. Please consult the DESCRIPTION file for more details on required R packages - it is specifically designed to work with single-cell objects that have had TCRs added using [scRepertoire](https://github.com/ncborcherding/scRepertoire). Trex has been tested on OS X and Windows platforms.
 
+muxViz is essiential before installing Trex:
+
+```r
+devtools::install_github("manlius/muxViz")
+```
+
 # Installation
 
 To run Trex, open R and install harmony from CRAN: 
 
 ```r
-library(devtools)
-install_github("ncborcherding/Trex")
+devtools::install_github("ncborcherding/Trex")
 ```
 
 # Usage/Demos
