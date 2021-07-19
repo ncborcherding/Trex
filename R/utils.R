@@ -1,16 +1,12 @@
+
+#Allows for the cutting of the cdr3 sequenc
 trim <- function(x, ctrim = c.trim, ntrim = n.trim) {
   substring(x, ctrim, nchar(x)-ntrim)
 }
 
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
 
-Jaccard = function (x, y) {
-  M.11 = sum(x == 1 & y == 1)
-  M.10 = sum(x == 1 & y == 0)
-  M.01 = sum(x == 0 & y == 1)
-  return (M.11 / (M.11 + M.10 + M.01))
-}
-
+#Convert binary to adjacency matrix
 gene.to.knn <- function(tmpscore) {
   names <- tmpscore$barcode
   knn.matrix <- matrix(ncol=length(names), nrow=length(names), 0)
@@ -22,6 +18,7 @@ gene.to.knn <- function(tmpscore) {
 }
 
 '%!in%' <- Negate("%in%")
+#Append the multiple network object
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
   names.list <- names(network)
@@ -34,6 +31,7 @@ add.to.network <- function(network, new.knn, name) {
   return(network)
 }
 
+# Add to meta data some of the metrics calculated
 #' @importFrom rlang %||%
 #' @importFrom SummarizedExperiment coldata 'coldata<-'
 add.meta.data <- function(sc, meta) {
@@ -95,7 +93,7 @@ grabMeta <- function(sc) {
       colnames(meta)[length(meta)] <- "cluster"
     }
   }
-  else if (inherits(x=sc, what ="SummarizedExperiment")){
+  else if (inherits(x=sc, what ="SingleCellExperiment")){
     meta <- data.frame(colData(sc))
     rownames(meta) <- sc@colData@rownames
     clu <- which(colnames(meta) == "ident")
@@ -108,6 +106,7 @@ grabMeta <- function(sc) {
   return(meta)
 }
 
+#Shhhhhh
 quiet <- function(x) {
   sink(tempfile())
   on.exit(sink())
@@ -123,9 +122,10 @@ checkSingleObject <- function(sc) {
             the correct data.") }
 }
 
-
-library(muxViz)
-multiplex.network <- function(multi.network) {
+#This multiplexes the network and gets simplified eigen values
+#' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromEdgeColoredMatrices GetAggregateNetworkFromSupraAdjacencyMatrix
+#' @importFrom igraph simplify spectrum
+multiplex.network <- function(multi.network, n.dim, sc) {
   Nodes <- nrow(multi.network[[1]])
   layers <- length(multi.network)
   layerCouplingStrength <- 1
@@ -143,22 +143,31 @@ multiplex.network <- function(multi.network) {
                                    MultisliceType=networkOfLayersType)
   M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
+  N <- simplify(N)
+  eigen <- spectrum(N, 
+                    which = list(howmany = n.dim), 
+                    algorithm = "arpack")
+  eigen <- eigen$vectors
+  rownames(eigen) <- rownames(sc[[]])
+  colnames(eigen) <- paste0("Trex_", seq_len(ncol(eigen)))
+  return(eigen)
 }
 
+#Define adjacency matrix by either threshold or nearest neighbor
 #' @importFrom FNN knn.index
 get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
   knn.matrix <- matrix(ncol = nrow(TCR[[i]]), nrow= nrow(TCR[[i]]))
   if (nearest.method == "threshold") {
     for (m in seq_len(nrow(knn.matrix))){
       # find closes neighbors - not technically nearest neighbor
-      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors with > 0.8 edit similarity
+      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors > threshold similarity
       knn.matrix[m,matches] <- 1
       knn.matrix[matches,m] <- 1
     }
     }else if (nearest.method == "nn") {
       matches <- knn.index(out_matrix,k = near.neighbor)
       for (m in seq_len(nrow(matches))) {
-        neigh.check <- which(out_matrix[m,] == 1)
+        neigh.check <- which(out_matrix[m,] == 1) 
         if (length(neigh.check) > near.neighbor) {
           matches <- sample(neigh.check, near.neighbor)
         }
@@ -169,4 +178,25 @@ get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
     rownames(knn.matrix) <- TCR[[i]]$barcode
     colnames(knn.matrix) <- TCR[[i]]$barcode
     return(knn.matrix)
+}
+
+#Add the eigen values to single cell object
+#' @importFrom SeuratObject CreateDimReducObject
+#' @importFrom SingleCellExperiment reducedDim
+adding.DR <- function(sc, maTrex, reduction.name) {
+  if (inherits(sc, "Seurat")) {
+    DR <- CreateDimReducObject(
+      embeddings = maTrex,
+      loadings = maTrex,
+      projected = maTrex,
+      stdev = rep(0, ncol(maTrex)),
+      key = reduction.name,
+      jackstraw = NULL,
+      misc = list())
+    sc[[reduction.name]] <- DR
+  } else if (inherits(sc, "SingleCellExperiment")) {
+    reducedDim(sc, reduction.name) <- maTrex
   }
+  
+  
+}

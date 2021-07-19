@@ -19,6 +19,8 @@ reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 meta <- tmp[[]]
 meta <- meta[!is.na(meta$cloneType),]
 tmp <- subset(tmp, cells = rownames(meta))
+
+sce <- as.SingleCellExperiment(tmp)
 ```
 
 ```{r}
