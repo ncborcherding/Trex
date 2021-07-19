@@ -34,7 +34,12 @@ add.to.network <- function(network, new.knn, name) {
 # Add to meta data some of the metrics calculated
 #' @importFrom rlang %||%
 #' @importFrom SummarizedExperiment coldata 'coldata<-'
-add.meta.data <- function(sc, meta) {
+add.meta.data <- function(sc, meta, header) {
+  barcodes <- meta$barcode
+  meta <- as.data.frame(meta[,2])
+  colnames(tmpscore) <- header
+  rownames(tmpscore) <- barcodes
+  
 if (inherits(x=sc, what ="Seurat")) { 
   col.name <- names(meta) %||% colnames(meta)
   sc[[col.name]] <- meta
