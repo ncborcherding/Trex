@@ -1,15 +1,5 @@
-#method is the distance calculation
-#group is how to recombine the list before the calculation
-#group should be placed in list, such as group = list(set1 = c("names", "list" "elements"), set2 = etc)
-#Threshold for nearest neighbor identification
-#matrix is the type of matrix to return for the calculation 
-#TRA - for normalized TCRA, TRB for normalized TCRB, MED - mean edit distance for both loci, 
-#nn - nearest neighbor, or jaccard for similarity index matrix
-#c.trim - number of AA to trim from the front of the cdr3 sequence
-#n.trim - number of AA to trim from the end of the cdr3 sequence
-#barcodes - corresponding cell names from the single cell object used to filter
-
-library(stringdist)
+#Calculating Edit Distance Matrix
+#' @importFrom stringdist stringdistmatrix
 distanceMatrix <- function(TCR, 
                            edit.method = "lv",
                            nearest.method = nearest.method,
@@ -84,6 +74,7 @@ scoreMAIT <- function(TCR, species = NULL) {
   }
   return(score)
 }
+
 #Chains for INKT cells
 #' @importFrom dplyr bind_rows
 scoreINKT <- function(TCR, species = NULL) {
@@ -105,50 +96,7 @@ scoreINKT <- function(TCR, species = NULL) {
   return(score)
 }
 
-#results in 1- Relative distance between V and J regions of TCRA
-alphaDistance <- function(getTCR) {
-  references <- read.delim("./data/imgt_tra_locus_order.txt")
-  references$IMGT.gene.name <-  stringr::str_remove_all(references$IMGT.gene.name, "/")
-  
-  membership <- getTCR[[1]]
-  score <- data.frame("barcode" = membership[,"barcode"], score = 0)
-  cells <- unique(score$barcode)
-  for (i in seq_len(length(cells))) {
-    v.ref <- references[,1][which(references[,1] == membership[membership$barcode == cells[i], ]$v)]
-    j.ref <- references[,1][which(references[,1] == membership[membership$barcode == cells[i], ]$j)]
-    if (length(v.ref) > 0 & length(v.ref) > 0) {
-      score$score[i] <- 1-(references[references[,1] == j.ref,]$IMGT.gene.order - 
-                             references[references[,1] == v.ref,]$IMGT.gene.order) / length(references[,2])
-    } else {
-      score$score[i] <- NA
-    }
-  }
-  return(score)
-}
-
-#results in 1- Relative distance between V and J regions of TCRB 
-#To Do: Think about influence of direction on the calculation
-betaDistance <- function(getTCR) {
-  references <- read.delim("./data/imgt_trb_locus_order.txt", header = FALSE)
-  colnames(references) <- c("IMGT.gene.name", "IMGT.gene.order", "direction")
-  references$IMGT.gene.name <-  stringr::str_remove_all(references$IMGT.gene.name, "/")
-  
-  membership <- getTCR[[2]]
-  score <- data.frame("barcode" = membership[,"barcode"], score = 0)
-  cells <- unique(score$barcode)
-  for (i in seq_len(length(cells))) {
-    v.ref <- references[,1][which(references[,1] == membership[membership$barcode == cells[i], ]$v)]
-    j.ref <- references[,1][which(references[,1] == membership[membership$barcode == cells[i], ]$j)]
-    if (length(v.ref) > 0 & length(v.ref) > 0) {
-      score$score[i] <- 1-(references[references[,1] == j.ref,]$IMGT.gene.order - 
-                             references[references[,1] == v.ref,]$IMGT.gene.order) / length(references[,2])
-    } else {
-      score$score[i] <- NA
-    }
-  }
-  return(score)
-}
-
+#Calculating Distance of AA in CDR3 using mean
 #' @importFrom amap Dist
 aaProperty <- function(TCR, 
                        ctrim = c.trim,
@@ -191,7 +139,8 @@ aaProperty <- function(TCR,
   return(aa.score)
 }
 
-library(rowr)
+#Calculating Distance of AA in CDR3 using autoencoder
+#' @importFrom h20 
 aaAutoEncoder <- function(TCR, 
                        ctrim = c.trim,
                        ntrim = n.trim, 

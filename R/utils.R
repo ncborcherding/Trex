@@ -16,8 +16,9 @@ gene.to.knn <- function(tmpscore) {
   knn.matrix[match,match] <- 1
   return(knn.matrix)
 }
-
+#Invert %in%
 '%!in%' <- Negate("%in%")
+
 #Append the multiple network object
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
@@ -205,3 +206,22 @@ adding.DR <- function(sc, maTrex, reduction.name) {
   
   
 }
+
+#Combine arbitrary data types, filling in missing rows.
+#Stolen from old rowr package https://github.com/cran/rowr/blob/master/R/rowr.R
+cbind.fill<-function(...,fill=NULL)
+
+{
+
+  inputs<-list(...)
+
+  inputs<-lapply(inputs,vert)
+
+  maxlength<-max(unlist(lapply(inputs,len)))
+
+  bufferedInputs<-lapply(inputs,buffer,length.out=maxlength,fill,preserveClass=FALSE)
+
+  return(Reduce(cbind.data.frame,bufferedInputs))
+
+}
+

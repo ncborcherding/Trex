@@ -23,7 +23,11 @@ Imports: igraph,
 	stringr, 
 	SingleCellExperiment,
 	SeuratObject,
-	rowr
+	rowr, 
+	SummarizedExperiment,
+	rlang,
+	FNN,
+	h20
 Suggests: 
 	knitr, 
 	rmarkdown, 
