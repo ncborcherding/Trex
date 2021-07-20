@@ -24,30 +24,30 @@
 
 #' @importFrom SeuratObject CreateDimReducObject
 
-calculatemaTrex <- function(sc, 
-                            chains = "both", 
-                            edit.method = "lv",
-                            AA.properties = c("AF", "KF", "other"),
-                            AA.method = "auto",
-                            c.trim = 0,
-                            n.trim = 0,
-                            nearest.method = "threshold",
-                            threshold = 0.85,
-                            near.neighbor = NULL,
-                            add.INKT = TRUE,
-                            add.MAIT = TRUE, 
-                            n.dim = 30,
-                            species = "human") {
+maTrex <- function(sc, 
+                    chains = "both", 
+                    edit.method = "lv",
+                    AA.properties = c("AF", "KF", "other"),
+                    AA.method = "auto",
+                    c.trim = 0,
+                    n.trim = 0,
+                    nearest.method = "threshold",
+                    threshold = 0.85,
+                    near.neighbor = NULL,
+                    add.INKT = TRUE,
+                    add.MAIT = TRUE, 
+                    n.dim = 30,
+                    species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
-    multi.network <- distanceMatrix(TCR, edit.method, c.trim, n.trim, nearest.method, threshold, near.neighbor)
+    multi.network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
     
     if (unique(c("AF", "KF", "other") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
         if(AA.method == "mean") {
-            AA.knn <- aaProperty(TCR, c.trim, n.trim, AA.properties, nearest.method, threshold, near.neighbor)
+            AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.properties)
         } else if (AA.method == "auto") {
-            AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, AA.properties, nearest.method, threshold, near.neighbor)
+            AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.properties)
         }
         multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), ".AA")) 
     }
@@ -65,16 +65,12 @@ calculatemaTrex <- function(sc,
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
             multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
-            barcodes <- tmpscore$barcode
-            tmpscore <- as.data.frame(tmpscore[,2])
-            colnames(tmpscore) <- "MAIT.score"
-            rownames(tmpscore) <- barcodes
-            sc <- add.meta.data(sc, tmpscore)
         }
     }
     print("Multiplexing Nodes into single graph...")
-    graph <- multiplex.network(multi.network, n.dim)
-    return(graph)
+    barcodes <- rownames(grabMeta(sc))
+    reduction <- multiplex.network(multi.network, n.dim, barcodes)
+    return(reduction)
 }
 
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
@@ -116,23 +112,25 @@ runTrex <- function(sc,
                    near.neighbor = NULL,
                    add.INKT = TRUE,
                    add.MAIT = TRUE, 
+                   n.dim = 30,
                    species = "human") {
         
     cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
     sc <- subset(sc, cells = cells.chains)
-    reduction <- calculatemaTrex(sc,
-                                 chains, 
-                                 edit.method,
-                                 AA.properties,
-                                 AA.method,
-                                 c.trim,
-                                 n.trim,
-                                 nearest.method,
-                                 threshold,
-                                 near.neighbor,
-                                 add.INKT,
-                                 add.MAIT,
-                                 species)
+    reduction <- maTrex(sc,
+                        chains, 
+                        edit.method,
+                        AA.properties,
+                        AA.method,
+                        c.trim,
+                        n.trim,
+                        nearest.method,
+                        threshold,
+                        near.neighbor,
+                        add.INKT,
+                        add.MAIT,
+                        n.dim,
+                        species)
     
     if (add.INKT) {
         tmpscore <- scoreINKT(TCR, species = species)

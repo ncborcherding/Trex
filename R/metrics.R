@@ -10,7 +10,11 @@ distanceMatrix <- function(TCR,
   knn.return <- list()
   
     for (i in seq_along(TCR)) {
-      TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
+      if (c.trim != 0 || n.trim != 0 ){
+        TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
+      } else {
+        TR <- TCR[[i]]$cdr3_aa
+      }
       barcodes <- TCR[[i]]$barcode
       length <- nchar(na.omit(as.character(TR)))
       length.check <- min(length)
@@ -19,10 +23,11 @@ distanceMatrix <- function(TCR,
         warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
         than 3 AA residues calculations, please consider
             prefiltering short cdr3 AA sequences or changing the trimming parameters"))}
-      if (length.check < (n.trim + c.trim)) 
+      if (length.check < (n.trim + c.trim)) {
           stop(strwrap(prefix = " ", initial = "", "Unable to perform edit distance 
           calculations, at least one cdr3 AA sequence is
           shorter than the trimming parameters"))
+      }
         
       
     TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
@@ -99,8 +104,8 @@ scoreINKT <- function(TCR, species = NULL) {
 #Calculating Distance of AA in CDR3 using mean
 #' @importFrom amap Dist
 aaProperty <- function(TCR, 
-                       ctrim = c.trim,
-                       ntrim = n.trim, 
+                       c.trim = c.trim,
+                       n.trim = n.trim, 
                        nearest.method = nearest.method,
                        near.neighbor = near.neighbor,
                        edit.threshold = threshold,
@@ -123,7 +128,7 @@ aaProperty <- function(TCR,
     for (j in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
       if (c.trim != 0 | n.trim != 0){
-        tmp.CDR <- trim(tmp.CDR, ctrim = ctrim, ntrim = ntrim)
+        tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
@@ -142,8 +147,8 @@ aaProperty <- function(TCR,
 #Calculating Distance of AA in CDR3 using autoencoder
 #' @importFrom h20 
 aaAutoEncoder <- function(TCR, 
-                       ctrim = c.trim,
-                       ntrim = n.trim, 
+                       c.trim = c.trim,
+                       n.trim = n.trim, 
                        AA.properties = AA.properties) { 
   quiet(h2o.init())
   h2o.no_progress()
@@ -165,7 +170,7 @@ aaAutoEncoder <- function(TCR,
     for (j in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
       if (c.trim != 0 | n.trim != 0){
-        tmp.CDR <- trim(tmp.CDR, ctrim = ctrim, ntrim = ntrim)
+        tmp.CDR <- trim(tmp.CDR, c.trim = ctrim, n.trim = n.trim)
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]

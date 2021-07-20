@@ -24,46 +24,9 @@ sce <- as.SingleCellExperiment(tmp)
 ```
 
 ```{r}
-# Create a graph adjacency based on correlation distances between genes in  pairwise fashion.
-g <- graph.adjacency(
-  igraph[[1]],
-  mode="undirected",
-  weighted=TRUE,
-  diag=FALSE
-)
-g <- simplify(g)
-eigen <- spectrum(g, 
-                 which = list(howmany = 30), 
-                 algorithm = "arpack")
 
-g_mst <- mst(g)
-nodeTensor <- get.adjacency(g_mst)
-nodeTensor[1:20,1:20]
-plot(g_mst)
+tmp <- runTrex(tmp, AA.method = "mean")
 
-make.knn.graph<-function(D,k){
-  # calculate euclidean distances between cells
-  dist<-as.matrix(dist(D))
-  # make a list of edges to k nearest neighbors for each cell
-  edges <- mat.or.vec(0,2)
-  for (i in 1:nrow(dist)){
-    # find closes neighbours
-    matches <- setdiff(order(dist[i,],decreasing = F)[1:(k+1)],i)
-    # add edges in both directions
-    edges <- rbind(edges,cbind(rep(i,k),matches))  
-    edges <- rbind(edges,cbind(matches,rep(i,k)))  
-  }
-  # create a graph from the edgelist
-  graph <- graph_from_edgelist(edges,directed=F)
-  V(graph)$frame.color <- NA
-  # make a layout for visualizing in 2D
-  set.seed(1)
-  g.layout<-layout_with_fr(graph)
-  return(list(graph=graph,layout=g.layout))        
-}
-
-library(FNN)
-x <- get.knn(multi.network[[1]], k = 30)
 ```
 
 #Notes:
@@ -88,34 +51,10 @@ Guess
 
     
 ```{r}
-N <- simplify(igraph)
-eigen <- spectrum(N, 
-                 which = list(howmany = 30), 
-                 algorithm = "arpack")
-plot(eigen$vectors[,4], eigen$vectors[,2])
-
-
-#SCG <- scg(N, ev = 1, nt = 2)
-#ProjectionMatrix <- magic....(not done yet)
-
-ProjectionMatrix <- eigen$vectors[,1:30]
-rownames(ProjectionMatrix) <- rownames(tmp[[]])
 
 unwanted_genes <- "^IGHV*|^IGHJ*|^IGHD*|^IGKV*|^IGLV*|^TRBV*|^TRBD*|^TRBJ*|^TRDV*|^TRDD*|^TRDJ*|^TRAV*|^TRAJ*|^TRGV*|^TRGJ*"
 remove_genes <- tmp[["RNA"]]@var.features %in% unwanted_genes
 tmp[["RNA"]]@var.features = tmp[["RNA"]]@var.features[!remove_genes]
-
-#Making essientially a pca out of the sparse matrix
-Trex <- CreateDimReducObject(
-    embeddings = ProjectionMatrix,
-    loadings = ProjectionMatrix,
-    projected = ProjectionMatrix,
-    stdev = rep(0, ncol(ProjectionMatrix)),
-    key = "Trex",
-    jackstraw = NULL,
-    misc = list()
-  )
-tmp@reductions[["Trex"]] <- Trex
 
 tmp <- FindNeighbors(tmp)
 tmp <- FindNeighbors(tmp, reduction = "Trex")
@@ -137,10 +76,13 @@ DimPlot(tmp)
 FeaturePlot(tmp, features = "CD4")
 DimPlot(tmp, group.by = "cloneType")
 
-DimPlot(tmp, reduction = 'rna.umap')
+DimPlot(tmp, reduction = 'Trex', dims = c(2,3))
+
+
 FeaturePlot(tmp, reduction = 'rna.umap', features = "CD3G")
 FeaturePlot(tmp, reduction = 'rna.umap', features = "CD4")
 FeaturePlot(tmp, reduction = 'rna.umap', features = "CD8A")
+DimPlot(tmp, reduction = 'rna.umap', group.by = "cloneType")
 DimPlot(tmp, reduction = 'trex.umap')
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD3G")
 FeaturePlot(tmp, reduction = 'trex.umap', features = "CD4")

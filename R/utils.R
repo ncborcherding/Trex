@@ -1,7 +1,7 @@
 
-#Allows for the cutting of the cdr3 sequenc
-trim <- function(x, ctrim = c.trim, ntrim = n.trim) {
-  substring(x, ctrim, nchar(x)-ntrim)
+#Allows for the cutting of the cdr3 sequence
+trim <- function(x, c.trim = c.trim, n.trim = n.trim) {
+  substring(x, c.trim, nchar(x)-n.trim)
 }
 
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
@@ -131,7 +131,7 @@ checkSingleObject <- function(sc) {
 #This multiplexes the network and gets simplified eigen values
 #' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromEdgeColoredMatrices GetAggregateNetworkFromSupraAdjacencyMatrix
 #' @importFrom igraph simplify spectrum
-multiplex.network <- function(multi.network, n.dim, sc) {
+multiplex.network <- function(multi.network, n.dim, barcodes) {
   Nodes <- nrow(multi.network[[1]])
   layers <- length(multi.network)
   layerCouplingStrength <- 1
@@ -154,7 +154,7 @@ multiplex.network <- function(multi.network, n.dim, sc) {
                     which = list(howmany = n.dim), 
                     algorithm = "arpack")
   eigen <- eigen$vectors
-  rownames(eigen) <- rownames(sc[[]])
+  rownames(eigen) <- barcodes
   colnames(eigen) <- paste0("Trex_", seq_len(ncol(eigen)))
   return(eigen)
 }
@@ -189,21 +189,21 @@ get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
 #Add the eigen values to single cell object
 #' @importFrom SeuratObject CreateDimReducObject
 #' @importFrom SingleCellExperiment reducedDim
-adding.DR <- function(sc, maTrex, reduction.name) {
+adding.DR <- function(sc, reduction, reduction.name) {
   if (inherits(sc, "Seurat")) {
-    DR <- CreateDimReducObject(
-      embeddings = maTrex,
-      loadings = maTrex,
-      projected = maTrex,
-      stdev = rep(0, ncol(maTrex)),
+    DR <- suppressWarnings(CreateDimReducObject(
+      embeddings = reduction,
+      loadings = reduction,
+      projected = reduction,
+      stdev = rep(0, ncol(reduction)),
       key = reduction.name,
       jackstraw = NULL,
-      misc = list())
+      misc = list()))
     sc[[reduction.name]] <- DR
   } else if (inherits(sc, "SingleCellExperiment")) {
-    reducedDim(sc, reduction.name) <- maTrex
+    reducedDim(sc, reduction.name) <- reduction
   }
-  
+  return(sc)
   
 }
 
