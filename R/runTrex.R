@@ -40,7 +40,7 @@ maTrex <- function(sc,
                     species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
-    multi.network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
+    network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
     
     if (unique(c("AF", "KF", "other") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
@@ -49,8 +49,15 @@ maTrex <- function(sc,
         } else if (AA.method == "auto") {
             AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.properties)
         }
-        multi.network <- add.to.network(multi.network, AA.knn, paste0(names(TCR), ".AA")) 
+        network <- add.to.network(network, AA.knn, paste0(names(TCR), ".AA")) 
     }
+    multi.network <- list()
+    for (i in seq_along(network)) {
+        multi.network[[i]] <- get.knn(TCR[[1]]$barcode, out_matrix = network[[i]], 
+                                       nearest.method, near.neighbor, threshold)
+    }
+    names(multi.network) <- names(network)
+    
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
         tmpscore <- scoreINKT(TCR, species = species)
@@ -67,6 +74,7 @@ maTrex <- function(sc,
             multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
         }
     }
+    
     print("Multiplexing Nodes into single graph...")
     barcodes <- rownames(grabMeta(sc))
     reduction <- multiplex.network(multi.network, n.dim, barcodes)

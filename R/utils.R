@@ -149,7 +149,6 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
                                    MultisliceType=networkOfLayersType)
   M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
-  N <- simplify(N)
   eigen <- spectrum(N, 
                     which = list(howmany = n.dim), 
                     algorithm = "arpack")
@@ -161,28 +160,31 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
 
 #Define adjacency matrix by either threshold or nearest neighbor
 #' @importFrom FNN knn.index
-get.knn <- function(TCR, i, nearest.method, near.neighbor, edit.threshold) {
-  knn.matrix <- matrix(ncol = nrow(TCR[[i]]), nrow= nrow(TCR[[i]]))
+get.knn <- function(barcodes, out_matrix, nearest.method, near.neighbor, threshold) {
   if (nearest.method == "threshold") {
+    knn.matrix <- matrix(ncol = nrow(out_matrix), nrow= nrow(out_matrix))
     for (m in seq_len(nrow(knn.matrix))){
       # find closes neighbors - not technically nearest neighbor
-      matches <- which(out_matrix[m,] > edit.threshold) #all neighbors > threshold similarity
+      matches <- which(out_matrix[m,] > threshold) #all neighbors > threshold similarity
       knn.matrix[m,matches] <- 1
       knn.matrix[matches,m] <- 1
     }
-    }else if (nearest.method == "nn") {
-      matches <- knn.index(out_matrix,k = near.neighbor)
-      for (m in seq_len(nrow(matches))) {
+  } else if (nearest.method == "nn") {
+      knn.matrix <- matrix(ncol = nrow(out_matrix), nrow= nrow(out_matrix))
+      knn <- knn.index(out_matrix,k = near.neighbor)
+      for (m in seq_len(nrow(knn.matrix))) {
         neigh.check <- which(out_matrix[m,] == 1) 
         if (length(neigh.check) > near.neighbor) {
           matches <- sample(neigh.check, near.neighbor)
+        } else {
+          matches <- knn[m,]
         }
         knn.matrix[m,matches] <- 1
         knn.matrix[matches,m] <- 1
       }
     } 
-    rownames(knn.matrix) <- TCR[[i]]$barcode
-    colnames(knn.matrix) <- TCR[[i]]$barcode
+    rownames(knn.matrix) <- barcodes
+    colnames(knn.matrix) <- barcodes
     return(knn.matrix)
 }
 

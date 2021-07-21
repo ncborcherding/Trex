@@ -4,11 +4,10 @@ distanceMatrix <- function(TCR,
                            edit.method = "lv",
                            nearest.method = nearest.method,
                            near.neighbor = near.neighbor,
-                           edit.threshold = threshold, 
+                           threshold = threshold, 
                            c.trim = c.trim,
                            n.trim = n.trim) {
-  knn.return <- list()
-  
+    knn.return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
         TR<- trim(TCR[[i]]$cdr3_aa, c.trim, n.trim)
@@ -28,14 +27,13 @@ distanceMatrix <- function(TCR,
           calculations, at least one cdr3 AA sequence is
           shorter than the trimming parameters"))
       }
-        
       
     TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
     #This converts the distance matrices calculated above to a normalized 
     #value based on the length of the cdr3 sequence.
     medianlength <- median(na.omit(length))
     out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
-      for (k in seq_len(ncol(TR))) {
+    for (k in seq_len(ncol(TR))) {
         for (l in seq_len(nrow(TR))) {
           if (is.na(length[l]) | is.na(length[k])) {
             out_matrix[k,l] <- NA
@@ -50,12 +48,13 @@ distanceMatrix <- function(TCR,
             }
         }
         }
-      }
-    knn.matrix<- get.knn(TCR, i, nearest.method, near.neighbor, edit.threshold)
-    knn.return[[i]] <- knn.matrix
+    }
+    #knn.matrix <- get.knn(barcodes, out_matrix, nearest.method, near.neighbor, threshold)
+    #knn.return[[i]] <- knn.matrix
+    knn.return[[i]] <- out_matrix
     }
   names(knn.return) <- paste0(names(TCR), ".edit")
-return(knn.return)
+  return(knn.return)
 }
 
 
@@ -108,7 +107,7 @@ aaProperty <- function(TCR,
                        n.trim = n.trim, 
                        nearest.method = nearest.method,
                        near.neighbor = near.neighbor,
-                       edit.threshold = threshold,
+                       threshold = threshold,
                        AA.properties = AA.properties) { 
   aa.score <- list()
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
@@ -137,9 +136,9 @@ aaProperty <- function(TCR,
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)
     dist <- (max-dist)/max
-    knn.matrix<- get.knn(TCR, i, nearest.method, near.neighbor, edit.threshold)
-    aa.score[[i]] <- knn.matrix
-    aa.score[[i]] <- knn.matrix
+    knn.matrix<- get.knn(names, dist, nearest.method, near.neighbor, threshold)
+    #aa.score[[i]] <- knn.matrix
+    aa.score[[i]] <- dist
   }
   return(aa.score)
 }
@@ -170,7 +169,7 @@ aaAutoEncoder <- function(TCR,
     for (j in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
       if (c.trim != 0 | n.trim != 0){
-        tmp.CDR <- trim(tmp.CDR, c.trim = ctrim, n.trim = n.trim)
+        tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
       }
       refer <- unlist(strsplit(tmp.CDR, ""))
       int <- reference[match(refer, reference$aa),]
@@ -219,3 +218,4 @@ aaAutoEncoder <- function(TCR,
   names(aa.score) <- paste0(names(TCR), ".edit")
   return(aa.score)
 }
+

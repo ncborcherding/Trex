@@ -16,14 +16,24 @@ tmp <- readRDS("~/Documents/GitHub/Trex/Sample11_seuratObject.rds")
 reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
 #igraph <- runTrex(tmp)
 
+source("~/Documents/GitHub/Trex/R/metrics.R")
+source("~/Documents/GitHub/Trex/R/utils.R")
+source("~/Documents/GitHub/Trex/R/runTrex.R")
+
 meta <- tmp[[]]
 meta <- meta[!is.na(meta$cloneType),]
 tmp <- subset(tmp, cells = rownames(meta))
 
-sce <- as.SingleCellExperiment(tmp)
+#sce <- as.SingleCellExperiment(tmp)
+
+eigen <- maTrex(tmp, AA.method = "mean", nearest.method = "threshold")
+plot(eigen[,1], eigen[,2])
 ```
 
-```{r}
+
+
+
+
 
 tmp <- runTrex(tmp, AA.method = "mean")
 
@@ -95,6 +105,12 @@ FeaturePlot(tmp, reduction = 'wnn.umap', features = "FOXP3")
 DimPlot(tmp, reduction = 'wnn.umap', group.by = "cloneType")
 DimPlot(tmp, reduction = 'wnn.umap')
 ```
+
+```{r}
+plot(eigen[,3], eigen[,2])
+```
+
+
 ```{r}
 h2o.init()
 x <- int
