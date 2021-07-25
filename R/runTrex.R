@@ -139,7 +139,7 @@ runTrex <- function(sc,
                         add.MAIT,
                         n.dim,
                         species)
-    
+    TCR <- getTCR(sc, chains)
     if (add.INKT) {
         tmpscore <- scoreINKT(TCR, species = species)
         sc <- add.meta.data(sc, tmpscore, "IKNT.score")

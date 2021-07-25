@@ -27,7 +27,8 @@ vae_generate<-function(sequence,
   if(missing(epochs)) epochs<-50L
   if(missing(epsilon.std)) epsilon.std<-1
   if(missing(null.threshold)) null.threshold<-0.05
-  base<-c("A","T","G","C")
+  base<-  c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 
+              'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
 
   #require(keras,tensorflow,stats)
 

@@ -14,8 +14,8 @@ TRA <- stringr::str_split(cdr3, "_", simplify = T)[,1]
 TRB <- stringr::str_split(cdr3, "_", simplify = T)[,2]
 set.seed(123)
 train <- sample(length(TRA), 100000)
-TRA.train <- TRA[train]
-TRB.train <- TRB[train]
+TRA.train <- TRA
+TRB.train <- TRB
 
 AA.properties = "af"
 col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))

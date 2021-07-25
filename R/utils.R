@@ -38,8 +38,8 @@ add.to.network <- function(network, new.knn, name) {
 add.meta.data <- function(sc, meta, header) {
   barcodes <- meta$barcode
   meta <- as.data.frame(meta[,2])
-  colnames(tmpscore) <- header
-  rownames(tmpscore) <- barcodes
+  colnames(meta) <- header
+  rownames(meta) <- barcodes
   
 if (inherits(x=sc, what ="Seurat")) { 
   col.name <- names(meta) %||% colnames(meta)
@@ -149,10 +149,11 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
                                    MultisliceType=networkOfLayersType)
   M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
+  N <- simplify(N)
   eigen <- spectrum(N, 
-                    which = list(howmany = n.dim), 
+                    which = list(howmany = n.dim+1), 
                     algorithm = "arpack")
-  eigen <- eigen$vectors
+  eigen <- eigen$vectors[,seq_len(n.dim)]
   rownames(eigen) <- barcodes
   colnames(eigen) <- paste0("Trex_", seq_len(ncol(eigen)))
   return(eigen)

@@ -28,16 +28,12 @@ tmp <- subset(tmp, cells = rownames(meta))
 
 eigen <- maTrex(tmp, AA.method = "mean", nearest.method = "threshold")
 plot(eigen[,1], eigen[,2])
+
+tmp <- runTrex(tmp, AA.method = "mean", nearest.method = "threshold")
+
+plot(tmp@reductions$Trex[,2], tmp@reductions$Trex[,3])
 ```
 
-
-
-
-
-
-tmp <- runTrex(tmp, AA.method = "mean")
-
-```
 
 #Notes:
 
@@ -82,9 +78,6 @@ tmp <- RunUMAP(tmp, reduction = 'Trex', dims = 1:20,
               reduction.name = 'trex.umap', reduction.key = 'trexUMAP_')
 tmp <- FindClusters(tmp, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
 
-DimPlot(tmp)
-FeaturePlot(tmp, features = "CD4")
-DimPlot(tmp, group.by = "cloneType")
 
 DimPlot(tmp, reduction = 'Trex', dims = c(2,3))
 
