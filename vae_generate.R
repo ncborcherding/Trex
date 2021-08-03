@@ -135,6 +135,9 @@ vae_generate<-function(sequence,
     output<-c()
     x_train_encoded<-as.data.frame(stats::predict(encoder, x_train, batch_size = batch_size))
 
+    #predict(encoder, x_train, batch_size = batch_size)
+    #predict(encoder, test, batch_size = batch_size)
+    
     V_range<-range(c(V_range,x_train_encoded$V1,x_train_encoded$V2))
 
     sampling.parameter<-list()
@@ -145,7 +148,7 @@ vae_generate<-function(sequence,
     for(p in 1:length(sampling.parameter)){
       z_sample<-matrix(sampling.parameter[[p]],ncol = latent_dim)
       matrix<-stats::predict(generator, z_sample)
-      matrix<-matrix(matrix,ncol = original_dim/4)
+      matrix<-matrix(matrix,ncol = original_dim/length(base))
       seq<-.Arg_base(matrix,null.threshold,base)
       output[p]<-seq
     }

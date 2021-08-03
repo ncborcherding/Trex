@@ -1,12 +1,12 @@
 
-#Allows for the cutting of the cdr3 sequence
+# Allows for the cutting of the cdr3 sequence
 trim <- function(x, c.trim = c.trim, n.trim = n.trim) {
   substring(x, c.trim, nchar(x)-n.trim)
 }
 
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
 
-#Convert binary to adjacency matrix
+# Convert binary to adjacency matrix
 gene.to.knn <- function(tmpscore) {
   names <- tmpscore$barcode
   knn.matrix <- matrix(ncol=length(names), nrow=length(names), 0)
@@ -19,7 +19,7 @@ gene.to.knn <- function(tmpscore) {
 #Invert %in%
 '%!in%' <- Negate("%in%")
 
-#Append the multiple network object
+# Append the multiple network object
 add.to.network <- function(network, new.knn, name) {
   length <- length(network)
   names.list <- names(network)
@@ -52,7 +52,7 @@ if (inherits(x=sc, what ="Seurat")) {
   return(sc)
 }
   
-#' Function to pull and organize TCR depending on the chain selected
+#Function to pull and organize TCR depending on the chain selected
 #' @importFrom stringr str_split
 getTCR <- function(sc, chains) {
   meta <- grabMeta(sc)
@@ -210,21 +210,4 @@ adding.DR <- function(sc, reduction, reduction.name) {
   
 }
 
-#Combine arbitrary data types, filling in missing rows.
-#Stolen from old rowr package https://github.com/cran/rowr/blob/master/R/rowr.R
-cbind.fill<-function(...,fill=NULL)
-
-{
-
-  inputs<-list(...)
-
-  inputs<-lapply(inputs,vert)
-
-  maxlength<-max(unlist(lapply(inputs,len)))
-
-  bufferedInputs<-lapply(inputs,buffer,length.out=maxlength,fill,preserveClass=FALSE)
-
-  return(Reduce(cbind.data.frame,bufferedInputs))
-
-}
 
