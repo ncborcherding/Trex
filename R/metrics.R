@@ -5,8 +5,9 @@ distanceMatrix <- function(TCR,
                            nearest.method = nearest.method,
                            near.neighbor = near.neighbor,
                            threshold = threshold, 
-                           c.trim = c.trim,
-                           n.trim = n.trim) {
+                           n.trim = n.trim,
+                           c.trim = c.trim)
+ {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
@@ -104,31 +105,53 @@ aaProperty <- function(TCR,
                        nearest.method = nearest.method,
                        near.neighbor = near.neighbor,
                        threshold = threshold,
+                       AA.method = AA.method,
                        AA.properties = AA.properties) { 
   aa.score <- list()
+  reference <- load("/data/trex.AA.reference.rda") ### Need to add reference data
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
-  other.ref <- grep("af|kf", colnames(reference)[-1], invert = TRUE)
-  if ("other" %in% AA.properties | "all" %in% AA.properties) {
-    column.ref <- unique(sort(c(col.ref, other.ref)))
+  if (AA.properties == " both") {
+    column.ref <- unique(sort(c(AF.col, KF.col)))
   } else {
     column.ref <- unique(sort(col.ref))
   }
   for (i in seq_along(TCR)) {
     membership <- TCR[[i]]
     names <- membership$barcode
-    score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
-    colnames(score) <- c("barcodes", colnames(reference)[column.ref])
-    score$barcodes <- unique(membership[,"barcode"])
-    cells <- unique(score$barcode)
+    if (AA.method != "auto") {
+      score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
+      colnames(score) <- c("barcodes", colnames(reference)[column.ref])
+      score$barcodes <- unique(membership[,"barcode"])
+    else {
+      aa.model <- aa.model.load(chain, AA.properties)
+      local.min #need local min recover
+      local.max #need local min recover
+    }
+    cells <- unique(membership[,"barcode"])
     for (j in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
-      if (c.trim != 0 | n.trim != 0){
-        tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
-      }
-      refer <- unlist(strsplit(tmp.CDR, ""))
-      int <- reference[match(refer, reference$aa),]
-      score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
-    } 
+      if (AA.method != "auto") {
+        if (c.trim != 0 | n.trim != 0){
+          tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
+        }
+        refer <- unlist(strsplit(tmp.CDR, ""))
+        int <- reference[match(refer, reference$aa),]
+        score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
+      } else {
+        refer <- unlist(strsplit(tmp.CDR, ""))
+        refer <- c(refer, rep(NA, 50 - length(refer)))
+        int <- reference[match(refer, reference$aa),]
+        array.reshape.tmp <- array_reshape(as.matrix(int[,-1]), length(col.ref)*50)
+        array.reshape <- rbind(array.reshape, array.reshape.tmp)
+        next()
+      } 
+    }
+    if (aa.method == "auto") {
+      #Here is where the autoencoder embeds and returns a 30-vector value for each cdr3
+      score <- auto.embedder(array.reshape, aa.model, local.max, local.max)
+      score <- data.frame(unique(membership[,"barcode"]), score)
+      colnames(score) <- c("barcodes", colnames(reference)[column.ref])
+    }
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)
     dist <- (max-dist)/max

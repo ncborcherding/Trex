@@ -11,9 +11,10 @@
 #' ot include edit distance layer in multiplex network
 #' @param AA.method method for deriving pairwise distances from amino acid properties, 
 #' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-#' for using an auto-encoder model.
-#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
+#' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
+#' the cdr3 sequences.
 #' @param n.trim length from N-terminus to trim on the CDR3 aa sequence
+#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
 #' @param nearest.method method for defining neighbors, either "threshold" for normalized
 #' distances above a certain value or "nn" for nearest neighbor by normalized distances. 
 #' @param threshold If nearest.method = "threshold" -the value for distance measures 
@@ -34,8 +35,8 @@ maTrex <- function(sc,
                     edit.method = "lv",
                     AA.properties = c("AF", "KF", "both"),
                     AA.method = "auto",
-                    c.trim = 0,
                     n.trim = 0,
+                    c.trim = 0,
                     nearest.method = "threshold",
                     threshold = 0.85,
                     near.neighbor = NULL,
@@ -51,15 +52,12 @@ maTrex <- function(sc,
         network <- NULL
     }
     
-    if (unique(c("AF", "KF") %in% AA.properties)[1]) {
+    if (unique(c("AF", "KF", "both", "all") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
-        if(AA.method == "mean") {
-            AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.properties)
-        } else if (AA.method == "auto") {
-            AA.knn <- aaAutoEncoder(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.properties)
-        }
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.method, AA.properties)
         network <- add.to.network(network, AA.knn, paste0(names(TCR), ".AA")) 
     }
+    
     multi.network <- list()
     for (i in seq_along(network)) {
         multi.network[[i]] <- get.knn(TCR[[1]]$barcode, out_matrix = network[[i]], 
@@ -83,8 +81,7 @@ maTrex <- function(sc,
             multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
         }
     }
-    
-    print("Multiplexing Nodes into single graph...")
+    print("Calculating Latent Vectors from multiplex network...")
     barcodes <- rownames(grabMeta(sc))
     reduction <- multiplex.network(multi.network, n.dim, barcodes)
     return(reduction)
@@ -103,11 +100,12 @@ maTrex <- function(sc,
 #' or none
 #' @param AA.method method for deriving pairwise distances from amino acid properties, 
 #' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-#' for using an auto-encoder model.
+#' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
+#' the cdr3 sequences.
 #' @param reduction.name Keyword to save Trex reduction. Useful if you want
 #' to try Trex with multiple parameters 
-#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
 #' @param n.trim length from N-terminus to trim on the CDR3 aa sequence
+#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
 #' @param nearest.method method for defining neighbors, either "threshold" for normalized
 #' distances above a certain value or "nn" for nearest neighbor by normalized distances. 
 #' @param threshold If nearest.method = "threshold" -the value for distance measures 
@@ -131,8 +129,8 @@ runTrex <- function(sc,
                    AA.properties = c("AF", "KF", "other"),
                    AA.method = "auto",
                    reduction.name = "Trex",
-                   c.trim = 0,
                    n.trim = 0,
+                   c.trim = 0,
                    nearest.method = "threshold",
                    threshold = 0.85,
                    near.neighbor = NULL,

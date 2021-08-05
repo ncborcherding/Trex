@@ -1,7 +1,7 @@
 
 # Allows for the cutting of the cdr3 sequence
-trim <- function(x, c.trim = c.trim, n.trim = n.trim) {
-  substring(x, c.trim, nchar(x)-n.trim)
+trim <- function(x, n.trim = n.trim, c.trim = c.trim) {
+  substring(x, n.trim, nchar(x)-c.trim)
 }
 
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
@@ -159,6 +159,15 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
   return(eigen)
 }
 
+aa.model.loader <- function(chain, AA.properties) {
+  load(Trex.auto.models)
+  if (chain != "both") {
+    model <- Trex.aut.models[[chain]]
+    
+  }
+}
+
+
 #Define adjacency matrix by either threshold or nearest neighbor
 #' @importFrom FNN knn.index
 get.knn <- function(barcodes, out_matrix, nearest.method, near.neighbor, threshold) {
@@ -189,7 +198,7 @@ get.knn <- function(barcodes, out_matrix, nearest.method, near.neighbor, thresho
     return(knn.matrix)
 }
 
-#Add the eigen values to single cell object
+#Add the eigen vectors to single cell object
 #' @importFrom SeuratObject CreateDimReducObject
 #' @importFrom SingleCellExperiment reducedDim
 adding.DR <- function(sc, reduction, reduction.name) {
@@ -210,4 +219,16 @@ adding.DR <- function(sc, reduction, reduction.name) {
   
 }
 
+AF.col <- c(2,3,4,5,6)
+KF.col <- c(7,8,9,10,11,12,13,14,15,16)
+
+auto.embedder <- function(array.reshape, aa.model, local.max, local.max) {
+  for(i in seq_len(ncol(array.reshape))) {
+    array.reshape[,i] - local.min[i]/local.max[i] - local.min[i]
+  }
+  array.reshape[is.na(array.reshape)] <- 0
+  score <- stats::predict(aa.model, array.reshape)
+  return(score)
+}
+  
 
