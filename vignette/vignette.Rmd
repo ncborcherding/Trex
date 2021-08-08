@@ -100,69 +100,30 @@ DimPlot(tmp, reduction = 'wnn.umap')
 ```
 
 ```{r}
-plot(eigen[,3], eigen[,2])
+TRB.KF <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRB_KF_Encoder.h5", compile = FALSE)
+TRB.AF <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRB_AF_Encoder.h5", compile = FALSE)
+TRB.both <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRB_both_Encoder.h5", compile = FALSE)
+
+TRA.KF <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRA_KF_Encoder.h5", compile = FALSE)
+TRA.AF <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRA_AF_Encoder.h5", compile = FALSE)
+TRA.both <- load_model_hdf5("/Users/nick/Documents/GitHub/Trex/TRA_both_Encoder.h5", compile = FALSE)
+
+B.ranges <- readRDS("/Users/nick/Documents/GitHub/Trex/TRB.range.rds")
+A.ranges <- readRDS("/Users/nick/Documents/GitHub/Trex/TRA.range.rds")
+
+reference <- read.delim("/Users/nick/Documents/GitHub/Trex/data/aa_props.tsv")
+
+AE.model <- list(TRA = list(KF = TRA.KF, AF = TRA.AF, both = TRA.both), TRB = list(KF = TRB.KF, AF = TRB.AF, both = TRB.both))
+
+Trex.Data <- list(AA.reference = reference, model.ranges = list(TRA = A.ranges, TRB = B.ranges))
+
+save(Trex.Data, file = "Trex.Data.rda", compress = "xz")
+tensorflow::tf$compat$v1$disable_eager_execution()
+load("/Users/nick/Documents/GitHub/Trex/data/Trex.Data.rda")
+
+
+
+Trex.Data[[3]][[1]][[1]]
 ```
-
-
-```{r}
-h2o.init()
-x <- int
-#y <- matrix(ncol = (80-nrow(x)), nrow = 28)
-y <- matrix(nrow = (80-nrow(x)), ncol = 28)
-colnames(y) <- colnames(x[,2:29])
-#x <- cbind(t(x[,2:29]), y)
-x <- rbind(x[,2:29], y)
-h2o.init()
-z <- as.h2o(x)
-ae1 <- h2o.deeplearning(
-  x = seq_along(z), 
-  training_frame = z,
-  autoencoder = TRUE,
-  hidden = c(100,50,30, 1, 30 ,50,100), 
-  activation = "Tanh",
-  seed = 123
-)
-
-ae1_coding <- h2o.deepfeatures(ae1, z, layer = 1)
-ae2_coding <- h2o.deepfeatures(w1, w1, layer = 1)
-
-ae2 <- h2o.deeplearning(
-  x = ae1_coding, 
-  training_frame = ae1_coding,
-  autoencoder = TRUE,
-  hidden = 2, 
-  activation = "Tanh",
-)
-
-layers <- c(100,50,20)
-  args <- list(activation="Tanh", epochs=1, l1=1e-5)
-  ae <- get_stacked_ae_array(z, layers, args)
-  
-w1 <- as.matrix(h2o.deepfeatures(ae1, final.hex, layer=4))
-names(w1) <- gsub("DF", paste0("L",2,sep=""), names(z)) 
-w2 = h2o.deepfeatures(ae[[2]], w1, layer = 1)
-rownames(w1) <- int$aa
-plot(w1)
-
-get_stacked_ae_array <- function(training_data,layers,args){  
-    vector <- c()
-    index = 0
-    for(i in 1:length(layers)){    
-      index = index + 1
-      ae_model <- do.call(h2o.deeplearning, 
-                          modifyList(list(x=names(training_data),
-                                          training_frame=training_data,
-                                          autoencoder=TRUE,
-                                          hidden=layers[i]),
-                                     args))
-      training_data = h2o.deepfeatures(ae_model,training_data,layer=1)
-      
-      names(training_data) <- gsub("DF", paste0("L",index,sep=""), names(training_data)) 
-      vector <- c(vector, ae_model)    
-    }
-    vector
-  }
-```
-
 
 

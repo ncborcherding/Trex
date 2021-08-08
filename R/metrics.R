@@ -108,13 +108,15 @@ aaProperty <- function(TCR,
                        AA.method = AA.method,
                        AA.properties = AA.properties) { 
   aa.score <- list()
-  reference <- load("/data/trex.AA.reference.rda") ### Need to add reference data
+  load("./data/Trex.Data.rda") ### Need to add reference data
+  reference <- Trex.Data[[1]]
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   if (AA.properties == " both") {
     column.ref <- unique(sort(c(AF.col, KF.col)))
   } else {
     column.ref <- unique(sort(col.ref))
   }
+  chain <- names(TCR)
   for (i in seq_along(TCR)) {
     membership <- TCR[[i]]
     names <- membership$barcode
@@ -122,10 +124,12 @@ aaProperty <- function(TCR,
       score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
       colnames(score) <- c("barcodes", colnames(reference)[column.ref])
       score$barcodes <- unique(membership[,"barcode"])
+      array.reshape <- NULL
     else {
-      aa.model <- aa.model.load(chain, AA.properties)
-      local.min #need local min recover
-      local.max #need local min recover
+      aa.model <- aa.model.loader(chain[[i]], AA.properties)
+      range <- aa.range.loader(chain[[i]], AA.properties, Trex.Data) 
+      local.min <- range[[1]]
+      local.max <- range[[2]]
     }
     cells <- unique(membership[,"barcode"])
     for (j in seq_len(length(cells))) {
@@ -140,7 +144,7 @@ aaProperty <- function(TCR,
       } else {
         refer <- unlist(strsplit(tmp.CDR, ""))
         refer <- c(refer, rep(NA, 50 - length(refer)))
-        int <- reference[match(refer, reference$aa),]
+        int <- reference[match(refer, reference$aa),c(1,col.ref)]
         array.reshape.tmp <- array_reshape(as.matrix(int[,-1]), length(col.ref)*50)
         array.reshape <- rbind(array.reshape, array.reshape.tmp)
         next()
@@ -148,9 +152,8 @@ aaProperty <- function(TCR,
     }
     if (aa.method == "auto") {
       #Here is where the autoencoder embeds and returns a 30-vector value for each cdr3
-      score <- auto.embedder(array.reshape, aa.model, local.max, local.max)
+      score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
-      colnames(score) <- c("barcodes", colnames(reference)[column.ref])
     }
     dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
     max <- max(dist, na.rm = TRUE)

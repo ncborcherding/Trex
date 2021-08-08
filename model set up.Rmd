@@ -48,6 +48,14 @@ for (m in seq_along(chain)) {
             int <- int[,col.ref]
             array.reshape <- rbind(array.reshape,array_reshape(as.matrix(int), length(col.ref)*50))
       } 
+      if (n == 3) {
+        min <- apply(array.reshape,2,function(x) min(x, na.rm=TRUE))
+        max <- apply(array.reshape,2, function(x) max(x, na.rm=TRUE))
+        min[is.infinite(min)] <- NA
+        max[is.infinite(max)] <- NA
+        range <- list(min = min, max = max)
+        saveRDS(range, file = paste0(names(chain)[m], ".range.rds"))
+      }
       #Setting Up and Normalizing Data
       data <- array.reshape
       data[is.na(data)] <- 0

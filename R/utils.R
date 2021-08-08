@@ -159,13 +159,36 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
   return(eigen)
 }
 
+
+#Retunrs appropriate model for autoencoder
+#' @importFrom tensor tf
 aa.model.loader <- function(chain, AA.properties) {
-  load(Trex.auto.models)
-  if (chain != "both") {
-    model <- Trex.aut.models[[chain]]
-    
-  }
+  tensorflow::tf$compat$v1$disable_eager_execution()
+  suppressWarnings(model <- load_model_hdf5(paste0("./data/", chain, "_", 
+                                                   AA.properties, "_Encoder.h5"), compile = FALSE))
+  return(model)
 }
+
+#Selects columns to normalize input data basedon the inputs to the model
+aa.range.loader <- function(chain, AA.properties, Trex.Data) {
+  range <- Trex.Data[["model.ranges"]][[chain]]
+  min <- range[["min"]]
+  max <- range[["max"]]
+  ref <- seq(1, 750, 15)
+  if (AA.properties == "AF") {
+    ref2 <- sort(c(ref, ref+1, ref+2, ref+3, ref+4))
+    min <- min[ref2]
+    max <- max[ref2]
+  } else if (AA.properties == "AF") {
+    ref2 <- sort(c(ref+5, ref+6, ref+7, ref+8, ref+9, ref+10, ref+11, ref+12, ref+13, ref+14))
+    min <- min[ref2]
+    max <- max[ref2]
+  }
+  range <- list(min = min, max = max)
+  return(range)
+}
+
+
 
 
 #Define adjacency matrix by either threshold or nearest neighbor
@@ -222,9 +245,11 @@ adding.DR <- function(sc, reduction, reduction.name) {
 AF.col <- c(2,3,4,5,6)
 KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
-auto.embedder <- function(array.reshape, aa.model, local.max, local.max) {
+#Generats the 30 vector based on autoencoder model 
+#First normalizes the value by the min and max of the autoencoder training data
+auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
   for(i in seq_len(ncol(array.reshape))) {
-    array.reshape[,i] - local.min[i]/local.max[i] - local.min[i]
+    (array.reshape[,i] - local.min[i])/(local.max[i] - local.min[i])
   }
   array.reshape[is.na(array.reshape)] <- 0
   score <- stats::predict(aa.model, array.reshape)
