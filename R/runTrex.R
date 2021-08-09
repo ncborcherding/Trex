@@ -46,7 +46,7 @@ maTrex <- function(sc,
                     species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
-    if (!is.null(edit.emthod)) {
+    if (!is.null(edit.method)) {
         network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
     } else {
         network <- NULL

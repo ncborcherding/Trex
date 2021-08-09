@@ -164,7 +164,7 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
 #' @importFrom tensor tf
 aa.model.loader <- function(chain, AA.properties) {
   tensorflow::tf$compat$v1$disable_eager_execution()
-  suppressWarnings(model <- load_model_hdf5(paste0("./data/", chain, "_", 
+  quiet(model <- load_model_hdf5(paste0("~/Documents/GitHub/Trex/data/", chain, "_", 
                                                    AA.properties, "_Encoder.h5"), compile = FALSE))
   return(model)
 }

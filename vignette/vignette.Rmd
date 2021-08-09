@@ -13,21 +13,21 @@ library(dplyr)
 library(muxViz)
 library(igraph)
 tmp <- readRDS("~/Documents/GitHub/Trex/Sample11_seuratObject.rds")
-reference <- read.delim("~/Documents/GitHub/Trex/data/aa_props.tsv")
-#igraph <- runTrex(tmp)
+load("~/Documents/GitHub/Trex/data/Trex.Data.rda")
 
 source("~/Documents/GitHub/Trex/R/metrics.R")
 source("~/Documents/GitHub/Trex/R/utils.R")
 source("~/Documents/GitHub/Trex/R/runTrex.R")
 
-meta <- tmp[[]]
-meta <- meta[!is.na(meta$cloneType),]
-tmp <- subset(tmp, cells = rownames(meta))
 
 #sce <- as.SingleCellExperiment(tmp)
 
-eigen <- maTrex(tmp, AA.method = "mean", nearest.method = "threshold")
-plot(eigen[,1], eigen[,2])
+eigen <- maTrex(tmp, AA.method = "mean", nearest.method = "threshold", AA.properties = "AF")
+eigen2 <- maTrex(tmp, AA.method = "auto", nearest.method = "threshold", 
+                 AA.properties = "AF")
+
+plot(eigen[,2:3])
+plot(eigen[,1], eigen[,])
 
 tmp <- runTrex(tmp, AA.method = "mean", nearest.method = "threshold")
 

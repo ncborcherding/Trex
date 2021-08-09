@@ -99,6 +99,7 @@ scoreINKT <- function(TCR, species = NULL) {
 
 #Calculating Distance of AA in CDR3 using mean
 #' @importFrom amap Dist
+#' @importFrom keras load_model_hdf5
 aaProperty <- function(TCR, 
                        c.trim = c.trim,
                        n.trim = n.trim, 
@@ -108,7 +109,7 @@ aaProperty <- function(TCR,
                        AA.method = AA.method,
                        AA.properties = AA.properties) { 
   aa.score <- list()
-  load("./data/Trex.Data.rda") ### Need to add reference data
+  #load("./data/Trex.Data.rda") ### Need to add reference data
   reference <- Trex.Data[[1]]
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   if (AA.properties == " both") {
@@ -124,8 +125,9 @@ aaProperty <- function(TCR,
       score <- as.data.frame(matrix(ncol = length(column.ref)+1, nrow = length(unique(membership[,"barcode"]))))
       colnames(score) <- c("barcodes", colnames(reference)[column.ref])
       score$barcodes <- unique(membership[,"barcode"])
+     
+    } else {
       array.reshape <- NULL
-    else {
       aa.model <- aa.model.loader(chain[[i]], AA.properties)
       range <- aa.range.loader(chain[[i]], AA.properties, Trex.Data) 
       local.min <- range[[1]]
@@ -150,7 +152,7 @@ aaProperty <- function(TCR,
         next()
       } 
     }
-    if (aa.method == "auto") {
+    if (AA.method == "auto") {
       #Here is where the autoencoder embeds and returns a 30-vector value for each cdr3
       score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
