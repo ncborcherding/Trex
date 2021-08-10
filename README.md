@@ -3,7 +3,7 @@ Using TCR and expression for graph embedding
 
 <img align="right" src="https://github.com/ncborcherding/Trex/blob/main/www/trex_hex.png" width="305" height="352">
 
-### Introduction
+## Introduction
 Single-cell sequencing is now a integral tool in the field of immunology and oncology that allows researchers to couple RNA quantification and other modalities, 
 like immune cell receptor profiling at the level of an individual cell. Towards this end, we developed the [scRepertoire](https://github.com/ncborcherding/scRepertoire) 
 R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality in embedding of single-cells and in trajectory analyses. To this end, here we develop the basis of combining clonal and expression analyses to facilitate dimensional reduction and trajectory inference. 
@@ -47,7 +47,7 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 
 Check out this [vignette](https://ncborcherding.github.io/vignettes/Trex.html) for a quick start tutorial. 
 
-## Eigen vector matrix
+## Eigen Vector Matrix
 
 The Trex algorithm allows users to select TCR-based metrics to return eigen vector to be used in dimensional reduction. If single-cell objects are not filtered for T cells with TCR,  `maTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
 
@@ -56,7 +56,7 @@ library(Trex)
 my_trex <- maTrex(singleObject)
 ```
 
-## Seurat 
+## Seurat or Single-Cell Experiment
 
 You can run Trex within your Seurat or SingleCellExperiemt workflow. **Importantly** `runTrex()` will automatically filter single-cells that do not contain TCR information in the meta data of the single-cell object. 
 
@@ -85,6 +85,8 @@ seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
 seuratObj_Tonly <- runTrex(seuratObj, reduction.name = "Trex")
 ```
 
+## After Running Trex
+
 From here, you can generate a tSNE/UMAP using the Trex values, similar to the PCA values based on variable gene expression.
 
 ```r
@@ -92,8 +94,15 @@ seuratObj <- RunTSNE(seuratObj, reduction = "Trex",  reduction.key = "Trex_")
 seuratObj <- RunUMAP(seuratObj, reduction = "Trex",  reduction.key = "Trex_")
 ```
 
-If using Seurat package, the Trex embedding infromation and gene expression PCA can be used to find the [Weighted Nearest Neighbors](https://pubmed.ncbi.nlm.nih.gov/34062119/)
+If using Seurat package, the Trex embedding infromation and gene expression PCA can be used to find the [Weighted Nearest Neighbors](https://pubmed.ncbi.nlm.nih.gov/34062119/). Before applying the WNN approach, best practice would be to remove the TCR-related genes from the list of variable genes and rerunning the PCA analysis. 
 
+### Recaluclate PCA without TCR genes with queitTCRgenes() function in Trex.
+```r
+seuratObj <- quietTCRgenes(seuratObj)
+seuratObj <- RunPCA(seuratObj)
+```
+
+### Running WNN approach
 ```r
 seuratObj <- FindMultiModalNeighbors(
   seuratObj, reduction.list = list("pca", "Trex"), 
@@ -101,6 +110,7 @@ seuratObj <- FindMultiModalNeighbors(
 )
 seuratObj <- RunUMAP(seuratObj, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
 ```
+***
 
 ### Contact
 Questions, comments, suggestions, please feel free to contact Nick Borcherding via this repository, [email](mailto:ncborch@gmail.com), or using [twitter](https://twitter.com/theHumanBorch). 
