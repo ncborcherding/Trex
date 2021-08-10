@@ -33,7 +33,7 @@ install_tensorflow()
 
 # Installation
 
-To run Trex, open R and install harmony from CRAN: 
+To run Trex, open R and install Trex from github: 
 
 ```r
 devtools::install_github("ncborcherding/Trex")
@@ -41,19 +41,19 @@ devtools::install_github("ncborcherding/Trex")
 
 # Usage/Demos
 
-Trex should be able to be run in popular R-based single-cell workflows, including Seurat and Bioconductor formats.
+Trex should be able to be run in popular R-based single-cell workflows, including Seurat and Bioconductor/Single-Cell Experiment formats.
 
 ## Quick Start 
 
 Check out this [vignette](https://ncborcherding.github.io/vignettes/Trex.html) for a quick start tutorial. 
 
-## Eigen value matrix
+## Eigen vector matrix
 
-The Trex algorithm iteratively corrects PCA embeddings. To input your own low dimensional embeddings directly, set `do_pca=FALSE`. Harmony is packaged with a small dataset. If single-cell objects are not filtered for T cells with TCR,  `calculatemaTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
+The Trex algorithm allows users to select TCR-based metrics to return eigen vector to be used in dimensional reduction. If single-cell objects are not filtered for T cells with TCR,  `maTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
 
 ```r
 library(Trex)
-my_trex <- calculatemaTrex(singleObject)
+my_trex <- maTrex(singleObject)
 ```
 
 ## Seurat 
