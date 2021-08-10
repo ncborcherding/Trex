@@ -64,13 +64,13 @@ You can run Trex within your Seurat or SingleCellExperiemt workflow. **Important
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
                    chains = "both", #Use of "TRA", "TRB" or "both"
                    edit.method = "lv", #Calculate edit distance methods
-                   AA.properties = c("AF", "KF", "other"), 
-                   AA.method = "auto", #Use "auto" for auto-encoder or 
+                   AA.properties = c("AF", "KF", "both"), 
+                   AA.method = "auto", #Use "auto" for Autoencoder or 
                    #"mean" for mean properties across cdr3 sequence
                    reduction.name = "Trex", #Name designation for 
-                   #the values to be added to the single-cell object
-                   c.trim = 0, #Amino Acid Residues to trim from the start of the cdr3 sequence
-                   n.trim = 0, #Amino Acid Residues to trim from the end of the cdr3 sequence
+                   #the vectors to be added to the single-cell object
+                   c.trim = 0, #Amino acid residues to trim from the start of the cdr3 sequence
+                   n.trim = 0, #Amino acid residues to trim from the end of the cdr3 sequence
                    nearest.method = "threshold", #Use "threshold" to find related clonotypes above threshold or 
                    #"nn" for nearest neighbor by normalized distances
                    threshold = 0.85, #The normalized threshold to use where 1 = clone
