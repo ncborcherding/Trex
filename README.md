@@ -8,6 +8,11 @@ Single-cell sequencing is now a integral tool in the field of immunology and onc
 like immune cell receptor profiling at the level of an individual cell. Towards this end, we developed the [scRepertoire](https://github.com/ncborcherding/scRepertoire) 
 R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality in embedding of single-cells and in trajectory analyses. To this end, here we develop the basis of combining clonal and expression analyses to facilitate dimensional reduction and trajectory inference. 
 
+### Methods
+
+As of right now, there is no citation associated with Trex. If you're interested in the methods used to create the package, please [see the methods](https://ncborcherding.github.io/vignettes/TrexMethods.pdf) for now.
+
+### TCRex
 If you are looking for the (very cool) TCR-epitope prediction algorithm **TCRex**, check out their website [here](https://tcrex.biodatamining.be/).
 
 # System requirements 
