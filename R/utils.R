@@ -34,7 +34,7 @@ add.to.network <- function(network, new.knn, name) {
 
 # Add to meta data some of the metrics calculated
 #' @importFrom rlang %||%
-#' @importFrom SummarizedExperiment coldata 'coldata<-'
+#' @importFrom SingleCellExperiment colData
 add.meta.data <- function(sc, meta, header) {
   barcodes <- meta$barcode
   meta <- as.data.frame(meta[,2])
@@ -46,7 +46,8 @@ if (inherits(x=sc, what ="Seurat")) {
   sc[[col.name]] <- meta
 } else {
   rownames <- rownames(colData(sc))
-  colData(sc) <- cbind(colData(sc), meta[rownames,])[, union(colnames(colData(sc)),  colnames(meta))]
+  colData(sc) <- cbind(colData(sc), 
+          meta[rownames,])[, union(colnames(colData(sc)),  colnames(meta))]
   rownames(colData(sc)) <- rownames  
 }
   return(sc)
@@ -130,7 +131,7 @@ checkSingleObject <- function(sc) {
 
 #This multiplexes the network and gets simplified eigen values
 #' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromEdgeColoredMatrices GetAggregateNetworkFromSupraAdjacencyMatrix
-#' @importFrom igraph simplify spectrum
+#' @importFrom igraph simplify spectrum graph_from_adjacency_matrix get.adjacency
 multiplex.network <- function(multi.network, n.dim, barcodes) {
   Nodes <- nrow(multi.network[[1]])
   layers <- length(multi.network)
@@ -161,11 +162,14 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
 
 
 #Retunrs appropriate model for autoencoder
-#' @importFrom tensor tf
+#' @importFrom tensorflow tf
+#' @importFrom keras load_model_hdf5
 aa.model.loader <- function(chain, AA.properties) {
-  tensorflow::tf$compat$v1$disable_eager_execution()
-  quiet(model <- load_model_hdf5(paste0("~/Documents/GitHub/Trex/data/", chain, "_", 
-                                                   AA.properties, "_Encoder.h5"), compile = FALSE))
+  quiet(tensorflow::tf$compat$v1$disable_eager_execution())
+    select  <- system.file("extdata", paste0(chain, "_", 
+                               AA.properties, "_Encoder.h5"), 
+                          package = "Trex")
+  model <- quiet(load_model_hdf5(select, compile = FALSE))
   return(model)
 }
 

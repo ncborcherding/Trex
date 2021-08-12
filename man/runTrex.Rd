@@ -8,11 +8,11 @@ runTrex(
   sc,
   chains = "both",
   edit.method = "lv",
-  AA.properties = c("AF", "KF", "other"),
+  AA.properties = "AF",
   AA.method = "auto",
   reduction.name = "Trex",
-  c.trim = 0,
   n.trim = 0,
+  c.trim = 0,
   nearest.method = "threshold",
   threshold = 0.85,
   near.neighbor = NULL,
@@ -27,22 +27,22 @@ runTrex(
 
 \item{chains}{TRA, TRB, both}
 
-\item{edit.method}{distance measures inherited from \link[stringdist]{sstringdist}}
+\item{edit.method}{distance measures inherited from \link[stringdist]{stringdist}}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
-AF = Atchley factors, KF = Kidera factors, or other (polarity, molecular weight, etc), 
-or none}
+"AF" = Atchley factors, "KF" = Kidera factors, or "both"}
 
 \item{AA.method}{method for deriving pairwise distances from amino acid properties, 
 either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-for using an auto-encoder model.}
+for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
+the cdr3 sequences.}
 
 \item{reduction.name}{Keyword to save Trex reduction. Useful if you want
 to try Trex with multiple parameters}
 
-\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
-
 \item{n.trim}{length from N-terminus to trim on the CDR3 aa sequence}
+
+\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
 
 \item{nearest.method}{method for defining neighbors, either "threshold" for normalized
 distances above a certain value or "nn" for nearest neighbor by normalized distances.}
@@ -62,6 +62,18 @@ near.neighbor value used, the near.neighbor will randomly return neighbors/clone
 
 \item{species}{Indicate "human" or "mouse" for gene-based metrics}
 }
+\value{
+Seurat or SingleCellExperiment object with Trex dimensions placed 
+into the dimensional reduction slot.
+}
 \description{
 Run Trex algorithm with Seurat or SingleCellExperiment pipelines
+}
+\examples{
+trex_example <- runTrex(trex_example, 
+                        AA.properties = "AF", 
+                        nearest.method = "nn",
+                        near.neighbor = 40,
+                        reduction.name = "Trex.AF")
+                        
 }

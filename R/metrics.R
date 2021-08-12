@@ -100,6 +100,7 @@ scoreINKT <- function(TCR, species = NULL) {
 #Calculating Distance of AA in CDR3 using mean
 #' @importFrom amap Dist
 #' @importFrom keras load_model_hdf5
+#' @importFrom reticulate array_reshape
 aaProperty <- function(TCR, 
                        c.trim = c.trim,
                        n.trim = n.trim, 
@@ -109,7 +110,7 @@ aaProperty <- function(TCR,
                        AA.method = AA.method,
                        AA.properties = AA.properties) { 
   aa.score <- list()
-  #load("./data/Trex.Data.rda") ### Need to add reference data
+  data("Trex.Data") ### Need to add reference data
   reference <- Trex.Data[[1]]
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   if (AA.properties == " both") {

@@ -1,14 +1,21 @@
 #' Main Trex interface
 #' 
 #' Use this to run the Trex algorithm to return latent vectors
-
+#' 
+#' @examples
+#' trex_values <- maTrex(trex_example, 
+#'                         AA.properties = "AF", 
+#'                         nearest.method = "nn",
+#'                         near.neighbor = 40,
+#'                         reduction.name = "Trex.AF")
+#'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA, TRB, both
-#' @param edit.method distance measures inherited from \link[stringdist]{sstringdist} or NULL
+#' @param edit.method distance measures inherited from \link[stringdist]{stringdist} or NULL
 #' to not include edit distance layer in multiplex network
 #' @param AA.properties Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to n
-#' ot include edit distance layer in multiplex network
+#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to not 
+#' include edit distance layer in multiplex network
 #' @param AA.method method for deriving pairwise distances from amino acid properties, 
 #' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
 #' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
@@ -27,22 +34,23 @@
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
 #' 
+#' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
 #' @return Trex eigen vectors caculated from multiplex network
 maTrex <- function(sc, 
                     chains = "both", 
                     edit.method = "lv",
-                    AA.properties = c("AF", "KF", "both"),
+                    AA.properties = "AF",
                     AA.method = "auto",
                     n.trim = 0,
                     c.trim = 0,
-                    nearest.method = "threshold",
+                    nearest.method = "nn",
                     threshold = 0.85,
-                    near.neighbor = NULL,
+                    near.neighbor = 40,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
-                    n.dim = 30,
+                    n.dim = 40,
                     species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
@@ -90,14 +98,19 @@ maTrex <- function(sc,
 #' Trex single cell calculation
 #'
 #'Run Trex algorithm with Seurat or SingleCellExperiment pipelines
-
-
+#'
+#' @examples
+#' trex_example <- runTrex(trex_example, 
+#'                         AA.properties = "AF", 
+#'                         nearest.method = "nn",
+#'                         near.neighbor = 40,
+#'                         reduction.name = "Trex.AF")
+#'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA, TRB, both
-#' @param edit.method distance measures inherited from \link[stringdist]{sstringdist}
+#' @param edit.method distance measures inherited from \link[stringdist]{stringdist}
 #' @param AA.properties Amino acid properties to use for distance calculation: 
-#' AF = Atchley factors, KF = Kidera factors, or other (polarity, molecular weight, etc), 
-#' or none
+#' "AF" = Atchley factors, "KF" = Kidera factors, or "both"
 #' @param AA.method method for deriving pairwise distances from amino acid properties, 
 #' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
 #' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
@@ -117,16 +130,15 @@ maTrex <- function(sc,
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
-
-#' @importFrom SeuratObject subset
 #' 
-#' #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
+#' @export
+#' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
 #' 
 runTrex <- function(sc, 
                    chains = "both", 
                    edit.method = "lv",
-                   AA.properties = c("AF", "KF", "other"),
+                   AA.properties = "AF",
                    AA.method = "auto",
                    reduction.name = "Trex",
                    n.trim = 0,
@@ -178,7 +190,8 @@ runTrex <- function(sc,
 #'the Bioconductor scran workflow. 
 #'
 #' @examples
-
+#' x <- trex_example
+#' x <- quietTCRgenes(x)
 #' 
 #' @param sc Single Cell Object in Seurat format or vector of variable genes to use in reduction
 #' @export
@@ -189,7 +202,7 @@ quietTCRgenes <- function(sc) {
         unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = T)
         sc[["RNA"]]@var.features <- sc[["RNA"]]@var.features[sc[["RNA"]]@var.features %!in% unwanted_genes]
     } else {
-        #Biocondutor scran pipelines uses vector of variable genes for DR
+        #Bioconductor scran pipelines uses vector of variable genes for DR
         unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = T)
         sc <- sc[sc %!in% unwanted_genes]
     }

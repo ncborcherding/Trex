@@ -20,12 +20,13 @@ Imports: igraph,
 	dplyr,
 	reshape2,  
 	stringr, 
-	SingleCellExperiment,
 	SeuratObject,
-	rowr, 
-	SummarizedExperiment,
+	SingleCellExperiment,
 	rlang,
-	FNN
+	FNN, 
+	keras,
+	tensorflow,
+	reticulate
 Suggests: 
 	knitr, 
 	rmarkdown, 

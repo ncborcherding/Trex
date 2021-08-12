@@ -8,16 +8,16 @@ maTrex(
   sc,
   chains = "both",
   edit.method = "lv",
-  AA.properties = c("AF", "KF", "both"),
+  AA.properties = "AF",
   AA.method = "auto",
-  c.trim = 0,
   n.trim = 0,
-  nearest.method = "threshold",
+  c.trim = 0,
+  nearest.method = "nn",
   threshold = 0.85,
-  near.neighbor = NULL,
+  near.neighbor = 40,
   add.INKT = TRUE,
   add.MAIT = TRUE,
-  n.dim = 30,
+  n.dim = 40,
   species = "human"
 )
 }
@@ -26,20 +26,21 @@ maTrex(
 
 \item{chains}{TRA, TRB, both}
 
-\item{edit.method}{distance measures inherited from \link[stringdist]{sstringdist} or NULL
+\item{edit.method}{distance measures inherited from \link[stringdist]{stringdist} or NULL
 to not include edit distance layer in multiplex network}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to n
-ot include edit distance layer in multiplex network}
+"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to not 
+include edit distance layer in multiplex network}
 
 \item{AA.method}{method for deriving pairwise distances from amino acid properties, 
 either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-for using an auto-encoder model.}
-
-\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
+for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
+the cdr3 sequences.}
 
 \item{n.trim}{length from N-terminus to trim on the CDR3 aa sequence}
+
+\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
 
 \item{nearest.method}{method for defining neighbors, either "threshold" for normalized
 distances above a certain value or "nn" for nearest neighbor by normalized distances.}
@@ -64,4 +65,12 @@ Trex eigen vectors caculated from multiplex network
 }
 \description{
 Use this to run the Trex algorithm to return latent vectors
+}
+\examples{
+trex_values <- maTrex(trex_example, 
+                        AA.properties = "AF", 
+                        nearest.method = "nn",
+                        near.neighbor = 40,
+                        reduction.name = "Trex.AF")
+                        
 }
