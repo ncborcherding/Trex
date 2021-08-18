@@ -60,7 +60,7 @@ getTCR <- function(sc, chains) {
   tmp <- data.frame(barcode = rownames(meta), 
                     str_split(meta[,"CTaa"], "_", simplify = TRUE), 
                     str_split(meta[,"CTgene"], "_", simplify = TRUE))
-  if (length(chains) == 1 & chains != "both") {
+  if (length(chains) == 1 && chains != "both") {
     if (chains %in% c("TRA", "TRD")) {
       pos <- list(c(2,4))
     } else if (chains %in% c("TRB", "TRG")) {
@@ -69,11 +69,7 @@ getTCR <- function(sc, chains) {
   } else {
     pos <- list(one = c(2,4), two = c(3,5))
     ch.1 <- grep("TRB|TRA",sc[[]]$CTgene[1])
-    if (ch.1 == 1) {
-      chains <- c("TRA", "TRB")
-    } else {
-      chains <- c("TRD", "TRG")
-    }
+    chains <- c("TRA", "TRB")
   }
   TCR <- NULL
   for (i in seq_along(pos)) {
