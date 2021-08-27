@@ -9,7 +9,8 @@
     utils::globalVariables ("median")
     utils::globalVariables ("slot")
     utils::globalVariables ("get.adjacency")
-    utils::globalVariables ("graph_from_adjacency_matrix")
+    utils::globalVariables ("nn")
+    utils::globalVariables ("data")
     utils::globalVariables ("Trex.Data")
     utils::globalVariables ("colData<-")
     

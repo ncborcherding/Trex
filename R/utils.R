@@ -7,30 +7,20 @@ trim <- function(x, n.trim = n.trim, c.trim = c.trim) {
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
 
 # Convert binary to adjacency matrix
+#' @importFrom igraph graph_from_adjacency_matrix
 gene.to.knn <- function(tmpscore) {
   names <- tmpscore$barcode
   knn.matrix <- matrix(ncol=length(names), nrow=length(names), 0)
   rownames(knn.matrix) <- names
   colnames(knn.matrix) <- names
-  match <- which(tmpscore > 0)
+  match <- which(tmpscore$score > 0)
   knn.matrix[match,match] <- 1
-  return(knn.matrix)
+  network <- graph_from_adjacency_matrix(knn.matrix)
+  return(network)
 }
 #Invert %in%
 '%!in%' <- Negate("%in%")
 
-# Append the multiple network object
-add.to.network <- function(network, new.knn, name) {
-  length <- length(network)
-  names.list <- names(network)
-  if(is(new.knn)[1] != "list") { list(new.knn) }
-  for (i in seq_along(new.knn)) {
-    network[[length + i]] <- new.knn[[i]]
-    
-  }
-  names(network) <- c(names.list, name)
-  return(network)
-}
 
 # Add to meta data some of the metrics calculated
 #' @importFrom rlang %||%
@@ -126,29 +116,29 @@ checkSingleObject <- function(sc) {
 }
 
 #This multiplexes the network and gets simplified eigen values
-#' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromEdgeColoredMatrices GetAggregateNetworkFromSupraAdjacencyMatrix
-#' @importFrom igraph simplify spectrum graph_from_adjacency_matrix get.adjacency
+#' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromExtendedEdgelist GetAggregateNetworkFromSupraAdjacencyMatrix
+#' @importFrom igraph simplify spectrum graph_from_edgelist get.edgelist
 multiplex.network <- function(multi.network, n.dim, barcodes) {
-  Nodes <- nrow(multi.network[[1]])
+  Nodes <- length(barcodes)
   layers <- length(multi.network)
-  layerCouplingStrength <- 1
   networkOfLayersType <- "categorical"
-  isDirected <- FALSE
-  nodeTensor <- list() 
+  nodeTensor <- NULL 
   g.list <- list() 
   for (l in seq_len(layers)) {
-    #Generate the layers
-    g.list[[l]] <- graph_from_adjacency_matrix(multi.network[[l]], mode = "undirected")
     #Get the list of adjacency matrices which build the multiplex
-    nodeTensor[[l]] <- get.adjacency(g.list[[l]])
+    g.list[[l]] <- graph_from_edgelist(as.matrix(multi.network[[l]]), directed = FALSE)
+    tmp <-  get.edgelist(g.list[[l]])
+    tmp <- data.frame("node.from" = tmp[,1], "layer.from" = l, "node.to" = tmp[,2], "layer.to" = l,  "weight" = 1)
+    nodeTensor <- rbind.data.frame(nodeTensor, tmp)
   }
-  layerTensor <- BuildLayersTensor(Layers=layers, OmegaParameter=layerCouplingStrength,
+  
+  layerTensor <- BuildLayersTensor(Layers=layers, OmegaParameter=1,
                                    MultisliceType=networkOfLayersType)
-  M <- BuildSupraAdjacencyMatrixFromEdgeColoredMatrices(nodeTensor, layerTensor, layers, Nodes)
+  M <- suppressMessages(BuildSupraAdjacencyMatrixFromExtendedEdgelist(nodeTensor, layers, Nodes, isDirected = FALSE))
   N <- GetAggregateNetworkFromSupraAdjacencyMatrix(M, layers, Nodes)
   N <- simplify(N)
   eigen <- spectrum(N, 
-                    which = list(howmany = n.dim+1), 
+                    which = list(howmany = n.dim), 
                     algorithm = "arpack")
   eigen <- eigen$vectors[,seq_len(n.dim)]
   rownames(eigen) <- barcodes
@@ -189,38 +179,6 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
 }
 
 
-
-
-#Define adjacency matrix by either threshold or nearest neighbor
-#' @importFrom FNN knn.index
-get.knn <- function(barcodes, out_matrix, nearest.method, near.neighbor, threshold) {
-  if (nearest.method == "threshold") {
-    knn.matrix <- matrix(ncol = nrow(out_matrix), nrow= nrow(out_matrix))
-    for (m in seq_len(nrow(knn.matrix))){
-      # find closes neighbors - not technically nearest neighbor
-      matches <- which(out_matrix[m,] > threshold) #all neighbors > threshold similarity
-      knn.matrix[m,matches] <- 1
-      knn.matrix[matches,m] <- 1
-    }
-  } else if (nearest.method == "nn") {
-      knn.matrix <- matrix(ncol = nrow(out_matrix), nrow= nrow(out_matrix))
-      knn <- knn.index(out_matrix,k = near.neighbor)
-      for (m in seq_len(nrow(knn.matrix))) {
-        neigh.check <- which(out_matrix[m,] == 1) 
-        if (length(neigh.check) > near.neighbor) {
-          matches <- sample(neigh.check, near.neighbor)
-        } else {
-          matches <- knn[m,]
-        }
-        knn.matrix[m,matches] <- 1
-        knn.matrix[matches,m] <- 1
-      }
-    } 
-    rownames(knn.matrix) <- barcodes
-    colnames(knn.matrix) <- barcodes
-    return(knn.matrix)
-}
-
 #Add the eigen vectors to single cell object
 #' @importFrom SeuratObject CreateDimReducObject
 #' @importFrom SingleCellExperiment reducedDim
@@ -255,5 +213,33 @@ auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
   score <- stats::predict(aa.model, array.reshape)
   return(score)
 }
-  
+
+#Code from https://stackoverflow.com/questions/57282842/how-to-efficiently-extract-a-row-or-column-from-a-dist-distance-matrix?rq=1
+
+f <- function (i, j, dist_obj) {
+  if (!inherits(dist_obj, "dist")) stop("please provide a 'dist' object")
+  n <- attr(dist_obj, "Size")
+  valid <- (i >= 1) & (j >= 1) & (i > j) & (i <= n) & (j <= n)
+  k <- (2 * n - j) * (j - 1) / 2 + (i - j)
+  k[!valid] <- NA_real_
+  k
+}
+
+#Code from https://stackoverflow.com/questions/57282842/how-to-efficiently-extract-a-row-or-column-from-a-dist-distance-matrix?rq=1
+SliceExtract_dist <- function (dist_obj, k) {
+  if (length(k) > 1) stop("The function is not 'vectorized'!")
+  n <- attr(dist_obj, "Size")
+  if (k < 1 || k > n) stop("k out of bound!")
+  ##
+  i <- 1:(k - 1)
+  j <- rep.int(k, k - 1)
+  v1 <- dist_obj[f(j, i, dist_obj)]
+  ## 
+  i <- (k + 1):n
+  j <- rep.int(k, n - k)
+  v2 <- dist_obj[f(i, j, dist_obj)]
+  ## 
+  c(v1, 0, v2)
+}
+
 

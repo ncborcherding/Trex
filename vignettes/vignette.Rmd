@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "August 11th, 2021"
+date: "August 27th, 2021"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -26,7 +26,7 @@ library(BiocStyle)
 
 ```{r}
 suppressMessages(library(Seurat))
-suppressMessages(library(scRepertoire))
+suppressMessages(library(ggplot2))
 suppressMessages(library(Trex))
 suppressMessages(library(viridis))
 suppressMessages(library(patchwork))
@@ -41,6 +41,7 @@ This is a standard workflow based on the [WNN](https://satijalab.org/seurat/arti
 
 
 ```{r, eval=FALSE}
+suppressMessages(library(scRepertoire))
 ##################################
 #scRNA/ADT loading and processing
 #################################
@@ -128,9 +129,10 @@ Trex has 2 major functions - the first being ```maTrex()```, which is the backbo
 
 ```{r}
 Trex_vectors <- maTrex(trex_example, 
-                       AA.method = "mean", 
-                    AA.properties = "KF", 
-                    nearest.method = "threshold")
+                      AA.method = "mean", 
+                      AA.properties = "KF", 
+                      nearest.method = "nn",
+                      near.neighbor = 40)
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```
@@ -140,24 +142,16 @@ qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 Additionally, ```runTrex()``` can be used append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
                     
 ```{r}
-trex_example <- runTrex(trex_example, AA.method = "auto", 
-                    AA.properties = "AF", 
-                    nearest.method = "nn",
-                    near.neighbor = 40,
-                    reduction.name = "Trex.AF")
-
-trex_example <- runTrex(trex_example, AA.method = "mean", 
+trex_example <- runTrex(trex_example, 
+                    AA.method = "mean", 
                     AA.properties = "KF", 
                     nearest.method = "threshold",
+                    threshold = 0.8,
                     reduction.name = "Trex.KF")
 ```
 
 ```{r}
-plot1 <- DimPlot(trex_example, reduction = "Trex.AF") + NoLegend()
-
-plot2 <- DimPlot(trex_example, reduction = "Trex.KF") + NoLegend()
-
-plot1 + plot2
+DimPlot(trex_example, reduction = "Trex.KF") + NoLegend()
 ```
 
 
@@ -167,7 +161,7 @@ After ```runTrex()``` we have the eigen vectors for the TCR layers that we have 
 
 ```{r}
 trex_example <- FindMultiModalNeighbors(
-  trex_example, reduction.list = list("pca", "apca", "Trex.AF"), 
+  trex_example, reduction.list = list("pca", "apca", "Trex.KF"), 
   dims.list = list(1:30, 1:20, 1:30), modality.weight.name = "RNA.weight"
 )
 trex_example <- RunUMAP(trex_example, nn.name = "weighted.nn", 
@@ -176,11 +170,12 @@ trex_example <- FindClusters(trex_example, graph.name = "wsnn", resolution = 0.6
                           algorithm = 3, verbose = FALSE)
 
 
-plot3 <- DimPlot(trex_example)
-plot4 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "H")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot1 <- DimPlot(trex_example)
+plot2 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "H")(length(unique(trex_example$CTaa)))) + NoLegend()
 
-plot3 + plot4
+plot1 + plot2
 ```
+
 ## Comparing the outcome to just 1 modality
 
 ```{r}
@@ -188,14 +183,14 @@ trex_example <- RunUMAP(trex_example, reduction = 'pca', dims = 1:30, assay = 'R
               reduction.name = 'rna.umap', reduction.key = 'rnaUMAP_')
 trex_example <- RunUMAP(trex_example, reduction = 'apca', dims = 1:20, assay = 'ADT', 
               reduction.name = 'adt.umap', reduction.key = 'adtUMAP_')
-trex_example <- RunUMAP(trex_example, reduction = 'Trex.AF', dims = 1:30, 
+trex_example <- RunUMAP(trex_example, reduction = 'Trex.KF', dims = 1:30, 
               reduction.name = 'Trex.umap', reduction.key = 'trexUMAP_')
 
-plot5 <- DimPlot(trex_example, reduction = "rna.umap") + NoLegend()
-plot6 <- DimPlot(trex_example, reduction = "adt.umap") + NoLegend()
-plot7 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
+plot3 <- DimPlot(trex_example, reduction = "rna.umap") + NoLegend()
+plot4 <- DimPlot(trex_example, reduction = "adt.umap") + NoLegend()
+plot5 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
 
-plot5 + plot6 + plot7
+plot3 + plot4 + plot5
 ```
 
 ***

@@ -68,9 +68,18 @@ Use this to run the Trex algorithm to return latent vectors
 }
 \examples{
 trex_values <- maTrex(trex_example, 
-                        AA.properties = "AF", 
+                        chains = "both", 
+                        edit.method = "lv",
+                        AA.properties = "AF",
+                        AA.method = "auto",
+                        n.trim = 0,
+                        c.trim = 0,
                         nearest.method = "nn",
+                        threshold = 0.85,
                         near.neighbor = 40,
-                        reduction.name = "Trex.AF")
+                        add.INKT = TRUE,
+                        add.MAIT = TRUE, 
+                        n.dim = 40,
+                        species = "human")
                         
 }

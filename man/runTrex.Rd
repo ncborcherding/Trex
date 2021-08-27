@@ -74,6 +74,7 @@ trex_example <- runTrex(trex_example,
                         AA.properties = "AF", 
                         nearest.method = "nn",
                         near.neighbor = 40,
+                        threshold = 0.85,
                         reduction.name = "Trex.AF")
                         
 }

@@ -4,10 +4,19 @@
 #' 
 #' @examples
 #' trex_values <- maTrex(trex_example, 
-#'                         AA.properties = "AF", 
+#'                         chains = "both", 
+#'                         edit.method = "lv",
+#'                         AA.properties = "AF",
+#'                         AA.method = "mean",
+#'                         n.trim = 0,
+#'                         c.trim = 0,
 #'                         nearest.method = "nn",
+#'                         threshold = 0.85,
 #'                         near.neighbor = 40,
-#'                         reduction.name = "Trex.AF")
+#'                         add.INKT = TRUE,
+#'                         add.MAIT = TRUE, 
+#'                         n.dim = 40,
+#'                         species = "human")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA, TRB, both
@@ -55,30 +64,24 @@ maTrex <- function(sc,
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
+        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim)
     } else {
         network <- NULL
     }
     
     if (unique(c("AF", "KF", "both", "all") %in% AA.properties)[1]) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.method, AA.properties)
-        network <- add.to.network(network, AA.knn, paste0(names(TCR), ".AA")) 
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties)
+        network <- c(network, AA.knn)
     }
-    
-    multi.network <- list()
-    for (i in seq_along(network)) {
-        multi.network[[i]] <- get.knn(TCR[[1]]$barcode, out_matrix = network[[i]], 
-                                       nearest.method, near.neighbor, threshold)
-    }
-    names(multi.network) <- names(network)
     
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
         tmpscore <- scoreINKT(TCR, species = species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
-            multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            network <- c(network, tmp.knn)
+            names(network)[length(network)] <- "INKT"
         }
     }
     if (add.MAIT) {
@@ -86,12 +89,13 @@ maTrex <- function(sc,
         tmpscore <- scoreMAIT(TCR, species = species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
-            multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            network <- c(network, tmp.knn)
+            names(network)[length(network)] <- "MAIT"
         }
     }
     print("Calculating Latent Vectors from multiplex network...")
     barcodes <- rownames(grabMeta(sc))
-    reduction <- multiplex.network(multi.network, n.dim, barcodes)
+    reduction <- multiplex.network(network, n.dim, barcodes)
     return(reduction)
 }
 
@@ -104,6 +108,7 @@ maTrex <- function(sc,
 #'                         AA.properties = "AF", 
 #'                         nearest.method = "nn",
 #'                         near.neighbor = 40,
+#'                         threshold = 0.85,
 #'                         reduction.name = "Trex.AF")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format

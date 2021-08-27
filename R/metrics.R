@@ -6,8 +6,7 @@ distanceMatrix <- function(TCR,
                            near.neighbor = near.neighbor,
                            threshold = threshold, 
                            n.trim = n.trim,
-                           c.trim = c.trim)
- {
+                           c.trim = c.trim) {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
@@ -27,28 +26,30 @@ distanceMatrix <- function(TCR,
           calculations, at least one cdr3 AA sequence is
           shorter than the trimming parameters"))
       }
-    TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
-    #This converts the distance matrices calculated above to a normalized 
-    #value based on the length of the cdr3 sequence.
-    medianlength <- median(na.omit(length))
-    out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
-    for (k in seq_len(ncol(TR))) {
-        for (l in seq_len(nrow(TR))) {
-          if (is.na(length[l]) | is.na(length[k])) {
-            out_matrix[k,l] <- NA
-            out_matrix[l,k] <- NA
-          } else {
-            if (length[k] - length[l] >= round(medianlength/1.5)) {
-              out_matrix[k,l] <- 1 - (TR[k,l]/(max(length[k], length[l])))
-              out_matrix[l,k] <- 1 - (TR[l,k]/(max(length[k], length[l])))
-            } else {
-              out_matrix[k,l] <- 1 - (TR[k,l]/((length[k]+ length[l])/2))
-              out_matrix[l,k] <- 1 - (TR[l,k]/((length[k]+ length[l])/2))
-            }
+      dist <- stringdistmatrix(TR, method = edit.method)
+      edge.list <- NULL
+      for (j in seq_len(length(barcodes))) {
+        row <- SliceExtract_dist(dist,j)
+        norm.row <- row
+        for (k in seq_len(length(norm.row))) {
+          norm.row[k] <- 1- (norm.row[k]/(length[j] + length[k])/2)
         }
+        if (nearest.method == "threshold") {
+          neighbor <- which(row >= threshold)
+        } else if (nearest.method == "nn") {
+          neighbor <- order(row, decreasing = TRUE)[seq_len(near.neighbor)]
+          neigh.check <- which(row == 1) 
+          if (length(neigh.check) > near.neighbor) {
+            matches <- sample(neigh.check, near.neighbor)
+            neighbor <- matches
+          }
         }
-    }
-    return[[i]] <- out_matrix
+        knn.norm = data.frame("from" = j,
+                              "to" = neighbor)
+        edge.list <- rbind(edge.list, knn.norm)
+      }
+      return[[i]] <- edge.list
+      rm(edge.list)
     }
   names(return) <- paste0(names(TCR), ".edit")
   return(return)
@@ -109,9 +110,8 @@ aaProperty <- function(TCR,
                        threshold = threshold,
                        AA.method = AA.method,
                        AA.properties = AA.properties) { 
-  aa.score <- list()
-  data("Trex.Data") ### Need to add reference data
-  reference <- Trex.Data[[1]]
+  return <- list() ### Need to add reference data
+  reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   if (AA.properties == " both") {
     column.ref <- unique(sort(c(AF.col, KF.col)))
@@ -129,7 +129,7 @@ aaProperty <- function(TCR,
      
     } else {
       array.reshape <- NULL
-      aa.model <- aa.model.loader(chain[[i]], AA.properties)
+      aa.model <- quiet(aa.model.loader(chain[[i]], AA.properties))
       range <- aa.range.loader(chain[[i]], AA.properties, Trex.Data) 
       local.min <- range[[1]]
       local.max <- range[[2]]
@@ -158,10 +158,31 @@ aaProperty <- function(TCR,
       score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
     }
-    dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
-    max <- max(dist, na.rm = TRUE)
-    dist <- (max-dist)/max
-    aa.score[[i]] <- dist
+    dist <- Dist(score[,seq_len(ncol(score))[-1]], method = "pearson")
+    edge.list <- NULL
+    for (j in seq_len(length(cells))) {
+      row <- SliceExtract_dist(dist,j)
+      max <- max(row, na.rm = TRUE)
+      row <- (max-row)/max
+      if (nearest.method == "threshold") {
+        neighbor <- which(row >= threshold)
+      } else if (nearest.method == "nn") {
+        neighbor <- order(row, decreasing = TRUE)[seq_len(near.neighbor)]
+        neigh.check <- which(row == 1) 
+        if (length(neigh.check) > near.neighbor) {
+          matches <- sample(neigh.check, near.neighbor)
+          neighbor <- matches
+        }
+      }
+      knn.norm = data.frame("from" = j,
+                            "to" = neighbor)
+      edge.list <- rbind(edge.list, knn.norm)
+    }
+    return[[i]] <- edge.list
+    rm(edge.list)
   }
-  return(aa.score)
+  names(return) <- paste0(names(TCR), ".AA")
+  return(return)
 }
+
+

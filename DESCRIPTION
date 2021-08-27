@@ -1,14 +1,14 @@
 Package: Trex
-Title: Methods for dual TCR and expression single-cell embedding 
-Version: 0.99.0
-Date: 2021-08-03
+Title: Methods for TCR single-cell embedding 
+Version: 0.99.1
+Date: 2021-08-26
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre"), email = "ncborch@gmail.com"),
     person(given = "Drew", family = "Voigt", role = c("aut"), email = "drewvoigt@gmail.com"))
 Description: Implementation of the Trex algorithm for single cell embedding based on TCR sequences. Package includes standalone function to calculate multilayered network from a variety of TCR metrics and interaction with SingleCellExperiment or Seurat data objects. 
 License: Apache License 2.0
 Encoding: UTF-8
-LazyData: false
+LazyData: true
 RoxygenNote: 7.1.1
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
 Depends: 
@@ -30,6 +30,10 @@ Imports: igraph,
 Suggests: 
 	knitr, 
 	rmarkdown, 
+	markdown,
 	BiocStyle,  
-	Seurat
+	Seurat,
+	viridis,
+	patchwork,
+	ggplot2
 VignetteBuilder: knitr
