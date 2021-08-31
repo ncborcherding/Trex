@@ -4,3 +4,4 @@ CHANGES IN VERSION 0.99.1
 * Changed metric functions as it related to memory. Firstly, no more as.matrix() calls, this prevents upper ceiling on memory usage. 
 * Now distance is computed and from each row, a normalized comparison is made using the method for near call, which is then converted and stored as an edge list. This eliminates 3 matrices - pairwise distance matrix, normalized distance matrix and the adjacency matrix. Based on some benchmarking, this is a reduction in memory of around 3 (matrices) x 50. 
 *Edge list is now used to form multiplex graph object, with the list of edges across layers used to make supraAdjacency matrix.
+* AAProperties distance calculated using cosine using the philanthropy package - this returns a distance object instead of a Pearson correlation-based pairwise matrix, saves time and memory

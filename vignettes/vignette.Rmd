@@ -171,7 +171,7 @@ trex_example <- FindClusters(trex_example, graph.name = "wsnn", resolution = 0.6
 
 
 plot1 <- DimPlot(trex_example)
-plot2 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "H")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot2 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
 
 plot1 + plot2
 ```

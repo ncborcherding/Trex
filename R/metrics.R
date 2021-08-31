@@ -99,7 +99,7 @@ scoreINKT <- function(TCR, species = NULL) {
 }
 
 #Calculating Distance of AA in CDR3 using mean
-#' @importFrom amap Dist
+#' @importFrom philentropy distance
 #' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
 aaProperty <- function(TCR, 
@@ -158,7 +158,8 @@ aaProperty <- function(TCR,
       score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
     }
-    dist <- Dist(score[,seq_len(ncol(score))[-1]], method = "pearson")
+    dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
+                     mute.message = TRUE)
     edge.list <- NULL
     for (j in seq_len(length(cells))) {
       row <- SliceExtract_dist(dist,j)
@@ -180,6 +181,7 @@ aaProperty <- function(TCR,
     }
     return[[i]] <- edge.list
     rm(edge.list)
+    rm(dist)
   }
   names(return) <- paste0(names(TCR), ".AA")
   return(return)

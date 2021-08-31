@@ -14,7 +14,7 @@ biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Seq
 Depends: 
 	R (>= 4.0)
 Imports: igraph,
-	amap,
+	philentropy,
 	muxViz,
 	stringdist,
 	dplyr,
