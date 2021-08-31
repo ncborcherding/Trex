@@ -10,13 +10,10 @@ aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
 #' @importFrom igraph graph_from_adjacency_matrix
 gene.to.knn <- function(tmpscore) {
   names <- tmpscore$barcode
-  knn.matrix <- matrix(ncol=length(names), nrow=length(names), 0)
-  rownames(knn.matrix) <- names
-  colnames(knn.matrix) <- names
   match <- which(tmpscore$score > 0)
-  knn.matrix[match,match] <- 1
-  network <- graph_from_adjacency_matrix(knn.matrix)
-  return(network)
+  knn.norm = list(data.frame("from" = match[1],
+                          "to" = match))
+  return(knn.norm)
 }
 #Invert %in%
 '%!in%' <- Negate("%in%")
