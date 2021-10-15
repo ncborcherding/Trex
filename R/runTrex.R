@@ -41,8 +41,6 @@
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
-#' @param add.clusters Return community-based clusters for multiplex network
-#' can be either Louvain or Leiden methods or use "FALSE" to not perform clustering
 #' @param species Indicate "human" or "mouse" for gene-based metrics
 #' 
 #' @export
@@ -62,7 +60,6 @@ maTrex <- function(sc,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
-                    add.clusters = "louvain",
                     species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
@@ -98,7 +95,7 @@ maTrex <- function(sc,
     }
     print("Calculating Latent Vectors from multiplex network...")
     barcodes <- rownames(grabMeta(sc))
-    reduction <- multiplex.network(network, n.dim, barcodes, add.clusters)
+    reduction <- multiplex.network(network, n.dim, barcodes)
     return(reduction)
 }
 
@@ -137,10 +134,8 @@ maTrex <- function(sc,
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
-#' @param add.clusters Return community-based clusters for multiplex network
-#' can be either Louvain or Leiden methods or use "FALSE" to not perform clustering
 #' @param species Indicate "human" or "mouse" for gene-based metrics
-#' 
+#' @importFrom Seurat
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
@@ -159,7 +154,6 @@ runTrex <- function(sc,
                    add.INKT = TRUE,
                    add.MAIT = TRUE, 
                    n.dim = 40,
-                   add.clusters = "louvain",
                    species = "human") {
         
     cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
@@ -189,7 +183,6 @@ runTrex <- function(sc,
     }
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
-   
 }
 
 #' Remove TCR genes from variable gene results

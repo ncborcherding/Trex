@@ -69,7 +69,7 @@ getTCR <- function(sc, chains) {
   return(TCR)
 }
 
-#This is to grab the meta data from a seurat or SCE object
+#This is to grab the meta data from a Seurat or SCE object
 #' @importFrom SingleCellExperiment colData 
 grabMeta <- function(sc) {
   if (inherits(x=sc, what ="Seurat")) {
@@ -112,7 +112,7 @@ checkSingleObject <- function(sc) {
 #This multiplexes the network and gets simplified eigen values
 #' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromExtendedEdgelist GetAggregateNetworkFromSupraAdjacencyMatrix
 #' @importFrom igraph simplify spectrum graph_from_edgelist get.edgelist cluster_louvain
-multiplex.network <- function(multi.network, n.dim, barcodes, add.clusters = add.clusters) {
+multiplex.network <- function(multi.network, n.dim, barcodes) {
   Nodes <- length(barcodes)
   layers <- length(multi.network)
   networkOfLayersType <- "categorical"
@@ -137,15 +137,6 @@ multiplex.network <- function(multi.network, n.dim, barcodes, add.clusters = add
   eigen <- eigen$vectors[,seq_len(n.dim)]
   rownames(eigen) <- barcodes
   colnames(eigen) <- paste0("Trex_", seq_len(ncol(eigen)))
-  if(add.clusters != FALSE) {
-    if (add.clusters == "lovuain") {
-      clust <- cluster_louvain(N)
-    } else {
-      require(leiden)
-      clust <- leiden(N, resolution_parameter = 1.5)
-    }
-    eigen <- list(eigen = eigen, clusters = clust)
-  }
   return(eigen)
 }
 
@@ -204,12 +195,13 @@ adding.DR <- function(sc, reduction, reduction.name) {
   } else if (inherits(sc, "SingleCellExperiment")) {
     reducedDim(sc, reduction.name) <- reduction
   }
-  if(!is.null(clusters)) {
-    clusters <- as.data.frame(clusters)
-    colnames(clusters) <- paste0(reduction.name, ".cluster")
-    rownames(clusters) <- rownames(grabMeta(sc))
-    sc <- add.meta.data(sc, clusters, colnames(clusters))
-  }
+  #No built in clustering for now
+  #if(!is.null(clusters)) {
+   # clusters <- as.data.frame(clusters)
+  #  colnames(clusters) <- paste0(reduction.name, ".cluster")
+   # rownames(clusters) <- rownames(grabMeta(sc))
+   # sc <- add.meta.data(sc, clusters, colnames(clusters))
+  #}
   return(sc)
   
 }
