@@ -143,15 +143,17 @@ Additionally, ```runTrex()``` can be used append the Seurat or Single-cell Exper
                     
 ```{r}
 trex_example <- runTrex(trex_example, 
-                    AA.method = "mean", 
+                        edit.method = "lv",
+                    AA.method = "auto", 
                     AA.properties = "KF", 
                     nearest.method = "threshold",
                     threshold = 0.8,
-                    reduction.name = "Trex.KF")
+                    reduction.name = "Trex.KF", 
+                    add.clusters = "leiden")
 ```
 
 ```{r}
-DimPlot(trex_example, reduction = "Trex.KF") + NoLegend()
+DimPlot(trex_example, dims = c(1,3), reduction = "Trex.KF", group.by = "Trex.KF.cluster") + NoLegend()
 ```
 
 

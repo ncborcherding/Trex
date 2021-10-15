@@ -44,6 +44,9 @@ distanceMatrix <- function(TCR,
             neighbor <- matches
           }
         }
+        if(length(neighbor) == 0) {
+          next()
+        }
         knn.norm = data.frame("from" = j,
                               "to" = neighbor)
         edge.list <- rbind(edge.list, knn.norm)
@@ -51,7 +54,7 @@ distanceMatrix <- function(TCR,
       return[[i]] <- edge.list
       rm(edge.list)
     }
-  names(return) <- paste0(names(TCR), ".edit")
+ #names(return) <- paste0(names(TCR), ".edit")
   return(return)
 }
 

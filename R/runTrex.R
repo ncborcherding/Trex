@@ -41,6 +41,8 @@
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
+#' @param add.clusters Return community-based clusters for multiplex network
+#' can be either Louvain or Leiden methods or use "FALSE" to not perform clustering
 #' @param species Indicate "human" or "mouse" for gene-based metrics
 #' 
 #' @export
@@ -60,6 +62,7 @@ maTrex <- function(sc,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
+                    add.clusters = "louvain",
                     species = "human") {
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
@@ -69,7 +72,7 @@ maTrex <- function(sc,
         network <- NULL
     }
     
-    if (unique(c("AF", "KF", "both", "all") %in% AA.properties)[1]) {
+    if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
         AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties)
         network <- c(network, AA.knn)
@@ -95,7 +98,7 @@ maTrex <- function(sc,
     }
     print("Calculating Latent Vectors from multiplex network...")
     barcodes <- rownames(grabMeta(sc))
-    reduction <- multiplex.network(network, n.dim, barcodes)
+    reduction <- multiplex.network(network, n.dim, barcodes, add.clusters)
     return(reduction)
 }
 
@@ -134,6 +137,8 @@ maTrex <- function(sc,
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
+#' @param add.clusters Return community-based clusters for multiplex network
+#' can be either Louvain or Leiden methods or use "FALSE" to not perform clustering
 #' @param species Indicate "human" or "mouse" for gene-based metrics
 #' 
 #' @export
@@ -153,7 +158,8 @@ runTrex <- function(sc,
                    near.neighbor = NULL,
                    add.INKT = TRUE,
                    add.MAIT = TRUE, 
-                   n.dim = 30,
+                   n.dim = 40,
+                   add.clusters = "louvain",
                    species = "human") {
         
     cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
