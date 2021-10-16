@@ -143,15 +143,38 @@ Additionally, ```runTrex()``` can be used append the Seurat or Single-cell Exper
                     
 ```{r}
 trex_example <- runTrex(trex_example, 
-                    AA.method = "mean", 
+                        edit.method = "lv",
+                    AA.method = "auto", 
                     AA.properties = "KF", 
                     nearest.method = "threshold",
                     threshold = 0.8,
+                    near.neighbor = 30,
                     reduction.name = "Trex.KF")
 ```
 
+## Using Trex-specific UMAP 
 ```{r}
-DimPlot(trex_example, reduction = "Trex.KF") + NoLegend()
+neighbors <- FindNeighbors(trex_example@reductions$Trex.KF, 
+                                       annoy.metric = "cosine",
+                                       k.param = 30, 
+                                       verbose = FALSE)
+
+names(neighbors) <- paste0("Trex.KF", names(neighbors))
+graph.names <- names(neighbors)
+for(i in seq_len(length(graph.names))) {
+          suppressWarnings(sc[[graph.names[i]]] <- neighbors[[i]])
+  }
+    
+trex_example <- RunUMAP(trex_example, graph = "Trex.KF.KF_snn")
+trex_example <- FindClusters(trex_example, graph = "RNA_snn")
+DimPlot(trex_example) + NoLegend()
+DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values =viridis::viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend() 
+
+DimPlot(trex_example, label = TRUE) + NoLegend()
+```
+
+```{r}
+DimPlot(trex_example, dims = c(1,3), reduction = "Trex.KF", group.by = "Trex.KF.cluster") + NoLegend()
 ```
 
 
@@ -177,6 +200,12 @@ plot1 + plot2
 ```
 
 ## Comparing the outcome to just 1 modality
+
+```{r}
+DimPlot(sc) + NoLegend()
+DimPlot(sc, group.by = "CTaa") + scale_color_manual(values = viridis::viridis_pal(option = "B")(length(unique(sc$CTaa)))) + NoLegend()
+```
+
 
 ```{r}
 trex_example <- RunUMAP(trex_example, reduction = 'pca', dims = 1:30, assay = 'RNA', 

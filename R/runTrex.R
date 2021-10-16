@@ -69,7 +69,7 @@ maTrex <- function(sc,
         network <- NULL
     }
     
-    if (unique(c("AF", "KF", "both", "all") %in% AA.properties)[1]) {
+    if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
         AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties)
         network <- c(network, AA.knn)
@@ -135,7 +135,7 @@ maTrex <- function(sc,
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
-#' 
+#' @importFrom Seurat
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
@@ -153,7 +153,7 @@ runTrex <- function(sc,
                    near.neighbor = NULL,
                    add.INKT = TRUE,
                    add.MAIT = TRUE, 
-                   n.dim = 30,
+                   n.dim = 40,
                    species = "human") {
         
     cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
@@ -183,7 +183,6 @@ runTrex <- function(sc,
     }
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
-   
 }
 
 #' Remove TCR genes from variable gene results
