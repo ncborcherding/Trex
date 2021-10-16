@@ -1,12 +1,12 @@
 #Calculating Edit Distance Matrix
 #' @importFrom stringdist stringdistmatrix
 distanceMatrix <- function(TCR, 
-                           edit.method = "lv",
-                           nearest.method = nearest.method,
-                           near.neighbor = near.neighbor,
-                           threshold = threshold, 
-                           n.trim = n.trim,
-                           c.trim = c.trim) {
+                          edit.method = "lv",
+                          nearest.method = nearest.method,
+                          near.neighbor = near.neighbor,
+                          threshold = threshold, 
+                          n.trim = n.trim,
+                          c.trim = c.trim) {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){

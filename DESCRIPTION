@@ -9,7 +9,7 @@ Description: Implementation of the Trex algorithm for single cell embedding base
 License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
 Depends: 
 	R (>= 4.0)
@@ -17,13 +17,11 @@ Imports: igraph,
 	philentropy,
 	muxViz,
 	stringdist,
-	dplyr,
-	reshape2,  
+	dplyr, 
 	stringr, 
 	SeuratObject,
 	SingleCellExperiment,
 	rlang,
-	FNN, 
 	keras,
 	tensorflow,
 	reticulate

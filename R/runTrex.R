@@ -204,11 +204,11 @@ runTrex <- function(sc,
 quietTCRgenes <- function(sc) {
     unwanted_genes <- "TRBV*|^TRBD*|^TRBJ*|^TRDV*|^TRDD*|^TRDJ*|^TRAV*|^TRAJ*|^TRGV*|^TRGJ*"
     if (inherits(x=sc, what ="Seurat")) {
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = T)
+        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = TRUE)
         sc[["RNA"]]@var.features <- sc[["RNA"]]@var.features[sc[["RNA"]]@var.features %!in% unwanted_genes]
     } else {
         #Bioconductor scran pipelines uses vector of variable genes for DR
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = T)
+        unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = TRUE)
         sc <- sc[sc %!in% unwanted_genes]
     }
     return(sc)

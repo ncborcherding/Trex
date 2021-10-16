@@ -62,8 +62,8 @@ getTCR <- function(sc, chains) {
   for (i in seq_along(pos)) {
     sub <- as.data.frame(tmp[,c(1,pos[[i]])])
     colnames(sub) <- c("barcode", "cdr3_aa", "genes")
-    sub$v <- str_split(sub$genes, "[.]", simplify = T)[,1]
-    sub$j <- str_split(sub$genes, "[.]", simplify = T)[,2]
+    sub$v <- str_split(sub$genes, "[.]", simplify = TRUE)[,1]
+    sub$j <- str_split(sub$genes, "[.]", simplify = TRUE)[,2]
     sub[sub == ""] <- NA
     TCR[[i]] <- sub
     sub <- NULL
