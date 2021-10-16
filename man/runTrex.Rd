@@ -18,7 +18,7 @@ runTrex(
   near.neighbor = NULL,
   add.INKT = TRUE,
   add.MAIT = TRUE,
-  n.dim = 30,
+  n.dim = 40,
   species = "human"
 )
 }

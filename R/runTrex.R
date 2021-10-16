@@ -135,7 +135,6 @@ maTrex <- function(sc,
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
-#' @importFrom Seurat
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 

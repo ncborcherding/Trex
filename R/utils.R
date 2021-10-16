@@ -177,11 +177,11 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
 #' @importFrom SeuratObject CreateDimReducObject
 #' @importFrom SingleCellExperiment reducedDim
 adding.DR <- function(sc, reduction, reduction.name) {
-  clusters <- NULL
-  if(length(reduction) > 1) {
-    clusters <- reduction[[2]]
-    reduction <- reduction[[1]]
-  }
+  #clusters <- NULL
+  #if(length(reduction) > 1) {
+  #  clusters <- reduction[[2]]
+  #  reduction <- reduction[[1]]
+ # }
   if (inherits(sc, "Seurat")) {
     DR <- suppressWarnings(CreateDimReducObject(
       embeddings = reduction,

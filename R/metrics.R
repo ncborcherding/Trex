@@ -162,7 +162,7 @@ aaProperty <- function(TCR,
       score <- data.frame(unique(membership[,"barcode"]), score)
     }
     dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
-                     mute.message = TRUE)
+                     mute.message = TRUE, test.na = FALSE)
     edge.list <- NULL
     for (j in seq_len(length(cells))) {
       row <- SliceExtract_dist(dist,j)
@@ -177,6 +177,9 @@ aaProperty <- function(TCR,
           matches <- sample(neigh.check, near.neighbor)
           neighbor <- matches
         }
+      }
+      if(length(neighbor) == 0) {
+        next()
       }
       knn.norm = data.frame("from" = j,
                             "to" = neighbor)
