@@ -71,7 +71,7 @@ scoreMAIT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v && comp[[species]]$j %in% j && comp[[species]]$length %in% length) {
+    if(comp[[species]]$v  %in% v & any(comp[[species]]$j %in% j) & comp[[species]]$length %in% length) {
       score$score[i] <- 1
     } else {
       next()
@@ -92,7 +92,7 @@ scoreINKT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v && comp[[species]]$j %in% j && comp[[species]]$length %in% length) {
+    if(comp[[species]]$v  %in% v && any(comp[[species]]$j %in% j) && any(comp[[species]]$length %in% length)) {
       score$score[i] <- 1
     } else {
       next()

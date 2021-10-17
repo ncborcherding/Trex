@@ -77,8 +77,8 @@ trex_values <- maTrex(trex_example,
                         nearest.method = "nn",
                         threshold = 0.85,
                         near.neighbor = 40,
-                        add.INKT = TRUE,
-                        add.MAIT = TRUE, 
+                        add.INKT = FALSE,
+                        add.MAIT = FALSE, 
                         n.dim = 40,
                         species = "human")
                         

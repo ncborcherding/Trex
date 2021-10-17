@@ -133,6 +133,8 @@ Trex_vectors <- maTrex(trex_example,
                       AA.method = "mean", 
                       AA.properties = "KF", 
                       nearest.method = "nn",
+                      add.INKT = FALSE,
+                      add.MAIT = FALSE,
                       near.neighbor = 40)
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
@@ -165,10 +167,10 @@ neighbors <- FindNeighbors(trex_example@reductions$Trex.KF,
                                        verbose = FALSE)
 
 #Adding the Neighbors to the Seurat Object
-names(neighbors) <- paste0("Trex.KF", names(neighbors))
+names(neighbors) <- paste0("Trex.KF_", names(neighbors))
 graph.names <- names(neighbors)
 for(i in seq_len(length(graph.names))) {
-          suppressWarnings(sc[[graph.names[i]]] <- neighbors[[i]])
+          suppressWarnings(trex_example[[graph.names[i]]] <- neighbors[[i]])
   }
 
 #Generating UMAP from Trex Neighbors
@@ -195,21 +197,15 @@ trex_example <- FindClusters(trex_example, graph.name = "wsnn", resolution = 0.6
                           algorithm = 3, verbose = FALSE)
 
 #WNN UMAP
-plot3 <- DimPlot(trex_example)
-plot4 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot3 <- DimPlot(trex_example, reduction = "wnn.umap")
+plot4 <- DimPlot(trex_example, reduction = "wnn.umap", group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
 
 plot3 + plot4
 ```
 
 ## Comparing the outcome to just one modality
 
-We can also look at the differences in the UMAP generated from RNA, ADT, or Trex as individual compoenents
-
-```{r}
-DimPlot(sc) + NoLegend()
-DimPlot(sc, group.by = "CTaa") + scale_color_manual(values = viridis::viridis_pal(option = "B")(length(unique(sc$CTaa)))) + NoLegend()
-```
-
+We can also look at the differences in the UMAP generated from RNA, ADT, or Trex as individual components. Remember the clusters that we are displaying in UMAP is based on clusters defined by the weighted nearest neighbors calculated above. 
 
 ```{r}
 trex_example <- RunUMAP(trex_example, reduction = 'pca', dims = 1:30, assay = 'RNA', 
