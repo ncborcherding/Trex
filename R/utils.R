@@ -109,7 +109,7 @@ checkSingleObject <- function(sc) {
             the correct data.") }
 }
 
-#This multiplexes the network and gets simplified eigen values
+#This multiplexes the network and gets simplified eigenvectors
 #' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromExtendedEdgelist GetAggregateNetworkFromSupraAdjacencyMatrix
 #' @importFrom igraph simplify spectrum graph_from_edgelist get.edgelist cluster_louvain
 multiplex.network <- function(multi.network, n.dim, barcodes) {
@@ -141,7 +141,7 @@ multiplex.network <- function(multi.network, n.dim, barcodes) {
 }
 
 
-#Retunrs appropriate model for autoencoder
+#Returns appropriate model for autoencoder
 #' @importFrom tensorflow tf
 #' @importFrom keras load_model_hdf5
 aa.model.loader <- function(chain, AA.properties) {
@@ -153,7 +153,7 @@ aa.model.loader <- function(chain, AA.properties) {
   return(model)
 }
 
-#Selects columns to normalize input data basedon the inputs to the model
+#Selects columns to normalize input data based on the inputs to the model
 aa.range.loader <- function(chain, AA.properties, Trex.Data) {
   range <- Trex.Data[["model.ranges"]][[chain]]
   min <- range[["min"]]
@@ -173,7 +173,7 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
 }
 
 
-#Add the eigen vectors to single cell object
+#Add the eigenvectors to single cell object
 #' @importFrom SeuratObject CreateDimReducObject
 #' @importFrom SingleCellExperiment reducedDim
 adding.DR <- function(sc, reduction, reduction.name) {
@@ -209,7 +209,7 @@ adding.DR <- function(sc, reduction, reduction.name) {
 AF.col <- c(2,3,4,5,6)
 KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
-#Generats the 30 vector based on autoencoder model 
+#Generates the 30 vector based on autoencoder model 
 #First normalizes the value by the min and max of the autoencoder training data
 auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
   for(i in seq_len(ncol(array.reshape))) {
@@ -221,7 +221,6 @@ auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
 }
 
 #Code from https://stackoverflow.com/questions/57282842/how-to-efficiently-extract-a-row-or-column-from-a-dist-distance-matrix?rq=1
-
 f <- function (i, j, dist_obj) {
   if (!inherits(dist_obj, "dist")) stop("please provide a 'dist' object")
   n <- attr(dist_obj, "Size")

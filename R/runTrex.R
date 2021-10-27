@@ -46,7 +46,7 @@
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
-#' @return Trex eigen vectors caculated from multiplex network
+#' @return Trex eigenvectors calculated from multiplex network
 maTrex <- function(sc, 
                     chains = "both", 
                     edit.method = "lv",
