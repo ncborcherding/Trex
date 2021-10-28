@@ -1,6 +1,7 @@
 #' Main Trex interface
 #' 
-#' Use this to run the Trex algorithm to return latent vectors
+#' Use this to run the Trex algorithm to return latent vectors in 
+#' the form of a matrix or if you prefer, a maTrex.
 #' 
 #' @examples
 #' trex_values <- maTrex(trex_example, 
@@ -37,11 +38,14 @@
 #' above which simplify for adjacency matrix
 #' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly return neighbors/clones. 
+#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+#' to the clone being compared.
+#' @param clone.proportion The proportion of nearest neighbors to return from the a single clone
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
+#' @param seed seed for the random number generator
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
@@ -57,27 +61,30 @@ maTrex <- function(sc,
                     nearest.method = "nn",
                     threshold = 0.85,
                     near.neighbor = 40,
+                    clone.proportion = 0.5,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
-                    species = "human") {
+                    species = "human", 
+                    seed = 42) {
+    set.seed(seed)
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim)
+        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, clone.proportion)
     } else {
         network <- NULL
     }
     
     if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties)
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, clone.proportion)
         network <- c(network, AA.knn)
     }
     
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
-        tmpscore <- scoreINKT(TCR, species = species)
+        tmpscore <- scoreINKT(TCR, species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
             network <- c(network, tmp.knn)
@@ -86,7 +93,7 @@ maTrex <- function(sc,
     }
     if (add.MAIT) {
         print("Calculating the MAIT gene usage...")
-        tmpscore <- scoreMAIT(TCR, species = species)
+        tmpscore <- scoreMAIT(TCR, species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
             network <- c(network, tmp.knn)
@@ -130,31 +137,36 @@ maTrex <- function(sc,
 #' above which simplify for adjacency matrix
 #' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly return neighbors/clones. 
+#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+#' to the clone being compared.
+#' @param clone.proportion The proportion of nearest neighbors to return from the a single clone
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
+#' @param seed seed for the random number generator
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
 #' 
 runTrex <- function(sc, 
-                   chains = "both", 
-                   edit.method = "lv",
-                   AA.properties = "AF",
-                   AA.method = "auto",
-                   reduction.name = "Trex",
-                   n.trim = 0,
-                   c.trim = 0,
-                   nearest.method = "threshold",
-                   threshold = 0.85,
-                   near.neighbor = NULL,
-                   add.INKT = TRUE,
-                   add.MAIT = TRUE, 
-                   n.dim = 40,
-                   species = "human") {
-        
+                    chains = "both", 
+                    edit.method = "lv",
+                    AA.properties = "AF",
+                    AA.method = "auto",
+                    n.trim = 0,
+                    c.trim = 0,
+                    nearest.method = "nn",
+                    threshold = 0.85,
+                    near.neighbor = 40,
+                    clone.proportion = 0.5,
+                    add.INKT = TRUE,
+                    add.MAIT = TRUE, 
+                    n.dim = 40,
+                    species = "human",
+                    reduction.name = "Trex",
+                    seed = 42) {
+
     cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
     sc <- subset(sc, cells = cells.chains)
     reduction <- maTrex(sc,
@@ -162,22 +174,24 @@ runTrex <- function(sc,
                         edit.method,
                         AA.properties,
                         AA.method,
+                        n.trim, 
                         c.trim,
-                        n.trim,
                         nearest.method,
                         threshold,
                         near.neighbor,
+                        clone.proportion,
                         add.INKT,
                         add.MAIT,
                         n.dim,
-                        species)
+                        species, 
+                        seed)
     TCR <- getTCR(sc, chains)
     if (add.INKT) {
-        tmpscore <- scoreINKT(TCR, species = species)
+        tmpscore <- scoreINKT(TCR, species)
         sc <- add.meta.data(sc, tmpscore, "IKNT.score")
     }
     if (add.MAIT) {
-        tmpscore <- scoreMAIT(TCR, species = species)
+        tmpscore <- scoreMAIT(TCR, species)
         sc <- add.meta.data(sc, tmpscore, "MAIT.score")
     }
     sc <- adding.DR(sc, reduction, reduction.name)

@@ -247,4 +247,33 @@ SliceExtract_dist <- function (dist_obj, k) {
   c(v1, 0, v2)
 }
 
+neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.neighbor, .threshold, .clone.proportion, .TR) {
+  if (metric == "distance") {
+      for (k in seq_len(length(.row))) {
+        suppressWarnings(.row[k] <- 1- (.row[k]/(.length[.j] + .length[k])/2))
+      }
+  } else if (metric == "aa.property") {
+      max <- max(.row, na.rm = TRUE)
+      .row <- (max-abs(.row))/max
+  }
+  if (.nearest.method == "threshold") {
+      neighbor <- which(.row >= .threshold)
+  } else if (.nearest.method == "nn") {
+      neighbor <- order(.row, decreasing = TRUE)[seq_len(.near.neighbor)]
+      neigh.check <- which(.row > 0.99)  
+      if (length(neigh.check) > .near.neighbor) {
+          matches <- sample(neigh.check, round(.near.neighbor*.clone.proportion))
+          .row[.row > 0.99] <- 0
+          #Generate "neighborhood"
+          close.matches <- order(.row, decreasing = TRUE)
+          unique.matches <- unique(.TR[close.matches])[seq_len(.near.neighbor*(1-.clone.proportion))]
+          close.matches <- lapply(unique.matches, FUN = function(x) {
+              x <- which(.TR == x)
+              x <- x[sample(length(x), 1)] })
+          neighbor <- c(matches, unlist(close.matches))
+      }
+    }
+  return(neighbor)
+}
+
 

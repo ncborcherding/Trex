@@ -1,3 +1,14 @@
+
+CHANGES IN VERSION 0.99.2
+------------------------
+
+* Added seed parameter to improve reproducibility 
+* Added clone.proportion parameter to select for relative number of duplicates to allow into nearest neighbor evaluation
+* New internal function neighbor.manager - nearest neighbor approximation is now based on clone proportion (for clones), the remaining neighbors are randomized across unique clones in the vicinity of the clonotype/cell in question. 
+* Modified Mean approach for aa.property now references the correct columns in generating output frame and the cosine distance function
+* Changed internal function parameters to prevent recursive functions.
+
+
 CHANGES IN VERSION 0.99.1
 ------------------------
 

@@ -6,7 +6,8 @@ distanceMatrix <- function(TCR,
                           near.neighbor = near.neighbor,
                           threshold = threshold, 
                           n.trim = n.trim,
-                          c.trim = c.trim) {
+                          c.trim = c.trim, 
+                          clone.proportion = clone.proportion) {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
@@ -15,8 +16,8 @@ distanceMatrix <- function(TCR,
         TR <- TCR[[i]]$cdr3_aa
       }
       barcodes <- TCR[[i]]$barcode
-      length <- nchar(na.omit(as.character(TR)))
-      length.check <- min(length)
+      length <- nchar(as.character(TR))
+      length.check <- min(na.omit(length))
       if (length.check < (n.trim + c.trim + 3) && c.trim != 0 && n.trim != 0) { 
         warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
         than 3 AA residues calculations, please consider
@@ -30,20 +31,9 @@ distanceMatrix <- function(TCR,
       edge.list <- NULL
       for (j in seq_len(length(barcodes))) {
         row <- SliceExtract_dist(dist,j)
-        norm.row <- row
-        for (k in seq_len(length(norm.row))) {
-          norm.row[k] <- 1- (norm.row[k]/(length[j] + length[k])/2)
-        }
-        if (nearest.method == "threshold") {
-          neighbor <- which(row >= threshold)
-        } else if (nearest.method == "nn") {
-          neighbor <- order(row, decreasing = TRUE)[seq_len(near.neighbor)]
-          neigh.check <- which(row == 1) 
-          if (length(neigh.check) > near.neighbor) {
-            matches <- sample(neigh.check, near.neighbor)
-            neighbor <- matches
-          }
-        }
+        neighbor <- neighbor.manager(row, metric = "distance", length, j, nearest.method, 
+                                     near.neighbor, threshold, clone.proportion,
+                                     TR)
         if(length(neighbor) == 0) {
           next()
         }
@@ -61,7 +51,7 @@ distanceMatrix <- function(TCR,
 
 #Chains for MAIT cells
 #' @importFrom dplyr bind_rows
-scoreMAIT <- function(TCR, species = NULL) {
+scoreMAIT <- function(TCR, .species) {
   membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV1", j = "TRAJ33", length = 12), 
                human = list(v = "TRAV1-2", j = c("TRAJ33", "TRAJ20", "TRAJ12"), length = 12))
@@ -71,7 +61,7 @@ scoreMAIT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v & any(comp[[species]]$j %in% j) & comp[[species]]$length %in% length) {
+    if(comp[[.species]]$v  %in% v & any(comp[[.species]]$j %in% j) & comp[[.species]]$length %in% length) {
       score$score[i] <- 1
     } else {
       next()
@@ -82,7 +72,7 @@ scoreMAIT <- function(TCR, species = NULL) {
 
 #Chains for INKT cells
 #' @importFrom dplyr bind_rows
-scoreINKT <- function(TCR, species = NULL) {
+scoreINKT <- function(TCR, .species) {
   membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV11", j = "TRAJ18", length = 15), 
                human = list(v = "TRAV10", j = c("TRAJ18", "TRBV25"), length = c(14,15,16)))
@@ -92,7 +82,7 @@ scoreINKT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v && any(comp[[species]]$j %in% j) && any(comp[[species]]$length %in% length)) {
+    if(comp[[.species]]$v  %in% v & any(comp[[.species]]$j %in% j) & any(comp[[.species]]$length %in% length)) {
       score$score[i] <- 1
     } else {
       next()
@@ -112,10 +102,12 @@ aaProperty <- function(TCR,
                        near.neighbor = near.neighbor,
                        threshold = threshold,
                        AA.method = AA.method,
-                       AA.properties = AA.properties) { 
+                       AA.properties = AA.properties, 
+                       clone.proportion = clone.proportion) { 
   return <- list() ### Need to add reference data
   reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
+  length <- NULL
   if (AA.properties == " both") {
     column.ref <- unique(sort(c(AF.col, KF.col)))
   } else {
@@ -138,15 +130,15 @@ aaProperty <- function(TCR,
       local.max <- range[[2]]
     }
     cells <- unique(membership[,"barcode"])
-    for (j in seq_len(length(cells))) {
-      tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
+    for (n in seq_len(length(cells))) {
+      tmp.CDR <- membership[membership$barcode == cells[n],]$cdr3_aa
       if (AA.method != "auto") {
         if (c.trim != 0 | n.trim != 0){
           tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
         }
         refer <- unlist(strsplit(tmp.CDR, ""))
         int <- reference[match(refer, reference$aa),]
-        score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
+        score[n,seq_len(length(col.ref))+1] <- colSums(int[,column.ref])/length(refer)
       } else {
         refer <- unlist(strsplit(tmp.CDR, ""))
         refer <- c(refer, rep(NA, 50 - length(refer)))
@@ -166,18 +158,9 @@ aaProperty <- function(TCR,
     edge.list <- NULL
     for (j in seq_len(length(cells))) {
       row <- SliceExtract_dist(dist,j)
-      max <- max(row, na.rm = TRUE)
-      row <- (max-row)/max
-      if (nearest.method == "threshold") {
-        neighbor <- which(row >= threshold)
-      } else if (nearest.method == "nn") {
-        neighbor <- order(row, decreasing = TRUE)[seq_len(near.neighbor)]
-        neigh.check <- which(row == 1) 
-        if (length(neigh.check) > near.neighbor) {
-          matches <- sample(neigh.check, near.neighbor)
-          neighbor <- matches
-        }
-      }
+      neighbor <- neighbor.manager(row, metric = "aa.property", length, j, nearest.method, 
+                                   near.neighbor, threshold, clone.proportion,
+                                  TCR[[i]]$cdr3_aa)
       if(length(neighbor) == 0) {
         next()
       }

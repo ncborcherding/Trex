@@ -129,13 +129,15 @@ Trex has 2 major functions - the first being ```maTrex()```, which is the backbo
 
 ```{r}
 Trex_vectors <- maTrex(trex_example, 
+                       chains = "both",
                       edit.method = "lv",
                       AA.method = "mean", 
                       AA.properties = "KF", 
                       nearest.method = "nn",
                       add.INKT = FALSE,
                       add.MAIT = FALSE,
-                      near.neighbor = 40)
+                      near.neighbor = 40, 
+                      clone.proportion = 0.5)
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```
