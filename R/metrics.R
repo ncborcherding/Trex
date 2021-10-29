@@ -40,6 +40,8 @@ distanceMatrix <- function(TCR,
         knn.norm = data.frame("from" = j,
                               "to" = neighbor)
         edge.list <- rbind(edge.list, knn.norm)
+        #removing self-references
+        edge.list <- edge.list[edge.list[,1] != edge.list[,2],]
       }
       return[[i]] <- edge.list
       rm(edge.list)

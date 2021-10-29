@@ -261,17 +261,33 @@ neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.n
   } else if (.nearest.method == "nn") {
       neighbor <- order(.row, decreasing = TRUE)[seq_len(.near.neighbor)]
       neigh.check <- which(.row > 0.99)  
-      if (length(neigh.check) > .near.neighbor) {
-          matches <- sample(neigh.check, round(.near.neighbor*.clone.proportion))
+      #This is for ensuring 1 clone is sampled even when clone.prop = 0
+      if(length(neigh.check)*.clone.proportion < 1 & length(neigh.check) >= 1) {
+        sampled.neighbor <- 1
+        matches <- sample(neigh.check, sampled.neighbor)
+      } else {
+        sampled.neighbor <- round(.near.neighbor*.clone.proportion)
+        #Deals with NA values in maTrex
+        if (length(neigh.check) == 0) {
+          matches <- .j
+        #When clone number is < sampled.neighbors
+        } else if(sampled.neighbor > length(neigh.check)) {
+          matches <- neigh.check
+        } else {
+          matches <- sample(neigh.check, sampled.neighbor)
+        }
+      }
           .row[.row > 0.99] <- 0
           #Generate "neighborhood"
           close.matches <- order(.row, decreasing = TRUE)
-          unique.matches <- unique(.TR[close.matches])[seq_len(.near.neighbor*(1-.clone.proportion))]
+          #get accompanying TCR sequences
+          unique.matches <- unique(.TR[close.matches])[seq_len(.near.neighbor-length(matches))]
+          #Sample closest TCR positions and isolate 1 single cell each
           close.matches <- lapply(unique.matches, FUN = function(x) {
               x <- which(.TR == x)
               x <- x[sample(length(x), 1)] })
           neighbor <- c(matches, unlist(close.matches))
-      }
+     # }
     }
   return(neighbor)
 }

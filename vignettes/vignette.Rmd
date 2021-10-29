@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "October 16th, 2021"
+date: "October 29th, 2021"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -144,8 +144,10 @@ qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 
 ## runTrex
 
-Additionally, ```runTrex()``` can be used append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
-                    
+Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
+
+Within the SeuratObj example, there is a single clonotype with 923 copies across the single-cells. In order to not over-bias the nearest neighbor approximation with duplicate values, **clone.proportion** was created. This parameter allows you to select the relative proportion of the neighbors allocated to clones, i.e., **near.neighbor** = 30, **clone.proportion** = 0.4, the indexed nearest neighbors sharing the exact clonotype will be 12. The remaining 18 will be go to 18 randomly sampled cell from the next 18 nearest clonotypes. 
+
 ```{r}
 trex_example <- runTrex(trex_example, 
                     edit.method = "lv",
