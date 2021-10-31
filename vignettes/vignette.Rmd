@@ -155,7 +155,52 @@ trex_example <- runTrex(trex_example,
                     AA.properties = "KF", 
                     nearest.method = "nn",
                     near.neighbor = 30,
-                    reduction.name = "Trex.KF")
+                    reduction.name = "Trex.KF", 
+                    clone.proportion = 0.4)
+```
+
+You can also use runTrex to get specific eigenvectors from a layer, for example, if we are interested in the edit distance between TRB chains, we could use:
+
+```{r}
+trex_example <- runTrex(trex_example, 
+                        chains = "TRB",
+                    edit.method = "lv",
+                    AA.method = "NULL", 
+                    nearest.method = "nn",
+                    near.neighbor = 30,
+                    reduction.name = "Trex.TRB")
+```
+
+## Raw Dimensional Reductions
+
+There are two additional functions to that will return the outputs of a single layer before the multi-network tranformation 1) ```aaReduction()``` and 2) ```distReduction()```. 
+
+### aaReduction()
+
+The ```aaReduction()``` will return either the 30-dimensional bottleneck layer or the mean value based on the indicated amino acid property for the cdr3 amino acid sequence. 
+
+```{r}
+AA.dim  <- aaReduction(trex_example, 
+                        chains = "TRB", 
+                         AA.properties = "AF",
+                        AA.method = "auto",
+                        n.trim = 0,
+                        c.trim = 0)
+```
+
+
+### distReduction()
+
+The ```distReduction()``` will return an object of distance class (the lower triangle of the distance matrix stored by columns in a single vector) with the pairwise distance calculated for each TCR. This is memory intensive and both ```maTrex()``` and ```runTrex()``` get around this by calculating and storing the nearest neighbors based on the matrix.
+
+**warning** if going to form a matrix (calling something like ```as.matrix()```) out of the object returned by ```distReduction()```, keep in mind the memory requirement will be = (Number of TCRs)^2*(2 bytes). So 60,0000 TCRS will equate to 3.6 gigabytes.
+
+```{r}
+dist.dim  <- distReduction(trex_example, 
+                        chains = "TRB", 
+                       edit.method = "lv",
+                        n.trim = 0,
+                        c.trim = 0)
 ```
 
 

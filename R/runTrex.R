@@ -71,14 +71,14 @@ maTrex <- function(sc,
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, clone.proportion)
+        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, clone.proportion, return.dims = FALSE)
     } else {
         network <- NULL
     }
     
     if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, clone.proportion)
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, clone.proportion, return.dims = FALSE)
         network <- c(network, AA.knn)
     }
     

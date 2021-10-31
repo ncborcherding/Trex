@@ -7,7 +7,8 @@ distanceMatrix <- function(TCR,
                           threshold = threshold, 
                           n.trim = n.trim,
                           c.trim = c.trim, 
-                          clone.proportion = clone.proportion) {
+                          clone.proportion = clone.proportion,
+                          return.dims = FALSE) {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
@@ -28,6 +29,9 @@ distanceMatrix <- function(TCR,
           shorter than the trimming parameters"))
       }
       dist <- stringdistmatrix(TR, method = edit.method)
+      if (return.dims == TRUE) {
+        return(dist)
+      }
       edge.list <- NULL
       for (j in seq_len(length(barcodes))) {
         row <- SliceExtract_dist(dist,j)
@@ -105,7 +109,8 @@ aaProperty <- function(TCR,
                        threshold = threshold,
                        AA.method = AA.method,
                        AA.properties = AA.properties, 
-                       clone.proportion = clone.proportion) { 
+                       clone.proportion = clone.proportion,
+                       return.dims = FALSE) { 
   return <- list() ### Need to add reference data
   reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
@@ -154,6 +159,9 @@ aaProperty <- function(TCR,
       #Here is where the autoencoder embeds and returns a 30-vector value for each cdr3
       score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
+    }
+    if (return.dims == TRUE) {
+      return(score)
     }
     dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
                      mute.message = TRUE, test.na = FALSE)
