@@ -161,6 +161,10 @@ aaProperty <- function(TCR,
       score <- data.frame(unique(membership[,"barcode"]), score)
     }
     if (return.dims == TRUE) {
+      barcodes <- score[,1]
+      score <- score[,-1]
+      rownames(score) <- barcodes
+      colnames(score) <- paste0("aa", seq_len(ncol(score)))
       return(score)
     }
     dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
