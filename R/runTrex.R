@@ -226,3 +226,36 @@ quietTCRgenes <- function(sc) {
     return(sc)
 }
 
+#' Cluster clones using the Trex dimensional reductions
+#' 
+#' Use this to return clusters for clonotypes based on 
+#' the \link[bluster]{bluster} clustering paramaters.
+#' 
+#' @examples
+#' /dontrun{
+#' sc <- clonalCommunity(sc, 
+#'                       reduction.name = NULL, 
+#'                       BLUSPARAM=NNGraphParam())
+#' }
+#' @param sc Single Cell Object in Seurat or SingleCell Experiment format
+#' @param reduction.name Name of the dimensional reduction output from runTrex()
+#' @param BLUSPARAM The community detection algorithm in \link[bluster]{bluster}
+#' @param ... other parameters
+#' @importFrom bluster clusterRows
+#' @export
+#' @return Single-Cell Object with trex.clusters in the meta.data
+clonalCommunity <- function(sc, 
+                            reduction.name = NULL, 
+                            BLUSPARAM=NNGraphParam(k=30), 
+                            ...) {
+    if (inherits(x=sc, what ="Seurat")) { 
+        dim.red <- sc[[reduction.name]] 
+        dim.red <- dim.red@cell.embeddings
+    } else {
+        dim.red <- reducedDim(sc, reduction.name)
+    }
+    clusters <- clusterRows(dim.red, BLUSPARAM=BLUSPARAM)
+    clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
+    rownames(clus.df) <- rownames(dim.red)
+    sc <- add.meta.data(sc, clus.df, colnames(clus.df))
+}

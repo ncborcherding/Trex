@@ -1,4 +1,9 @@
 
+CHANGES IN VERSION 0.99.3
+------------------------
+
+*Added clonalCommunity() function to allow for assignment and subsequent regression of feature space of groupings.
+
 CHANGES IN VERSION 0.99.2
 ------------------------
 

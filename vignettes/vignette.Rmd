@@ -270,6 +270,37 @@ plot7 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
 plot5 + plot6 + plot7
 ```
 
+## Remove shared feature space
+
+There is a high degree of overlap in the feature space of expanded clonotypes, not only in the adaptive receptor genes that form the clonotype, but also in potentially functional genes. In order to identify divergent clusters in shared clonotypes using ```clonalCommunity()```, we can use the Trex dimensions to identify clusters in order to then regress out closely associated clonotypes.
+
+```{r}
+library(harmony)
+
+#Cluster clones
+SeuratObj <- clonalCommunity(SeuratObj, 
+                            reduction.name = "Trex.KF", 
+                            BLUSPARAM=NNGraphParam(k=20))
+
+#Run Harmony and new UMAP for RNA
+DefaultAssay(SeuratObj) <- "RNA"
+SeuratObj<- RunHarmony(SeuratObj, "trex.clusters", verbose = FALSE)
+SeuratObj <- RunUMAP(SeuratObj, 
+                     reduction = "harmony", 
+                     dims = 1:20, 
+                     reduction.key = "RFS_UMAP_", 
+                     reduction.name = "regressClone")
+
+
+plot8 <- DimPlot(SeuratObj, reduction = "umap", group.by = "CTaa") + 
+  NoLegend() + 
+  scale_color_viridis(option="B", discrete = TRUE)
+plot9 <- DimPlot(SeuratObj, reduction = "regressClone", group.by = "CTaa") + 
+  NoLegend() + 
+  scale_color_viridis(option="B", discrete = TRUE)
+
+plot8 + plot9
+```
 ***
 # Conclusion
 

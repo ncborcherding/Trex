@@ -1,7 +1,7 @@
 Package: Trex
 Title: Methods for TCR single-cell embedding 
-Version: 0.99.2
-Date: 2021-08-26
+Version: 0.99.3
+Date: 2021-11-11
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre"), email = "ncborch@gmail.com"),
     person(given = "Drew", family = "Voigt", role = c("aut"), email = "drewvoigt@gmail.com"))
@@ -24,7 +24,8 @@ Imports: igraph,
 	rlang,
 	keras,
 	tensorflow,
-	reticulate
+	reticulate, 
+	bluster
 Suggests: 
 	knitr, 
 	rmarkdown, 
@@ -33,5 +34,6 @@ Suggests:
 	Seurat,
 	viridis,
 	patchwork,
-	ggplot2
+	ggplot2,
+	harmony
 VignetteBuilder: knitr
