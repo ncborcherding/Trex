@@ -232,21 +232,21 @@ quietTCRgenes <- function(sc) {
 #' the \link[bluster]{bluster} clustering paramaters.
 #' 
 #' @examples
-#' /dontrun{
+#' \dontrun{
 #' sc <- clonalCommunity(sc, 
 #'                       reduction.name = NULL, 
-#'                       BLUSPARAM=NNGraphParam())
+#'                       cluster.parameter = NNGraphParam())
 #' }
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param reduction.name Name of the dimensional reduction output from runTrex()
-#' @param BLUSPARAM The community detection algorithm in \link[bluster]{bluster}
-#' @param ... other parameters
-#' @importFrom bluster clusterRows
+#' @param cluster.parameter The community detection algorithm in \link[bluster]{bluster}
+#' @param ... For the generic, further arguments to pass to specific methods.
+#' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam
 #' @export
 #' @return Single-Cell Object with trex.clusters in the meta.data
 clonalCommunity <- function(sc, 
                             reduction.name = NULL, 
-                            BLUSPARAM=NNGraphParam(k=30), 
+                            cluster.parameter=NNGraphParam(k=30, ...), 
                             ...) {
     if (inherits(x=sc, what ="Seurat")) { 
         dim.red <- sc[[reduction.name]] 
@@ -254,7 +254,7 @@ clonalCommunity <- function(sc,
     } else {
         dim.red <- reducedDim(sc, reduction.name)
     }
-    clusters <- clusterRows(dim.red, BLUSPARAM=BLUSPARAM)
+    clusters <- clusterRows(dim.red, BLUSPARAM=cluster.parameter)
     clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
     rownames(clus.df) <- rownames(dim.red)
     sc <- add.meta.data(sc, clus.df, colnames(clus.df))

@@ -7,7 +7,7 @@
 clonalCommunity(
   sc,
   reduction.name = NULL,
-  BLUSPARAM = NNGraphParam(k = 30),
+  cluster.parameter = NNGraphParam(k = 30, ...),
   ...
 )
 }
@@ -16,9 +16,9 @@ clonalCommunity(
 
 \item{reduction.name}{Name of the dimensional reduction output from runTrex()}
 
-\item{BLUSPARAM}{The community detection algorithm in \link[bluster]{bluster}}
+\item{cluster.parameter}{The community detection algorithm in \link[bluster]{bluster}}
 
-\item{...}{other parameters}
+\item{...}{For the generic, further arguments to pass to specific methods.}
 }
 \value{
 Single-Cell Object with trex.clusters in the meta.data
@@ -28,9 +28,9 @@ Use this to return clusters for clonotypes based on
 the \link[bluster]{bluster} clustering paramaters.
 }
 \examples{
-/dontrun{
+\dontrun{
 sc <- clonalCommunity(sc, 
                       reduction.name = NULL, 
-                      BLUSPARAM=NNGraphParam())
+                      cluster.parameter = NNGraphParam())
 }
 }

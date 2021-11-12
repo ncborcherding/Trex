@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "October 29th, 2021"
+date: "November 11th, 2021"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -276,31 +276,33 @@ There is a high degree of overlap in the feature space of expanded clonotypes, n
 
 ```{r}
 library(harmony)
+library(bluster)
 
 #Cluster clones
-SeuratObj <- clonalCommunity(SeuratObj, 
+trex_example <- clonalCommunity(trex_example, 
                             reduction.name = "Trex.KF", 
-                            BLUSPARAM=NNGraphParam(k=20))
+                            cluster.parameter=NNGraphParam(k=20))
 
 #Run Harmony and new UMAP for RNA
-DefaultAssay(SeuratObj) <- "RNA"
-SeuratObj<- RunHarmony(SeuratObj, "trex.clusters", verbose = FALSE)
-SeuratObj <- RunUMAP(SeuratObj, 
+DefaultAssay(trex_example) <- "RNA"
+trex_example<- RunHarmony(trex_example, "trex.clusters", verbose = FALSE)
+trex_example <- RunUMAP(trex_example, 
                      reduction = "harmony", 
                      dims = 1:20, 
-                     reduction.key = "RFS_UMAP_", 
-                     reduction.name = "regressClone")
+                     reduction.key = "RC_UMAP_", 
+                     reduction.name = "regressClone_RNA")
 
 
-plot8 <- DimPlot(SeuratObj, reduction = "umap", group.by = "CTaa") + 
+plot8 <- DimPlot(trex_example, reduction = "rna.umap", group.by = "CTaa") + 
   NoLegend() + 
   scale_color_viridis(option="B", discrete = TRUE)
-plot9 <- DimPlot(SeuratObj, reduction = "regressClone", group.by = "CTaa") + 
+plot9 <- DimPlot(trex_example, reduction = "regressClone_RNA", group.by = "CTaa") + 
   NoLegend() + 
   scale_color_viridis(option="B", discrete = TRUE)
 
 plot8 + plot9
 ```
+
 ***
 # Conclusion
 
