@@ -40,7 +40,6 @@
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
 #' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
 #' to the clone being compared.
-#' @param clone.proportion The proportion of nearest neighbors to return from the a single clone
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
@@ -61,7 +60,6 @@ maTrex <- function(sc,
                     nearest.method = "nn",
                     threshold = 0.85,
                     near.neighbor = 40,
-                    clone.proportion = 0.5,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
@@ -71,14 +69,14 @@ maTrex <- function(sc,
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, clone.proportion, return.dims = FALSE)
+        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, return.dims = FALSE)
     } else {
         network <- NULL
     }
     
     if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, clone.proportion, return.dims = FALSE)
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, return.dims = FALSE)
         network <- c(network, AA.knn)
     }
     
@@ -139,7 +137,6 @@ maTrex <- function(sc,
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
 #' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
 #' to the clone being compared.
-#' @param clone.proportion The proportion of nearest neighbors to return from the a single clone
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
@@ -159,7 +156,6 @@ runTrex <- function(sc,
                     nearest.method = "nn",
                     threshold = 0.85,
                     near.neighbor = 40,
-                    clone.proportion = 0.5,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
@@ -179,7 +175,6 @@ runTrex <- function(sc,
                         nearest.method,
                         threshold,
                         near.neighbor,
-                        clone.proportion,
                         add.INKT,
                         add.MAIT,
                         n.dim,

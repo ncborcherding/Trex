@@ -6,8 +6,7 @@ distanceMatrix <- function(TCR,
                           near.neighbor = near.neighbor,
                           threshold = threshold, 
                           n.trim = n.trim,
-                          c.trim = c.trim, 
-                          clone.proportion = clone.proportion,
+                          c.trim = c.trim,
                           return.dims = FALSE) {
     return <- list()
     for (i in seq_along(TCR)) {
@@ -33,17 +32,19 @@ distanceMatrix <- function(TCR,
         return(dist)
       }
       edge.list <- NULL
-      for (j in seq_len(length(barcodes))) {
+      index <- seq_len(length(barcodes))
+      for (j in index) {
         row <- SliceExtract_dist(dist,j)
         neighbor <- neighbor.manager(row, metric = "distance", length, j, nearest.method, 
-                                     near.neighbor, threshold, clone.proportion,
-                                     TR)
+                                     near.neighbor, threshold, TR)
+        if(nearest.method == "threshold") {
+          val <- which(TR == TR[j])
+          index <- index[-val]
+        }
         if(length(neighbor) == 0) {
           next()
         }
-        knn.norm = data.frame("from" = j,
-                              "to" = neighbor)
-        edge.list <- rbind(edge.list, knn.norm)
+        edge.list <- rbind(edge.list, neighbor)
         #removing self-references
         edge.list <- edge.list[edge.list[,1] != edge.list[,2],]
       }
@@ -109,7 +110,6 @@ aaProperty <- function(TCR,
                        threshold = threshold,
                        AA.method = AA.method,
                        AA.properties = AA.properties, 
-                       clone.proportion = clone.proportion,
                        return.dims = FALSE) { 
   return <- list() ### Need to add reference data
   reference <- Trex.Data[[1]] #AA properties
@@ -170,17 +170,19 @@ aaProperty <- function(TCR,
     dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
                      mute.message = TRUE, test.na = FALSE)
     edge.list <- NULL
-    for (j in seq_len(length(cells))) {
+    index <- seq_len(length(cells))
+    for (j in index) {
       row <- SliceExtract_dist(dist,j)
       neighbor <- neighbor.manager(row, metric = "aa.property", length, j, nearest.method, 
-                                   near.neighbor, threshold, clone.proportion,
-                                  TCR[[i]]$cdr3_aa)
+                                   near.neighbor, threshold, TCR[[i]]$cdr3_aa)
+      if(nearest.method = "threshold") {
+        val <- which(TR == TR[j])
+        index <- index[-val]
+      }
       if(length(neighbor) == 0) {
         next()
       }
-      knn.norm = data.frame("from" = j,
-                            "to" = neighbor)
-      edge.list <- rbind(edge.list, knn.norm)
+      edge.list <- rbind(edge.list, neighbor)
     }
     return[[i]] <- edge.list
     rm(edge.list)

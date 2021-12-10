@@ -247,7 +247,7 @@ SliceExtract_dist <- function (dist_obj, k) {
   c(v1, 0, v2)
 }
 
-neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.neighbor, .threshold, .clone.proportion, .TR) {
+neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.neighbor, .threshold, .TR) {
   if (metric == "distance") {
       for (k in seq_len(length(.row))) {
         suppressWarnings(.row[k] <- 1- (.row[k]/(.length[.j] + .length[k])/2))
@@ -258,38 +258,18 @@ neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.n
   }
   if (.nearest.method == "threshold") {
       neighbor <- which(.row >= .threshold)
+      grid <- expand.grid(from = neighbor, to = neighbor)
   } else if (.nearest.method == "nn") {
       neighbor <- order(.row, decreasing = TRUE)[seq_len(.near.neighbor)]
       neigh.check <- which(.row > 0.99)  
-      #This is for ensuring 1 clone is sampled even when clone.prop = 0
-      if(length(neigh.check)*.clone.proportion < 1 & length(neigh.check) >= 1) {
-        sampled.neighbor <- 1
-        matches <- sample(neigh.check, sampled.neighbor)
-      } else {
-        sampled.neighbor <- round(.near.neighbor*.clone.proportion)
-        #Deals with NA values in maTrex
-        if (length(neigh.check) == 0) {
-          matches <- .j
-        #When clone number is < sampled.neighbors
-        } else if(sampled.neighbor > length(neigh.check)) {
-          matches <- neigh.check
-        } else {
-          matches <- sample(neigh.check, sampled.neighbor)
-        }
+      if (length(neigh.check) > near.neighbor) {
+        matches <- sample(neigh.check, near.neighbor)
+        neighbor <- matches
       }
-          .row[.row > 0.99] <- 0
-          #Generate "neighborhood"
-          close.matches <- order(.row, decreasing = TRUE)
-          #get accompanying TCR sequences
-          unique.matches <- unique(.TR[close.matches])[seq_len(.near.neighbor-length(matches))]
-          #Sample closest TCR positions and isolate 1 single cell each
-          close.matches <- lapply(unique.matches, FUN = function(x) {
-              x <- which(.TR == x)
-              x <- x[sample(length(x), 1)] })
-          neighbor <- c(matches, unlist(close.matches))
-     # }
-    }
-  return(neighbor)
+      grid <- data.frame("from" = .j,
+                  "to" = neighbor)
+  }
+  return(grid)
 }
 
 
