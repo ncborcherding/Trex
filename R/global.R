@@ -13,6 +13,7 @@
     utils::globalVariables ("data")
     utils::globalVariables ("Trex.Data")
     utils::globalVariables ("colData<-")
+    utils::globalVariables ("TR")
     
     invisible ()
     

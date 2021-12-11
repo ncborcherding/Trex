@@ -45,7 +45,6 @@ aaReduction <- function(sc,
                          near.neighbor = 40, 
                          AA.method, 
                          AA.properties, 
-                         clone.proportion = 0, 
                          return.dims = TRUE)
     return(AA)
 }
@@ -90,7 +89,6 @@ distReduction <- function(sc,
                           threshold = 0.85, 
                           n.trim, 
                           c.trim, 
-                          clone.proportion = 0,
                           return.dims = TRUE)
         
         

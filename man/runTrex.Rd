@@ -15,7 +15,6 @@ runTrex(
   nearest.method = "nn",
   threshold = 0.85,
   near.neighbor = 40,
-  clone.proportion = 0.5,
   add.INKT = TRUE,
   add.MAIT = TRUE,
   n.dim = 40,
@@ -53,8 +52,6 @@ above which simplify for adjacency matrix}
 in generating an adjacency matrix. If the number of copies of a clone is greater than the
 near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
 to the clone being compared.}
-
-\item{clone.proportion}{The proportion of nearest neighbors to return from the a single clone}
 
 \item{add.INKT}{Add a additional layer for invariant natural killer T cells based on genes}
 

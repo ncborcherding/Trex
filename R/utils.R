@@ -262,8 +262,8 @@ neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.n
   } else if (.nearest.method == "nn") {
       neighbor <- order(.row, decreasing = TRUE)[seq_len(.near.neighbor)]
       neigh.check <- which(.row > 0.99)  
-      if (length(neigh.check) > near.neighbor) {
-        matches <- sample(neigh.check, near.neighbor)
+      if (length(neigh.check) > .near.neighbor) {
+        matches <- sample(neigh.check, .near.neighbor)
         neighbor <- matches
       }
       grid <- data.frame("from" = .j,

@@ -134,10 +134,9 @@ Trex_vectors <- maTrex(trex_example,
                       AA.method = "mean", 
                       AA.properties = "KF", 
                       nearest.method = "nn",
+                      near.neighbor = 20,
                       add.INKT = FALSE,
-                      add.MAIT = FALSE,
-                      near.neighbor = 40, 
-                      clone.proportion = 0.5)
+                      add.MAIT = FALSE)
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```
@@ -146,8 +145,6 @@ qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 
 Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
 
-Within the SeuratObj example, there is a single clonotype with 923 copies across the single-cells. In order to not over-bias the nearest neighbor approximation with duplicate values, **clone.proportion** was created. This parameter allows you to select the relative proportion of the neighbors allocated to clones, i.e., **near.neighbor** = 30, **clone.proportion** = 0.4, the indexed nearest neighbors sharing the exact clonotype will be 12. The remaining 18 will be go to 18 randomly sampled cell from the next 18 nearest clonotypes. 
-
 ```{r}
 trex_example <- runTrex(trex_example, 
                     edit.method = "lv",
@@ -155,8 +152,7 @@ trex_example <- runTrex(trex_example,
                     AA.properties = "KF", 
                     nearest.method = "nn",
                     near.neighbor = 30,
-                    reduction.name = "Trex.KF", 
-                    clone.proportion = 0.4)
+                    reduction.name = "Trex.KF")
 ```
 
 You can also use runTrex to get specific eigenvectors from a layer, for example, if we are interested in the edit distance between TRB chains, we could use:

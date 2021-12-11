@@ -175,7 +175,7 @@ aaProperty <- function(TCR,
       row <- SliceExtract_dist(dist,j)
       neighbor <- neighbor.manager(row, metric = "aa.property", length, j, nearest.method, 
                                    near.neighbor, threshold, TCR[[i]]$cdr3_aa)
-      if(nearest.method = "threshold") {
+      if(nearest.method == "threshold") {
         val <- which(TR == TR[j])
         index <- index[-val]
       }
