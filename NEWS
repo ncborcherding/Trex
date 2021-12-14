@@ -4,15 +4,17 @@ CHANGES IN VERSION 0.99.3
 
 *Added clonalCommunity() function to allow for assignment and subsequent regression of feature space of groupings.
 * Changed neighbor.manager. Reverted the nearest neighbor proximation to the original version which only randomizes clones. Threshold detection changed to use expand.grid() instead of looping through all barcodes. 
+* Added support for aaReduction() and distReduction to the clonalCommunity() function
+* Added multicore parallelization to aaProperty() and distanceMatrix() function to speed up reduction. On an object of 3200 cells, sped the calculation up 8x.
 
 CHANGES IN VERSION 0.99.2
 ------------------------
 
 * Added seed parameter to improve reproducibility 
-* Added clone.proportion parameter to select for relative number of duplicates to allow into nearest neighbor evaluation
+* Added clone.proportion parameter to select for the relative number of duplicates to allow into nearest neighbor evaluation
 * New internal function neighbor.manager - nearest neighbor approximation is now based on clone proportion (for clones), the remaining neighbors are randomized across unique clones in the vicinity of the clonotype/cell in question. 
 * Modified Mean approach for aa.property now references the correct columns in generating output frame and the cosine distance function
-* Changed internal function parameters to prevent recursive issue.
+* Changed internal function parameters to prevent the recursive issue.
 * added aaReduction() and distReduction() functions to get intermediate values for a layer. 
 
 

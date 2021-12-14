@@ -111,7 +111,7 @@ checkSingleObject <- function(sc) {
 
 #This multiplexes the network and gets simplified eigenvectors
 #' @importFrom muxViz BuildLayersTensor BuildSupraAdjacencyMatrixFromExtendedEdgelist GetAggregateNetworkFromSupraAdjacencyMatrix
-#' @importFrom igraph simplify spectrum graph_from_edgelist get.edgelist cluster_louvain
+#' @importFrom igraph simplify spectrum graph_from_edgelist get.edgelist 
 multiplex.network <- function(multi.network, n.dim, barcodes) {
   Nodes <- length(barcodes)
   layers <- length(multi.network)
@@ -245,6 +245,17 @@ SliceExtract_dist <- function (dist_obj, k) {
   v2 <- dist_obj[f(i, j, dist_obj)]
   ## 
   c(v1, 0, v2)
+}
+
+dist.convert <- function(dist_obj, k) {
+  if (length(k) > 1) stop("The function is not 'vectorized'!")
+  n <- attr(dist_obj, "Size")
+  if (k < 1 || k > n) stop("k out of bound!")
+  ##
+  i <- 1:(k - 1)
+  j <- rep.int(k, k - 1)
+  v1 <- dist_obj[f(j, i, dist_obj)]
+  return(v1)
 }
 
 neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.neighbor, .threshold, .TR) {
