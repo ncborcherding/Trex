@@ -14,6 +14,7 @@
     utils::globalVariables ("Trex.Data")
     utils::globalVariables ("colData<-")
     utils::globalVariables ("TR")
+    utils::globalVariables ("graph.edgelist")
     
     invisible ()
     

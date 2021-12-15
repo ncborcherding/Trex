@@ -274,7 +274,7 @@ clonalCommunity <- function(sc,
         }
     }
     set.seed(42)
-    clusters <- SupressWarnings(clusterRows(dim.red, BLUSPARAM=cluster.parameter))
+    clusters <- suppressWarnings(clusterRows(dim.red, BLUSPARAM=cluster.parameter))
     clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
     if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {
         rownames(clus.df) <- rownames(dim.red)
