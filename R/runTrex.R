@@ -238,7 +238,7 @@ quietTCRgenes <- function(sc) {
 #' @param cluster.parameter The community detection algorithm in \link[bluster]{bluster}
 #' @param ... For the generic, further arguments to pass to specific methods.
 #' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam
-#' @importFrom igraph simplify spectrum graph_from_edgelist `E<-`
+#' @importFrom igraph simplify spectrum graph_from_edgelist E `E<-`
 #' @export
 #' @return Single-Cell Object with trex.clusters in the meta.data
 clonalCommunity <- function(sc, 
