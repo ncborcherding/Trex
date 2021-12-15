@@ -12,7 +12,8 @@ clonalCommunity(
 )
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
+\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format. In addition, the outputs of distReduction()
+and aaReduction() can be used.}
 
 \item{reduction.name}{Name of the dimensional reduction output from runTrex()}
 
@@ -25,7 +26,7 @@ Single-Cell Object with trex.clusters in the meta.data
 }
 \description{
 Use this to return clusters for clonotypes based on 
-the \link[bluster]{bluster} clustering paramaters.
+the \link[bluster]{bluster} clustering parameters.
 }
 \examples{
 \dontrun{

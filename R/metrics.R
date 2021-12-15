@@ -170,7 +170,7 @@ aaProperty <- function(TCR,
     index <- seq_len(length(cells))
     edge.list <- bplapply(index,  FUN = function(x) {
       row <- SliceExtract_dist(dist,x)
-      neighbor <- neighbor.manager(row, metric = "distance", length, x, nearest.method, 
+      neighbor <- neighbor.manager(row, metric = "aa.property", length, x, nearest.method, 
                                    near.neighbor, threshold, TR)
     }, BPPARAM = MulticoreParam())
     edge.list <- bind_rows(edge.list)
