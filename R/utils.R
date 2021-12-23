@@ -23,8 +23,6 @@ gene.to.knn <- function(tmpscore) {
 #' @importFrom rlang %||%
 #' @importFrom SingleCellExperiment colData
 add.meta.data <- function(sc, meta, header) {
-  barcodes <- rownames(meta)
-  
 if (inherits(x=sc, what ="Seurat")) { 
   col.name <- names(meta) %||% colnames(meta)
   sc[[col.name]] <- meta

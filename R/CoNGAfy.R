@@ -1,7 +1,7 @@
 #' Reduce a single-cell object to representative cells
 #' 
 #' Generate a single-cell object that has a representation of
-#' gene expression by clonotype. This approach was first introduced
+#' RNA expression by clonotype. This approach was first introduced
 #' in \href{https://pubmed.ncbi.nlm.nih.gov/34426704/}{CoNGA} and was 
 #' adapted to R. Please read and cite the authors work. 
 #' 
@@ -10,9 +10,9 @@
 #'                         method = "mean",
 #'                         features = NULL)
 #'                         
-#' @param sc Single Cell Object in Seurat or SingleCell Experiment format
+#' @param sc Single Cell Object in Seurat or Single Cell Experiment format
 #' @param method "mean" or "dist" Generate a mean value across features by clonotype or 
-#' use the PCA rduction to identify the cell with the minimal euclidena distance from the
+#' use the PCA reduction to identify the cell with the minimal euclidean distance from the
 #' clonotype group.
 #' @param features Selected genes for the reduction DEFAULT: null will return all genes
 #' 
@@ -20,7 +20,7 @@
 #' @importFrom SeuratObject CreateSeuratObject
 #' @importFrom SingleCellExperiment SingleCellExperiment
 #' 
-#' @return TSingle-cell Object with 1 cell representing 1 clone
+#' @return Single-cell Object with 1 cell representing 1 clone
 #' 
 #' 
 CoNGAfy <- function(sc, 
@@ -86,10 +86,9 @@ CoNGA.dist <- function(sc, features) {
     colnames(data.return) <- data$CTaa[match(barcodes, rownames(data))]
     return(data.return)
 }
-
-#' @importFrom rlang %*% %||%
+# Adapted from the AverageExperssion() function in Seurat
+#' @importFrom rlang %||%
 #' @importFrom Matrix sparse.model.matrix
-#' Adapted from the AverageExperssion() function in Seurat
 CoNGA.mean <- function(sc, features) {
     if (inherits(x=sc, what ="Seurat")) {
         data.use <- sc[["RNA"]]@data

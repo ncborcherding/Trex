@@ -1,8 +1,14 @@
 
+CHANGES IN VERSION 0.99.4
+------------------------
+
+* Added CoNGAfy() function to reduce RNA to a single cell per clonotype based on either mean expression or euclidean distance of the PCA.
+
+
 CHANGES IN VERSION 0.99.3
 ------------------------
 
-*Added clonalCommunity() function to allow for assignment and subsequent regression of feature space of groupings.
+* Added clonalCommunity() function to allow for assignment and subsequent regression of feature space of groupings.
 * Changed neighbor.manager. Reverted the nearest neighbor proximation to the original version which only randomizes clones. Threshold detection changed to use expand.grid() instead of looping through all barcodes. 
 * Added support for aaReduction() and distReduction to the clonalCommunity() function
 * Added multicore parallelization to aaProperty() and distanceMatrix() function to speed up reduction. On an object of 3200 cells, sped the calculation up 8x.

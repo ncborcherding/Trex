@@ -298,6 +298,25 @@ plot9 <- DimPlot(trex_example, reduction = "regressClone_RNA", group.by = "CTaa"
 plot8 + plot9
 ```
 
+# CoNGA Reduction
+
+Recent [work](https://pubmed.ncbi.nlm.nih.gov/34426704/) has proposed using representative cells for the characterization of clonotype and gene expression relationships. In order to generate these representative cells, either a mean expression across a clone or using the PCA dimensional space to identify a single cell that has the minimum euclidean distance across a clone. 
+
+In order to generate a single-cell object based on the CoNGA approach, Trex offers the function ```CoNGAfy()```. For **method**, select either "mean" or "dist" as described above. 
+
+```{r}
+CoNGA.seurat <- CoNGAfy(trex_example, 
+                         method = "mean")
+
+CoNGA.seurat <- runTrex(CoNGA.seurat, 
+                    edit.method = "lv",
+                    AA.method = "auto", 
+                    AA.properties = "KF", 
+                    nearest.method = "nn",
+                    near.neighbor = 30,
+                    reduction.name = "Trex.KF")
+```
+
 ***
 # Conclusion
 
