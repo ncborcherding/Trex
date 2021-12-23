@@ -163,7 +163,7 @@ runTrex <- function(sc,
                     reduction.name = "Trex",
                     seed = 42) {
 
-    cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
+    cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
     reduction <- maTrex(sc,
                         chains, 
