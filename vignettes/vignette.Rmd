@@ -306,7 +306,7 @@ In order to generate a single-cell object based on the CoNGA approach, Trex offe
 
 ```{r}
 CoNGA.seurat <- CoNGAfy(trex_example, 
-                         method = "mean")
+                         method = "dist")
 
 CoNGA.seurat <- runTrex(CoNGA.seurat, 
                     edit.method = "lv",

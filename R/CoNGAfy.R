@@ -7,7 +7,7 @@
 #' 
 #' @examples
 #' trex_values <- CoNGAfy(trex_example, 
-#'                         method = "mean",
+#'                         method = "dist",
 #'                         features = NULL)
 #'                         
 #' @param sc Single Cell Object in Seurat or Single Cell Experiment format
@@ -26,9 +26,12 @@
 CoNGAfy <- function(sc, 
                     method = "mean", 
                     features = NULL) {
+    cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
+    sc <- subset(sc, cells = cells.chains)
+    
     if(method == "mean") {
         conga <- CoNGA.mean(sc, features)
-    } else if(methods == "dist") {
+    } else if(method == "dist") {
         conga <- CoNGA.dist(sc, features)
     }
     if (inherits(x=sc, what ="Seurat")) {
@@ -52,6 +55,7 @@ CoNGAfy <- function(sc,
 #For all single clones, will use true RNA scaled values
 #For multiplets will use the cell with the minimal distance in PCA
 #For doublets, will automatically select the first cell. 
+#' @importFrom SummarizedExperiment assay
 CoNGA.dist <- function(sc, features) {
     if (inherits(x=sc, what ="Seurat")) {
         data.use <- sc[["pca"]]@cell.embeddings
@@ -89,7 +93,10 @@ CoNGA.dist <- function(sc, features) {
 # Adapted from the AverageExperssion() function in Seurat
 #' @importFrom rlang %||%
 #' @importFrom Matrix sparse.model.matrix
+#' @importFrom SummarizedExperiment assay
+#' @importFrom stats as.formula
 CoNGA.mean <- function(sc, features) {
+    
     if (inherits(x=sc, what ="Seurat")) {
         data.use <- sc[["RNA"]]@data
     } else if (inherits(x=sc, what ="SingleCellExperiment")){

@@ -26,7 +26,7 @@ adapted to R. Please read and cite the authors work.
 }
 \examples{
 trex_values <- CoNGAfy(trex_example, 
-                        method = "mean",
+                        method = "dist",
                         features = NULL)
                         
 }
