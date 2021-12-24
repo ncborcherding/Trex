@@ -230,20 +230,21 @@ quietTCRgenes <- function(sc) {
 #' \dontrun{
 #' sc <- clonalCommunity(sc, 
 #'                       reduction.name = NULL, 
-#'                       cluster.parameter = NNGraphParam())
+#'                       cluster.parameter = KNNGraphParam())
 #' }
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format. In addition, the outputs of distReduction()
 #' and aaReduction() can be used.
 #' @param reduction.name Name of the dimensional reduction output from runTrex()
 #' @param cluster.parameter The community detection algorithm in \link[bluster]{bluster}
 #' @param ... For the generic, further arguments to pass to specific methods.
-#' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam
+#' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam DbscanParam
 #' @importFrom igraph simplify spectrum graph_from_edgelist E `E<-`
+#' @importFrom SingleCellExperiment reducedDim
 #' @export
 #' @return Single-Cell Object with trex.clusters in the meta.data
 clonalCommunity <- function(sc, 
                             reduction.name = NULL, 
-                            cluster.parameter=NNGraphParam(k=30, ...), 
+                            cluster.parameter=KNNGraphParam(k=30, ...), 
                             ...) {
     if (inherits(x=sc, what ="Seurat")) { 
         dim.red <- sc[[reduction.name]] 

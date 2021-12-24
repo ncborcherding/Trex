@@ -7,7 +7,7 @@
 clonalCommunity(
   sc,
   reduction.name = NULL,
-  cluster.parameter = NNGraphParam(k = 30, ...),
+  cluster.parameter = KNNGraphParam(k = 30, ...),
   ...
 )
 }
@@ -32,6 +32,6 @@ the \link[bluster]{bluster} clustering parameters.
 \dontrun{
 sc <- clonalCommunity(sc, 
                       reduction.name = NULL, 
-                      cluster.parameter = NNGraphParam())
+                      cluster.parameter = KNNGraphParam())
 }
 }
