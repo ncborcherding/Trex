@@ -3,6 +3,9 @@ CHANGES IN VERSION 0.99.4
 ------------------------
 
 * Added CoNGAfy() function to reduce RNA to a single cell per clonotype based on either mean expression or euclidean distance of the PCA.
+* Changed normalization for length-based distance calculation, was effectively halving the true distance, over calling neighbors when using thresholding. 
+* AA property normalization now uses Pearson correlation instead of cosine. Simplifies the normalization. 
+* Removed the multicore parallelization, after implementing the above (and removing the over calling issue) the code is substantially faster when using thresholding!
 
 
 CHANGES IN VERSION 0.99.3

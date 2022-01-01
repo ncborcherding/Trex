@@ -1,7 +1,6 @@
 #Calculating Edit Distance Matrix
 #' @importFrom stringdist stringdistmatrix
 #' @importFrom dplyr bind_rows
-#' @importFrom BiocParallel bplapply MulticoreParam
 distanceMatrix <- function(TCR, 
                           edit.method = "lv",
                           nearest.method = nearest.method,
@@ -35,11 +34,14 @@ distanceMatrix <- function(TCR,
       }
       edge.list <- NULL
       index <- seq_len(length(barcodes))
-      edge.list <- bplapply(index,  FUN = function(x) {
+      edge.list <- lapply(index,  FUN = function(x) {
         row <- SliceExtract_dist(dist,x)
         neighbor <- neighbor.manager(row, metric = "distance", length, x, nearest.method, 
                                      near.neighbor, threshold, TR)
-      }, BPPARAM = MulticoreParam())
+       # d1 <- as.data.frame(t(apply(neighbor, 1, sort)))
+       # neighbor <- neighbor[!duplicated(d1),]
+      })
+      rm(dist)
       edge.list <- bind_rows(edge.list)
       #removing self-references
       edge.list <- edge.list[edge.list[,1] != edge.list[,2],]
@@ -98,7 +100,6 @@ scoreINKT <- function(TCR, .species) {
 #' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
 #' @importFrom dplyr bind_rows
-#' @importFrom BiocParallel bplapply MulticoreParam
 aaProperty <- function(TCR, 
                        c.trim = c.trim,
                        n.trim = n.trim, 
@@ -164,15 +165,18 @@ aaProperty <- function(TCR,
       colnames(score) <- paste0("aa", seq_len(ncol(score)))
       return(score)
     }
-    dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
-                     mute.message = TRUE, test.na = FALSE)
+    dist <- dist(score)
+   # dist <- distance(score[,seq_len(ncol(score))[-1]], method = "pearson", as.dist.obj = TRUE, 
+   #                  mute.message = TRUE, test.na = FALSE)
+    rm(score)
+    rm(array.reshape)
     edge.list <- NULL
     index <- seq_len(length(cells))
-    edge.list <- bplapply(index,  FUN = function(x) {
-      row <- SliceExtract_dist(dist,x)
-      neighbor <- neighbor.manager(row, metric = "aa.property", length, x, nearest.method, 
-                                   near.neighbor, threshold, TR)
-    }, BPPARAM = MulticoreParam())
+    edge.list <- lapply(index,  FUN = function(x) {
+        row <- SliceExtract_dist(dist,x)
+        neighbor <- neighbor.manager(row, metric = "aa.property", length, x, nearest.method, 
+                                    near.neighbor, threshold)
+      })
     edge.list <- bind_rows(edge.list)
     return[[i]] <- edge.list
     rm(edge.list)

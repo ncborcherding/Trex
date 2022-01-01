@@ -259,11 +259,11 @@ dist.convert <- function(dist_obj, k) {
 neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.neighbor, .threshold, .TR) {
   if (metric == "distance") {
       for (k in seq_len(length(.row))) {
-        suppressWarnings(.row[k] <- 1- (.row[k]/(.length[.j] + .length[k])/2))
+        suppressWarnings(.row[k] <- 1- (.row[k]/((.length[.j] + .length[k])/2)))
       }
   } else if (metric == "aa.property") {
       max <- max(.row, na.rm = TRUE)
-      .row <- (max-abs(.row))/max
+      .row <- (max-.row)/max
   }
   if (.nearest.method == "threshold") {
       neighbor <- which(.row >= .threshold)

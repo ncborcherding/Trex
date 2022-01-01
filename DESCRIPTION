@@ -26,7 +26,6 @@ Imports: igraph,
 	tensorflow,
 	reticulate, 
 	bluster,
-	BiocParallel, 
 	Matrix, 
 	SummarizedExperiment
 Suggests: 
