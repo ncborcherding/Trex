@@ -266,8 +266,12 @@ neighbor.manager <- function(.row, metric, .length, .j, .nearest.method, .near.n
       .row <- (max-.row)/max
   }
   if (.nearest.method == "threshold") {
-      neighbor <- which(.row >= .threshold)
-      grid <- expand.grid(from = neighbor, to = neighbor)
+      neighbor <- which(.row >= .threshold) 
+      if (length(neighbor) <= 1) {
+        grid <- data.frame(from = .j, to = .j)
+      } else {
+        grid <- data.frame(from = .j, to = neighbor)
+      }
   } else if (.nearest.method == "nn") {
       neighbor <- order(.row, decreasing = TRUE)[seq_len(.near.neighbor)]
       neigh.check <- which(.row > 0.99)  

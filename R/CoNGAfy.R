@@ -24,7 +24,7 @@
 #' 
 #' 
 CoNGAfy <- function(sc, 
-                    method = "mean", 
+                    method = "dist", 
                     features = NULL) {
     cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
