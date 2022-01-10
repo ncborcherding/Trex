@@ -1,4 +1,9 @@
 
+CHANGES IN VERSION 0.99.5
+------------------------
+
+* CoNGAfy now can reduce the size of multiple dimensions using mean or distance. 
+
 CHANGES IN VERSION 0.99.4
 ------------------------
 
