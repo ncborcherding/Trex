@@ -1,13 +1,14 @@
 #Calculating Edit Distance Matrix
 #' @importFrom stringdist stringdistmatrix
+#' @importFrom dplyr bind_rows
 distanceMatrix <- function(TCR, 
-                           edit.method = "lv",
-                           nearest.method = nearest.method,
-                           near.neighbor = near.neighbor,
-                           threshold = threshold, 
-                           n.trim = n.trim,
-                           c.trim = c.trim)
- {
+                          edit.method = "lv",
+                          nearest.method = nearest.method,
+                          near.neighbor = near.neighbor,
+                          threshold = threshold, 
+                          n.trim = n.trim,
+                          c.trim = c.trim,
+                          return.dims = FALSE) {
     return <- list()
     for (i in seq_along(TCR)) {
       if (c.trim != 0 || n.trim != 0 ){
@@ -16,8 +17,8 @@ distanceMatrix <- function(TCR,
         TR <- TCR[[i]]$cdr3_aa
       }
       barcodes <- TCR[[i]]$barcode
-      length <- nchar(na.omit(as.character(TR)))
-      length.check <- min(length)
+      length <- nchar(as.character(TR))
+      length.check <- min(na.omit(length))
       if (length.check < (n.trim + c.trim + 3) && c.trim != 0 && n.trim != 0) { 
         warning(strwrap(prefix = " ", initial = "", "Current trim strategy leaves less 
         than 3 AA residues calculations, please consider
@@ -27,37 +28,34 @@ distanceMatrix <- function(TCR,
           calculations, at least one cdr3 AA sequence is
           shorter than the trimming parameters"))
       }
-    TR <- as.matrix(stringdistmatrix(TR, method = edit.method))
-    #This converts the distance matrices calculated above to a normalized 
-    #value based on the length of the cdr3 sequence.
-    medianlength <- median(na.omit(length))
-    out_matrix <- matrix(ncol = ncol(TR), nrow=nrow(TR))
-    for (k in seq_len(ncol(TR))) {
-        for (l in seq_len(nrow(TR))) {
-          if (is.na(length[l]) | is.na(length[k])) {
-            out_matrix[k,l] <- NA
-            out_matrix[l,k] <- NA
-          } else {
-            if (length[k] - length[l] >= round(medianlength/1.5)) {
-              out_matrix[k,l] <- 1 - (TR[k,l]/(max(length[k], length[l])))
-              out_matrix[l,k] <- 1 - (TR[l,k]/(max(length[k], length[l])))
-            } else {
-              out_matrix[k,l] <- 1 - (TR[k,l]/((length[k]+ length[l])/2))
-              out_matrix[l,k] <- 1 - (TR[l,k]/((length[k]+ length[l])/2))
-            }
-        }
-        }
+      dist <- stringdistmatrix(TR, method = edit.method)
+      if (return.dims == TRUE) {
+        return(dist)
+      }
+      edge.list <- NULL
+      index <- seq_len(length(barcodes))
+      edge.list <- lapply(index,  FUN = function(x) {
+        row <- SliceExtract_dist(dist,x)
+        neighbor <- neighbor.manager(row, metric = "distance", length, x, nearest.method, 
+                                     near.neighbor, threshold, TR)
+       # d1 <- as.data.frame(t(apply(neighbor, 1, sort)))
+       # neighbor <- neighbor[!duplicated(d1),]
+      })
+      rm(dist)
+      edge.list <- bind_rows(edge.list)
+      #removing self-references
+      edge.list <- edge.list[edge.list[,1] != edge.list[,2],]
+      return[[i]] <- edge.list
+      rm(edge.list)
     }
-    return[[i]] <- out_matrix
-    }
-  names(return) <- paste0(names(TCR), ".edit")
+ #names(return) <- paste0(names(TCR), ".edit")
   return(return)
 }
 
 
 #Chains for MAIT cells
 #' @importFrom dplyr bind_rows
-scoreMAIT <- function(TCR, species = NULL) {
+scoreMAIT <- function(TCR, .species) {
   membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV1", j = "TRAJ33", length = 12), 
                human = list(v = "TRAV1-2", j = c("TRAJ33", "TRAJ20", "TRAJ12"), length = 12))
@@ -67,7 +65,7 @@ scoreMAIT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v && comp[[species]]$j %in% j && comp[[species]]$length %in% length) {
+    if(comp[[.species]]$v  %in% v & any(comp[[.species]]$j %in% j) & comp[[.species]]$length %in% length) {
       score$score[i] <- 1
     } else {
       next()
@@ -78,7 +76,7 @@ scoreMAIT <- function(TCR, species = NULL) {
 
 #Chains for INKT cells
 #' @importFrom dplyr bind_rows
-scoreINKT <- function(TCR, species = NULL) {
+scoreINKT <- function(TCR, .species) {
   membership <- bind_rows(TCR)
   comp <- list(mouse = list(v = "TRAV11", j = "TRAJ18", length = 15), 
                human = list(v = "TRAV10", j = c("TRAJ18", "TRBV25"), length = c(14,15,16)))
@@ -88,7 +86,7 @@ scoreINKT <- function(TCR, species = NULL) {
     v <- membership[membership[,1] == cells[i],]$v
     j <- membership[membership[,1] == cells[i],]$j
     length <- nchar(membership[membership[,1] == cells[i],]$Var1)
-    if(comp[[species]]$v  %in% v && comp[[species]]$j %in% j && comp[[species]]$length %in% length) {
+    if(comp[[.species]]$v  %in% v & any(comp[[.species]]$j %in% j) & any(comp[[.species]]$length %in% length)) {
       score$score[i] <- 1
     } else {
       next()
@@ -98,9 +96,10 @@ scoreINKT <- function(TCR, species = NULL) {
 }
 
 #Calculating Distance of AA in CDR3 using mean
-#' @importFrom amap Dist
+#' @importFrom philentropy distance
 #' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
+#' @importFrom dplyr bind_rows
 aaProperty <- function(TCR, 
                        c.trim = c.trim,
                        n.trim = n.trim, 
@@ -108,11 +107,12 @@ aaProperty <- function(TCR,
                        near.neighbor = near.neighbor,
                        threshold = threshold,
                        AA.method = AA.method,
-                       AA.properties = AA.properties) { 
-  aa.score <- list()
-  data("Trex.Data") ### Need to add reference data
-  reference <- Trex.Data[[1]]
+                       AA.properties = AA.properties, 
+                       return.dims = FALSE) { 
+  return <- list() ### Need to add reference data
+  reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
+  length <- NULL
   if (AA.properties == " both") {
     column.ref <- unique(sort(c(AF.col, KF.col)))
   } else {
@@ -129,21 +129,21 @@ aaProperty <- function(TCR,
      
     } else {
       array.reshape <- NULL
-      aa.model <- aa.model.loader(chain[[i]], AA.properties)
+      aa.model <- quiet(aa.model.loader(chain[[i]], AA.properties))
       range <- aa.range.loader(chain[[i]], AA.properties, Trex.Data) 
       local.min <- range[[1]]
       local.max <- range[[2]]
     }
     cells <- unique(membership[,"barcode"])
-    for (j in seq_len(length(cells))) {
-      tmp.CDR <- membership[membership$barcode == cells[j],]$cdr3_aa
+    for (n in seq_len(length(cells))) {
+      tmp.CDR <- membership[membership$barcode == cells[n],]$cdr3_aa
       if (AA.method != "auto") {
         if (c.trim != 0 | n.trim != 0){
           tmp.CDR <- trim(tmp.CDR, c.trim = c.trim, n.trim = n.trim)
         }
         refer <- unlist(strsplit(tmp.CDR, ""))
         int <- reference[match(refer, reference$aa),]
-        score[j,column.ref] <- colSums(int[,column.ref])/length(refer)
+        score[n,seq_len(length(col.ref))+1] <- colSums(int[,column.ref])/length(refer)
       } else {
         refer <- unlist(strsplit(tmp.CDR, ""))
         refer <- c(refer, rep(NA, 50 - length(refer)))
@@ -158,10 +158,32 @@ aaProperty <- function(TCR,
       score <- auto.embedder(array.reshape, aa.model, local.max, local.min)
       score <- data.frame(unique(membership[,"barcode"]), score)
     }
-    dist <- as.matrix(Dist(score[,seq_len(ncol(score))[-1]], method = "pearson"))
-    max <- max(dist, na.rm = TRUE)
-    dist <- (max-dist)/max
-    aa.score[[i]] <- dist
+    if (return.dims == TRUE) {
+      barcodes <- score[,1]
+      score <- score[,-1]
+      rownames(score) <- barcodes
+      colnames(score) <- paste0("aa", seq_len(ncol(score)))
+      return(score)
+    }
+    dist <- dist(score)
+   # dist <- distance(score[,seq_len(ncol(score))[-1]], method = "pearson", as.dist.obj = TRUE, 
+   #                  mute.message = TRUE, test.na = FALSE)
+    rm(score)
+    rm(array.reshape)
+    edge.list <- NULL
+    index <- seq_len(length(cells))
+    edge.list <- lapply(index,  FUN = function(x) {
+        row <- SliceExtract_dist(dist,x)
+        neighbor <- neighbor.manager(row, metric = "aa.property", length, x, nearest.method, 
+                                    near.neighbor, threshold)
+      })
+    edge.list <- bind_rows(edge.list)
+    return[[i]] <- edge.list
+    rm(edge.list)
+    rm(dist)
   }
-  return(aa.score)
+  names(return) <- paste0(names(TCR), ".AA")
+  return(return)
 }
+
+

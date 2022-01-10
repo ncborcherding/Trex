@@ -1,12 +1,12 @@
 # Trex
-Using TCR and expression for graph embedding
+Using TCR sequences for graph embedding
 
 <img align="right" src="https://github.com/ncborcherding/Trex/blob/main/www/trex_hex.png" width="305" height="352">
 
 ## Introduction
 Single-cell sequencing is now a integral tool in the field of immunology and oncology that allows researchers to couple RNA quantification and other modalities, 
 like immune cell receptor profiling at the level of an individual cell. Towards this end, we developed the [scRepertoire](https://github.com/ncborcherding/scRepertoire) 
-R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality in embedding of single-cells and in trajectory analyses. To this end, here we develop the basis of combining clonal and expression analyses to facilitate dimensional reduction and trajectory inference. 
+R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are are still lacking, spefically in using clonality in embedding of single-cells. To this end, here we develop the basis of customizable TCR seuqence-based embeding using multiplex networks.
 
 ### Methods
 
@@ -54,9 +54,9 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 
 Check out this [vignette](https://ncborcherding.github.io/vignettes/Trex.html) for a quick start tutorial. 
 
-## Eigen Vector Matrix
+## Eigenvector Matrix
 
-The Trex algorithm allows users to select TCR-based metrics to return eigen vector to be used in dimensional reduction. If single-cell objects are not filtered for T cells with TCR,  `maTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
+The Trex algorithm allows users to select TCR-based metrics to return eigenvectors to be used in dimensional reduction. If single-cell objects are not filtered for T cells with TCR,  `maTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containg cells based on the Trex algorithm. 
 
 ```r
 library(Trex)

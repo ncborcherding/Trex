@@ -18,7 +18,8 @@ maTrex(
   add.INKT = TRUE,
   add.MAIT = TRUE,
   n.dim = 40,
-  species = "human"
+  species = "human",
+  seed = 42
 )
 }
 \arguments{
@@ -50,7 +51,8 @@ above which simplify for adjacency matrix}
 
 \item{near.neighbor}{If nearest.method = "nn" - the number of nearest neighbors to use 
 in generating an adjacency matrix. If the number of copies of a clone is greater than the
-near.neighbor value used, the near.neighbor will randomly return neighbors/clones.}
+near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+to the clone being compared.}
 
 \item{add.INKT}{Add a additional layer for invariant natural killer T cells based on genes}
 
@@ -59,18 +61,30 @@ near.neighbor value used, the near.neighbor will randomly return neighbors/clone
 \item{n.dim}{The number of Trex dimensions to return, similar to PCA dimensions}
 
 \item{species}{Indicate "human" or "mouse" for gene-based metrics}
+
+\item{seed}{seed for the random number generator}
 }
 \value{
-Trex eigen vectors caculated from multiplex network
+Trex eigenvectors calculated from multiplex network
 }
 \description{
-Use this to run the Trex algorithm to return latent vectors
+Use this to run the Trex algorithm to return latent vectors in 
+the form of a matrix or if you prefer, a maTrex.
 }
 \examples{
 trex_values <- maTrex(trex_example, 
-                        AA.properties = "AF", 
+                        chains = "both", 
+                        edit.method = "lv",
+                        AA.properties = "AF",
+                        AA.method = "auto",
+                        n.trim = 0,
+                        c.trim = 0,
                         nearest.method = "nn",
+                        threshold = 0.85,
                         near.neighbor = 40,
-                        reduction.name = "Trex.AF")
+                        add.INKT = FALSE,
+                        add.MAIT = FALSE, 
+                        n.dim = 40,
+                        species = "human")
                         
 }

@@ -1,13 +1,23 @@
 #' Main Trex interface
 #' 
-#' Use this to run the Trex algorithm to return latent vectors
+#' Use this to run the Trex algorithm to return latent vectors in 
+#' the form of a matrix or if you prefer, a maTrex.
 #' 
 #' @examples
 #' trex_values <- maTrex(trex_example, 
-#'                         AA.properties = "AF", 
+#'                         chains = "both", 
+#'                         edit.method = "lv",
+#'                         AA.properties = "AF",
+#'                         AA.method = "auto",
+#'                         n.trim = 0,
+#'                         c.trim = 0,
 #'                         nearest.method = "nn",
+#'                         threshold = 0.85,
 #'                         near.neighbor = 40,
-#'                         reduction.name = "Trex.AF")
+#'                         add.INKT = FALSE,
+#'                         add.MAIT = FALSE, 
+#'                         n.dim = 40,
+#'                         species = "human")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA, TRB, both
@@ -28,16 +38,18 @@
 #' above which simplify for adjacency matrix
 #' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly return neighbors/clones. 
+#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+#' to the clone being compared.
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
+#' @param seed seed for the random number generator
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
-#' @return Trex eigen vectors caculated from multiplex network
+#' @return Trex eigenvectors calculated from multiplex network
 maTrex <- function(sc, 
                     chains = "both", 
                     edit.method = "lv",
@@ -51,47 +63,44 @@ maTrex <- function(sc,
                     add.INKT = TRUE,
                     add.MAIT = TRUE, 
                     n.dim = 40,
-                    species = "human") {
+                    species = "human", 
+                    seed = 42) {
+    set.seed(seed)
     TCR <- getTCR(sc, chains)
     print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, threshold, near.neighbor, c.trim, n.trim)
+        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, return.dims = FALSE)
     } else {
         network <- NULL
     }
     
-    if (unique(c("AF", "KF", "both", "all") %in% AA.properties)[1]) {
+    if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, threshold, near.neighbor, AA.method, AA.properties)
-        network <- add.to.network(network, AA.knn, paste0(names(TCR), ".AA")) 
+        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, return.dims = FALSE)
+        network <- c(network, AA.knn)
     }
-    
-    multi.network <- list()
-    for (i in seq_along(network)) {
-        multi.network[[i]] <- get.knn(TCR[[1]]$barcode, out_matrix = network[[i]], 
-                                       nearest.method, near.neighbor, threshold)
-    }
-    names(multi.network) <- names(network)
     
     if (add.INKT) {
         print("Calculating the INKT gene usage...")
-        tmpscore <- scoreINKT(TCR, species = species)
+        tmpscore <- scoreINKT(TCR, species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
-            multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            network <- c(network, tmp.knn)
+            names(network)[length(network)] <- "INKT"
         }
     }
     if (add.MAIT) {
         print("Calculating the MAIT gene usage...")
-        tmpscore <- scoreMAIT(TCR, species = species)
+        tmpscore <- scoreMAIT(TCR, species)
         if (length(which(tmpscore$score > 0)) != 0) {
             tmp.knn <- gene.to.knn(tmpscore)
-            multi.network <- add.to.network(multi.network, tmp.knn, "INKT") 
+            network <- c(network, tmp.knn)
+            names(network)[length(network)] <- "MAIT"
         }
     }
     print("Calculating Latent Vectors from multiplex network...")
     barcodes <- rownames(grabMeta(sc))
-    reduction <- multiplex.network(multi.network, n.dim, barcodes)
+    reduction <- multiplex.network(network, n.dim, barcodes)
     return(reduction)
 }
 
@@ -104,6 +113,7 @@ maTrex <- function(sc,
 #'                         AA.properties = "AF", 
 #'                         nearest.method = "nn",
 #'                         near.neighbor = 40,
+#'                         threshold = 0.85,
 #'                         reduction.name = "Trex.AF")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
@@ -125,60 +135,62 @@ maTrex <- function(sc,
 #' above which simplify for adjacency matrix
 #' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
 #' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly return neighbors/clones. 
+#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+#' to the clone being compared.
 #' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
 #' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
 #' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' @param species Indicate "human" or "mouse" for gene-based metrics
-#' 
+#' @param seed seed for the random number generator
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
 #' 
 runTrex <- function(sc, 
-                   chains = "both", 
-                   edit.method = "lv",
-                   AA.properties = "AF",
-                   AA.method = "auto",
-                   reduction.name = "Trex",
-                   n.trim = 0,
-                   c.trim = 0,
-                   nearest.method = "threshold",
-                   threshold = 0.85,
-                   near.neighbor = NULL,
-                   add.INKT = TRUE,
-                   add.MAIT = TRUE, 
-                   n.dim = 30,
-                   species = "human") {
-        
-    cells.chains <- rownames(sc[[]][!is.na(sc[["cloneType"]]),])
+                    chains = "both", 
+                    edit.method = "lv",
+                    AA.properties = "AF",
+                    AA.method = "auto",
+                    n.trim = 0,
+                    c.trim = 0,
+                    nearest.method = "nn",
+                    threshold = 0.85,
+                    near.neighbor = 40,
+                    add.INKT = TRUE,
+                    add.MAIT = TRUE, 
+                    n.dim = 40,
+                    species = "human",
+                    reduction.name = "Trex",
+                    seed = 42) {
+
+    cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
     reduction <- maTrex(sc,
                         chains, 
                         edit.method,
                         AA.properties,
                         AA.method,
+                        n.trim, 
                         c.trim,
-                        n.trim,
                         nearest.method,
                         threshold,
                         near.neighbor,
                         add.INKT,
                         add.MAIT,
                         n.dim,
-                        species)
+                        species, 
+                        seed)
     TCR <- getTCR(sc, chains)
     if (add.INKT) {
-        tmpscore <- scoreINKT(TCR, species = species)
+        tmpscore <- scoreINKT(TCR, species)
         sc <- add.meta.data(sc, tmpscore, "IKNT.score")
     }
     if (add.MAIT) {
-        tmpscore <- scoreMAIT(TCR, species = species)
+        tmpscore <- scoreMAIT(TCR, species)
         sc <- add.meta.data(sc, tmpscore, "MAIT.score")
     }
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
-   
 }
 
 #' Remove TCR genes from variable gene results
@@ -199,13 +211,77 @@ runTrex <- function(sc,
 quietTCRgenes <- function(sc) {
     unwanted_genes <- "TRBV*|^TRBD*|^TRBJ*|^TRDV*|^TRDD*|^TRDJ*|^TRAV*|^TRAJ*|^TRGV*|^TRGJ*"
     if (inherits(x=sc, what ="Seurat")) {
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = T)
+        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = TRUE)
         sc[["RNA"]]@var.features <- sc[["RNA"]]@var.features[sc[["RNA"]]@var.features %!in% unwanted_genes]
     } else {
         #Bioconductor scran pipelines uses vector of variable genes for DR
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = T)
+        unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = TRUE)
         sc <- sc[sc %!in% unwanted_genes]
     }
     return(sc)
 }
 
+#' Cluster clones using the Trex dimensional reductions
+#' 
+#' Use this to return clusters for clonotypes based on 
+#' the \link[bluster]{bluster} clustering parameters.
+#' 
+#' @examples
+#' \dontrun{
+#' sc <- clonalCommunity(sc, 
+#'                       reduction.name = NULL, 
+#'                       cluster.parameter = KNNGraphParam())
+#' }
+#' @param sc Single Cell Object in Seurat or SingleCell Experiment format. In addition, the outputs of distReduction()
+#' and aaReduction() can be used.
+#' @param reduction.name Name of the dimensional reduction output from runTrex()
+#' @param cluster.parameter The community detection algorithm in \link[bluster]{bluster}
+#' @param ... For the generic, further arguments to pass to specific methods.
+#' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam DbscanParam
+#' @importFrom igraph simplify spectrum graph_from_edgelist E `E<-`
+#' @importFrom SingleCellExperiment reducedDim
+#' @export
+#' @return Single-Cell Object with trex.clusters in the meta.data
+clonalCommunity <- function(sc, 
+                            reduction.name = NULL, 
+                            cluster.parameter=KNNGraphParam(k=30, ...), 
+                            ...) {
+    if (inherits(x=sc, what ="Seurat")) { 
+        dim.red <- sc[[reduction.name]] 
+        dim.red <- dim.red@cell.embeddings
+    } else if (inherits(x=sc, what ="SingleCellExperiment")){
+        dim.red <- reducedDim(sc, reduction.name)
+    } else {
+        if(inherits(x=sc, what ="dist")) {
+            mat <- sc
+            #mat[is.na(mat)] <- 0
+            dimension <- attr(mat, "Size")
+            edge <- NULL
+            for (j in seq_len(dimension)[-1]) {
+                row <- dist.convert(mat,j)
+                tmp.edge <- data.frame("from" = j, "to" = seq_len(j)[-j], weight = row)
+                edge <- rbind(edge, tmp.edge)
+            }
+            edge <- na.omit(edge)
+            g <- graph.edgelist(as.matrix(edge[,c(1,2)]), directed = FALSE)
+            E(g)$weights <- edge$weight
+            g <- simplify(g)
+            eigen <- spectrum(g, 
+                              which = list(howmany = 30), 
+                              algorithm = "arpack")
+            dim.red <- eigen$vectors
+        } else {
+            dim.red <- sc
+        }
+    }
+    set.seed(42)
+    clusters <- suppressWarnings(clusterRows(dim.red, BLUSPARAM=cluster.parameter))
+    clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
+    if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {
+        rownames(clus.df) <- rownames(dim.red)
+        sc <- add.meta.data(sc, clus.df, colnames(clus.df))
+        return(sc)
+    } 
+    return(clus.df)
+    
+}

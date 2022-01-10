@@ -10,16 +10,17 @@ runTrex(
   edit.method = "lv",
   AA.properties = "AF",
   AA.method = "auto",
-  reduction.name = "Trex",
   n.trim = 0,
   c.trim = 0,
-  nearest.method = "threshold",
+  nearest.method = "nn",
   threshold = 0.85,
-  near.neighbor = NULL,
+  near.neighbor = 40,
   add.INKT = TRUE,
   add.MAIT = TRUE,
-  n.dim = 30,
-  species = "human"
+  n.dim = 40,
+  species = "human",
+  reduction.name = "Trex",
+  seed = 42
 )
 }
 \arguments{
@@ -37,9 +38,6 @@ either "mean" or the average amino acid characteristics for given cdr3 sequence 
 for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
 the cdr3 sequences.}
 
-\item{reduction.name}{Keyword to save Trex reduction. Useful if you want
-to try Trex with multiple parameters}
-
 \item{n.trim}{length from N-terminus to trim on the CDR3 aa sequence}
 
 \item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
@@ -52,7 +50,8 @@ above which simplify for adjacency matrix}
 
 \item{near.neighbor}{If nearest.method = "nn" - the number of nearest neighbors to use 
 in generating an adjacency matrix. If the number of copies of a clone is greater than the
-near.neighbor value used, the near.neighbor will randomly return neighbors/clones.}
+near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
+to the clone being compared.}
 
 \item{add.INKT}{Add a additional layer for invariant natural killer T cells based on genes}
 
@@ -61,6 +60,11 @@ near.neighbor value used, the near.neighbor will randomly return neighbors/clone
 \item{n.dim}{The number of Trex dimensions to return, similar to PCA dimensions}
 
 \item{species}{Indicate "human" or "mouse" for gene-based metrics}
+
+\item{reduction.name}{Keyword to save Trex reduction. Useful if you want
+to try Trex with multiple parameters}
+
+\item{seed}{seed for the random number generator}
 }
 \value{
 Seurat or SingleCellExperiment object with Trex dimensions placed 
@@ -74,6 +78,7 @@ trex_example <- runTrex(trex_example,
                         AA.properties = "AF", 
                         nearest.method = "nn",
                         near.neighbor = 40,
+                        threshold = 0.85,
                         reduction.name = "Trex.AF")
                         
 }
