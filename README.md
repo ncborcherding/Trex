@@ -38,6 +38,8 @@ library(tensorflow)
 install_tensorflow()
 ```
 
+An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packahes using ```virtualenv_install()```.
+
 # Installation
 
 To run Trex, open R and install Trex from github: 
