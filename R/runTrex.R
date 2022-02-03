@@ -67,8 +67,8 @@ maTrex <- function(sc,
                     seed = 42) {
     set.seed(seed)
     TCR <- getTCR(sc, chains)
-    print("Calculating the Edit Distance for CDR3 AA sequence...")
     if (!is.null(edit.method)) {
+        print("Calculating the Edit Distance for CDR3 AA sequence...")
         network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, return.dims = FALSE)
     } else {
         network <- NULL
