@@ -3,6 +3,7 @@ CHANGES IN VERSION 0.99.5
 ------------------------
 
 * CoNGAfy now can reduce the size of multiple dimensions using mean or distance. 
+* aaproperty internal function relies on philentropy package for distance calculation based on pearson correlation
 
 CHANGES IN VERSION 0.99.4
 ------------------------

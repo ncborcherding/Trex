@@ -165,9 +165,8 @@ aaProperty <- function(TCR,
       colnames(score) <- paste0("aa", seq_len(ncol(score)))
       return(score)
     }
-    dist <- dist(score)
-   # dist <- distance(score[,seq_len(ncol(score))[-1]], method = "pearson", as.dist.obj = TRUE, 
-   #                  mute.message = TRUE, test.na = FALSE)
+    dist <- distance(score[,seq_len(ncol(score))[-1]], method = "pearson", as.dist.obj = TRUE, 
+                    mute.message = TRUE, test.na = FALSE)
     rm(score)
     rm(array.reshape)
     edge.list <- NULL
