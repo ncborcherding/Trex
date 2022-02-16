@@ -4,7 +4,13 @@
 \alias{CoNGAfy}
 \title{Reduce a single-cell object to representative cells}
 \usage{
-CoNGAfy(sc, method = "mean", features = NULL)
+CoNGAfy(
+  sc,
+  method = "dist",
+  features = NULL,
+  assay = "RNA",
+  meta.carry = c("CTaa", "CTgene")
+)
 }
 \arguments{
 \item{sc}{Single Cell Object in Seurat or Single Cell Experiment format}
@@ -14,6 +20,8 @@ use the PCA reduction to identify the cell with the minimal euclidean distance f
 clonotype group.}
 
 \item{features}{Selected genes for the reduction DEFAULT: null will return all genes}
+
+\item{assay}{The name of the assay or assays to return.}
 }
 \value{
 Single-cell Object with 1 cell representing 1 clone

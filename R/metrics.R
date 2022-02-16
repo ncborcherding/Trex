@@ -165,14 +165,16 @@ aaProperty <- function(TCR,
       colnames(score) <- paste0("aa", seq_len(ncol(score)))
       return(score)
     }
-    dist <- distance(score[,seq_len(ncol(score))[-1]], method = "pearson", as.dist.obj = TRUE, 
-                    mute.message = TRUE, test.na = FALSE)
+    #dist <- dist(score[,seq_len(ncol(score))[-1]])
+   dist <- distance(score[,seq_len(ncol(score))[-1]], method = "cosine", as.dist.obj = TRUE, 
+                    mute.message = TRUE, test.na = FALSE, diag = TRUE)
     rm(score)
     rm(array.reshape)
     edge.list <- NULL
     index <- seq_len(length(cells))
     edge.list <- lapply(index,  FUN = function(x) {
         row <- SliceExtract_dist(dist,x)
+        row <- 1-abs(row)
         neighbor <- neighbor.manager(row, metric = "aa.property", length, x, nearest.method, 
                                     near.neighbor, threshold)
       })
