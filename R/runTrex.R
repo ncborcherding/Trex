@@ -74,7 +74,7 @@ maTrex <- function(sc,
         network <- NULL
     }
     
-    if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
+    if (AA.properties %in% c("AF", "KF", "both", "all")) {
         print("Calculating the Amino Acid Properties...")
         AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, return.dims = FALSE)
         network <- c(network, AA.knn)
