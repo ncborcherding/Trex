@@ -17,7 +17,7 @@ If you are looking for the (very cool) TCR-epitope prediction algorithm **TCRex*
 
 # System requirements 
 
-Trex has been tested on R versions >= 4.0. Please consult the DESCRIPTION file for more details on required R packages - it is specifically designed to work with single-cell objects that have had TCRs added using [scRepertoire](https://github.com/ncborcherding/scRepertoire). Trex has been tested on OS X and Windows platforms.
+Trex has been tested on R versions >= 4.0. Please consult the DESCRIPTION file for more details on required R packages - it is specifically designed to work with single-cell objects that have had TCRs added using [scRepertoire](https://github.com/ncborcherding/scRepertoire). Trex has been tested on OS X and Windows platforms - currently not available for Apple silicon processors.
 
 **muxViz** is essiential before installing Trex:
 
