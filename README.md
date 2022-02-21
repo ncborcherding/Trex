@@ -33,6 +33,7 @@ install.packages("keras")
 
 ##Setting up Tensor Flow
 library(reticulate)
+conda_create("r-reticulate") ##If first time using reticulate
 use_condaenv(condaenv = "r-reticulate", required = TRUE)
 library(tensorflow)
 install_tensorflow()
