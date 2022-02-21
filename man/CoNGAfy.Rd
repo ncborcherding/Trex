@@ -22,6 +22,8 @@ clonotype group.}
 \item{features}{Selected genes for the reduction DEFAULT: null will return all genes}
 
 \item{assay}{The name of the assay or assays to return.}
+
+\item{meta.carry}{Variables to carry over from the meta data of thje single-cell object}
 }
 \value{
 Single-cell Object with 1 cell representing 1 clone

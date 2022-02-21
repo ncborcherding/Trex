@@ -12,7 +12,7 @@ maTrex(
   AA.method = "auto",
   n.trim = 0,
   c.trim = 0,
-  nearest.method = "nn",
+  nearest.method = "threshold",
   threshold = 0.85,
   near.neighbor = 40,
   add.INKT = TRUE,
