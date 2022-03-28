@@ -4,68 +4,20 @@
 \alias{maTrex}
 \title{Main Trex interface}
 \usage{
-maTrex(
-  sc,
-  chains = "both",
-  edit.method = "lv",
-  AA.properties = "AF",
-  AA.method = "auto",
-  n.trim = 0,
-  c.trim = 0,
-  nearest.method = "threshold",
-  threshold = 0.85,
-  near.neighbor = 40,
-  add.INKT = TRUE,
-  add.MAIT = TRUE,
-  n.dim = 40,
-  species = "human",
-  seed = 42
-)
+maTrex(sc, chains = "TRB", AA.properties = "AF")
 }
 \arguments{
 \item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
 
-\item{chains}{TRA, TRB, both}
-
-\item{edit.method}{distance measures inherited from \link[stringdist]{stringdist} or NULL
-to not include edit distance layer in multiplex network}
+\item{chains}{TRA or TRB}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to not 
-include edit distance layer in multiplex network}
-
-\item{AA.method}{method for deriving pairwise distances from amino acid properties, 
-either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
-the cdr3 sequences.}
-
-\item{n.trim}{length from N-terminus to trim on the CDR3 aa sequence}
-
-\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
-
-\item{nearest.method}{method for defining neighbors, either "threshold" for normalized
-distances above a certain value or "nn" for nearest neighbor by normalized distances.}
-
-\item{threshold}{If nearest.method = "threshold" -the value for distance measures 
-above which simplify for adjacency matrix}
-
-\item{near.neighbor}{If nearest.method = "nn" - the number of nearest neighbors to use 
-in generating an adjacency matrix. If the number of copies of a clone is greater than the
-near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
-to the clone being compared.}
-
-\item{add.INKT}{Add a additional layer for invariant natural killer T cells based on genes}
-
-\item{add.MAIT}{Add a additional layer for Mucosal-associated invariant T cells based on genes}
+"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.}
 
 \item{n.dim}{The number of Trex dimensions to return, similar to PCA dimensions}
-
-\item{species}{Indicate "human" or "mouse" for gene-based metrics}
-
-\item{seed}{seed for the random number generator}
 }
 \value{
-Trex eigenvectors calculated from multiplex network
+Trex encodedd values from the autoencoder
 }
 \description{
 Use this to run the Trex algorithm to return latent vectors in 
@@ -73,18 +25,7 @@ the form of a matrix or if you prefer, a maTrex.
 }
 \examples{
 trex_values <- maTrex(trex_example, 
-                        chains = "both", 
-                        edit.method = "lv",
-                        AA.properties = "AF",
-                        AA.method = "auto",
-                        n.trim = 0,
-                        c.trim = 0,
-                        nearest.method = "nn",
-                        threshold = 0.85,
-                        near.neighbor = 40,
-                        add.INKT = FALSE,
-                        add.MAIT = FALSE, 
-                        n.dim = 40,
-                        species = "human")
+                        chains = "TRA",
+                        AA.properties = "AF")
                         
 }
