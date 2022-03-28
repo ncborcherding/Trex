@@ -134,11 +134,11 @@ CoNGA.mean <- function(sc, features, assay) {
     data <- as.data.frame(meta[,"CTaa"])
     colnames(data) <- "CTaa"
     rownames(data) <- rownames(meta)
-    data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = F]
-    for (i in 1:ncol(x = data)) {
+    data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = FALSE]
+    for (i in seq_len(ncol(x = data))) {
         data[, i] <- as.factor(x = data[, i])
     }
-    num.levels <- sapply(X = 1:ncol(x = data), FUN = function(i) { 
+    num.levels <- sapply(X = seq_len(ncol(x = data)), FUN = function(i) { 
         length(x = levels(x = data[, i]))
     })
     category.matrix <- sparse.model.matrix(object = as.formula(

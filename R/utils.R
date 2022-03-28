@@ -1,3 +1,4 @@
+"%!in%" <- Negate("%in%")
 
 aa.eval <- function(x) { x %in% c("AF", "KF", "other")}
 
@@ -156,4 +157,14 @@ auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
   return(score)
 }
 
+dist.convert <- function(dist_obj, k) {
+  if (length(k) > 1) stop("The function is not 'vectorized'!")
+  n <- attr(dist_obj, "Size")
+  if (k < 1 || k > n) stop("k out of bound!")
+  ##
+  i <- 1:(k - 1)
+  j <- rep.int(k, k - 1)
+  v1 <- dist_obj[f(j, i, dist_obj)]
+  return(v1)
+}
 

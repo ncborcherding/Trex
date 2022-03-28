@@ -13,8 +13,6 @@ maTrex(sc, chains = "TRB", AA.properties = "AF")
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
 "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.}
-
-\item{n.dim}{The number of Trex dimensions to return, similar to PCA dimensions}
 }
 \value{
 Trex encodedd values from the autoencoder

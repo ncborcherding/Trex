@@ -15,6 +15,7 @@
     utils::globalVariables ("colData<-")
     utils::globalVariables ("TR")
     utils::globalVariables ("graph.edgelist")
+    utils::globalVariables ("f")
     
     invisible ()
     

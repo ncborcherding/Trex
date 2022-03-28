@@ -12,7 +12,6 @@
 #' @param chains TRA or TRB
 #' @param AA.properties Amino acid properties to use for distance calculation: 
 #' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.
-#' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
