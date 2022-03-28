@@ -12,7 +12,7 @@ CHANGES IN VERSION 0.99.5
 
 * CoNGAfy now can reduce the size of multiple dimensions using mean or distance. 
 * Moving the auto encoder distance back to cosine distance - per row the calculation will be 1-abs(cos())
-* Modified runTrex() to allow for generating layers without the edit distance (before it just errored out).
+* Modified runTrex() to allow for generating layers without the edit distance (before it just errored out). 
 
 CHANGES IN VERSION 0.99.4
 ------------------------
