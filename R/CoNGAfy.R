@@ -3,7 +3,7 @@
 #' Generate a single-cell object that has a representation of
 #' RNA expression by clonotype. This approach was first introduced
 #' in \href{https://pubmed.ncbi.nlm.nih.gov/34426704/}{CoNGA} and was 
-#' adapted to R. Please read and cite the authors work. 
+#' adapted to R. Please read and cite the author's work. 
 #' 
 #' @examples
 #' trex_values <- CoNGAfy(trex_example, 
@@ -115,7 +115,7 @@ CoNGA.dist <- function(sc, features, assay) {
     colnames(data.return) <- data$CTaa[match(barcodes, rownames(data))]
     return(data.return)
 }
-# Adapted from the AverageExperssion() function in Seurat
+# Adapted from the AverageExpression() function in Seurat
 #' @importFrom rlang %||%
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom SummarizedExperiment assay

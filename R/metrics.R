@@ -1,4 +1,4 @@
-#Calculating Distance of AA in CDR3 using mean
+#Transforming the CDR3 sequence into vectors
 #' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
 #' @importFrom dplyr bind_rows

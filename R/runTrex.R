@@ -16,7 +16,7 @@
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
-#' @return Trex encodedd values from the autoencoder
+#' @return Trex encoded values from the autoencoder
 maTrex <- function(sc, 
                     chains = "TRB", 
                     AA.properties = "AF") {

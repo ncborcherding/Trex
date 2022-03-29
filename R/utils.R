@@ -50,7 +50,7 @@ getTCR <- function(sc, chains) {
   return(TCR)
 }
 
-#This is to grab the meta data from a Seurat or SCE object
+#This is to grab the metadata from a Seurat or SCE object
 #' @importFrom SingleCellExperiment colData 
 grabMeta <- function(sc) {
   if (inherits(x=sc, what ="Seurat")) {

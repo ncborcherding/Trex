@@ -10,7 +10,7 @@
 #' @param chains TRA or TRB
 #' @export
 #' @return Seurat or SingleCellExperiment object with epitope information
-#' added to the meta data. 
+#' added to the metadata. 
 
 annotateDB <- function(sc,
                        chains = "TRB") {

@@ -126,7 +126,7 @@ qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 
 ## runTrex
 
-Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
+Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the metadata of the object. 
 
 ```{r}
 trex_example <- runTrex(trex_example, 
