@@ -50,6 +50,8 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 
 Check out this [vignette](https://ncborcherding.github.io/vignettes/Trex.html) for a quick start tutorial. 
 
+<img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/graphicalAbstract.png">
+
 ## Autoencoded Matrix
 
 The Trex algorithm allows users to select TCR-based metrics to return autoencoded values to be used in dimensional reduction. If single-cell objects are not filtered for T cells with TCR,  `maTrex()` will still return values, however TREX_1 will be based on the disparity of TCR-containing and TCR-non-containing cells based on the Trex algorithm. 
