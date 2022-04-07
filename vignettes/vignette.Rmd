@@ -137,29 +137,20 @@ trex_example <- runTrex(trex_example,
 
 ## Using Trex Vectors
 
-After ```runTrex()``` we have the encoded values stored under **"Trex..."**. Using the Trex reduction stored in Seurat, we can calculate the nearest neighbor and shared nearest neighbor indexes and generate a UMAP. In general, the nearest-neighbor-based UMAP will have more distributed points for easier visualization compared to directly using ```RunUMAP()``` on the Trex reduction.
+After ```runTrex()``` we have the encoded values stored under **"Trex..."**. Using the Trex reduction stored in Seurat, we can calculate the nearest neighbor and shared nearest neighbor indexes and generate a UMAP.
 
 ```{r}
-neighbors <- FindNeighbors(trex_example@reductions$Trex.KF, 
-                                       annoy.metric = "cosine",
-                                       k.param = 30, 
-                                       verbose = FALSE)
-
-#Adding the Neighbors to the Seurat Object
-names(neighbors) <- paste0("Trex.KF_", names(neighbors))
-graph.names <- names(neighbors)
-for(i in seq_len(length(graph.names))) {
-          suppressWarnings(trex_example[[graph.names[i]]] <- neighbors[[i]])
-  }
-
 #Generating UMAP from Trex Neighbors
 trex_example <- RunUMAP(trex_example, 
-                        graph = "Trex.KF_snn", 
+                        reduction = "Trex.KF",
+                        dims = 1:30,
                         reduction.name = 'Trex.umap', 
                         reduction.key = 'trexUMAP_')
 #Trex UMAP
-plot1 <- DimPlot(trex_example) + NoLegend()
-plot2 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values =viridis::viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot1 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
+plot2 <- DimPlot(trex_example, group.by = "CTaa", reduction = "Trex.umap") + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  NoLegend()
 
 plot1 + plot2
 ```
@@ -172,14 +163,22 @@ trex_example <- FindMultiModalNeighbors(
   trex_example, reduction.list = list("pca", "apca", "Trex.KF"), 
   dims.list = list(1:30, 1:20, 1:30), modality.weight.name = "RNA.weight"
 )
-trex_example <- RunUMAP(trex_example, nn.name = "weighted.nn", 
-                     reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
-trex_example <- FindClusters(trex_example, graph.name = "wsnn", resolution = 0.6,
-                          algorithm = 3, verbose = FALSE)
+trex_example <- RunUMAP(trex_example, 
+                        nn.name = "weighted.nn", 
+                        reduction.name = "wnn.umap", 
+                        reduction.key = "wnnUMAP_")
+
+trex_example <- FindClusters(trex_example, 
+                             graph.name = "wsnn",
+                             resolution = 0.6,
+                             algorithm = 3, 
+                             verbose = FALSE)
 
 #WNN UMAP
 plot3 <- DimPlot(trex_example, reduction = "wnn.umap")
-plot4 <- DimPlot(trex_example, reduction = "wnn.umap", group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot4 <- DimPlot(trex_example, reduction = "wnn.umap", group.by = "CTaa") + 
+  scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + 
+  NoLegend()
 
 plot3 + plot4
 ```
@@ -189,11 +188,19 @@ plot3 + plot4
 We can also look at the differences in the UMAP generated from RNA, ADT, or Trex as individual components. Remember, the clusters that we are displaying in UMAP are based on clusters defined by the weighted nearest neighbors calculated above. 
 
 ```{r}
-trex_example <- RunUMAP(trex_example, reduction = 'pca', dims = 1:30, assay = 'RNA', 
-              reduction.name = 'rna.umap', reduction.key = 'rnaUMAP_')
-trex_example <- RunUMAP(trex_example, reduction = 'apca', dims = 1:20, assay = 'ADT', 
-              reduction.name = 'adt.umap', reduction.key = 'adtUMAP_')
+trex_example <- RunUMAP(trex_example, 
+                        reduction = 'pca', 
+                        dims = 1:30, 
+                        assay = 'RNA', 
+                        reduction.name = 'rna.umap', 
+                        reduction.key = 'rnaUMAP_')
 
+trex_example <- RunUMAP(trex_example, 
+                        reduction = 'apca', 
+                        dims = 1:20, 
+                        assay = 'ADT', 
+                        reduction.name = 'adt.umap', 
+                        reduction.key = 'adtUMAP_')
 
 plot5 <- DimPlot(trex_example, reduction = "rna.umap") + NoLegend()
 plot6 <- DimPlot(trex_example, reduction = "adt.umap") + NoLegend()
@@ -225,12 +232,17 @@ trex_example <- RunUMAP(trex_example,
                      reduction.name = "regressClone_RNA")
 
 
-plot8 <- DimPlot(trex_example, reduction = "rna.umap", group.by = "CTaa") + 
-  NoLegend() + 
-  scale_color_viridis(option="B", discrete = TRUE)
-plot9 <- DimPlot(trex_example, reduction = "regressClone_RNA", group.by = "CTaa") + 
-  NoLegend() + 
-  scale_color_viridis(option="B", discrete = TRUE)
+plot8 <- DimPlot(trex_example, 
+                 reduction = "rna.umap", 
+                 group.by = "CTaa") + 
+                 NoLegend() + 
+                 scale_color_viridis(option="B", discrete = TRUE)
+
+plot9 <- DimPlot(trex_example, 
+                 reduction = "regressClone_RNA", 
+                 group.by = "CTaa") + 
+                 NoLegend() + 
+                 scale_color_viridis(option="B", discrete = TRUE)
 
 plot8 + plot9
 ```
@@ -248,6 +260,43 @@ CoNGA.seurat <- CoNGAfy(trex_example,
 CoNGA.seurat <- runTrex(CoNGA.seurat, 
                     AA.properties = "KF", 
                     reduction.name = "Trex.KF")
+
+CoNGA.seurat <- CoNGA.seurat %>%
+                  FindNeighbors(reduction = "Trex.KF") %>%
+                  FindClusters(algorithm = 3, resolution = 0.9)
+
+CoNGA.seurat <- RunUMAP(CoNGA.seurat, 
+                     reduction = "Trex.KF", 
+                     dims = 1:20, 
+                     reduction.name = 'Trex.umap', 
+                     reduction.key = 'trexUMAP_')
+
+DimPlot(CoNGA.seurat, reduction = "Trex.umap") + NoLegend()
+```
+
+# Annotating possible epitopes
+
+Towards find epitope relationships, Trex has a built in data base of TCRA and TCRB sequences associated with epitopes. To append the database to the single-cell object (either before or after ```CoNGAfy()```), you can use ```annotateDB()```. 
+
+The database is collated from multiple sources and represents a great deal of effort from these sources:
+
+1. [VDJdb](https://vdjdb.cdr3.net/) - [citation](https://pubmed.ncbi.nlm.nih.gov/28977646/)
+2. [McPAS-TCR](http://friedmanlab.weizmann.ac.il/McPAS-TCR/) - [citation](https://pubmed.ncbi.nlm.nih.gov/28481982/)
+3. [iedb](https://www.iedb.org/) - [citation](https://pubmed.ncbi.nlm.nih.gov/30357391/)
+4. [TBA](https://db.cngb.org/pird/home/) (now called PIRD) - [citation](https://pubmed.ncbi.nlm.nih.gov/31373607/)
+
+
+```{r}
+CoNGA.seurat <- annotateDB(CoNGA.seurat, 
+                           chains = "TRB")
+
+DimPlot(CoNGA.seurat, 
+        reduction = "Trex.umap", 
+        group.by = "TRB_Epitope.species")
+
+DimPlot(CoNGA.seurat, 
+        reduction = "Trex.umap", 
+        group.by = "TRB_Epitope.sequence")
 ```
 
 ***

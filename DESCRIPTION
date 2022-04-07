@@ -8,7 +8,8 @@ Authors@R: c(
 Description: Implementation of the Trex algorithm for single-cell embedding based on TCR sequences. The package includes a standalone function to encode TCR sequence information by amino acid properties or sequence order using tensorflow-based autoencoder. In addition, the package interacts with SingleCellExperiment or Seurat data objects. 
 License: GPL-2
 Encoding: UTF-8
-LazyData: false
+LazyData: true
+LazyDataCompression: xz
 RoxygenNote: 7.1.2
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
 Depends: 

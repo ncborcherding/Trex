@@ -15,7 +15,7 @@ maTrex(sc, chains = "TRB", AA.properties = "AF")
 "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.}
 }
 \value{
-Trex encodedd values from the autoencoder
+Trex encoded values from the autoencoder
 }
 \description{
 Use this to run the Trex algorithm to return latent vectors in 

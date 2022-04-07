@@ -32,7 +32,7 @@ Single-cell Object with 1 cell representing 1 clone
 Generate a single-cell object that has a representation of
 RNA expression by clonotype. This approach was first introduced
 in \href{https://pubmed.ncbi.nlm.nih.gov/34426704/}{CoNGA} and was 
-adapted to R. Please read and cite the authors work.
+adapted to R. Please read and cite the author's work.
 }
 \examples{
 trex_values <- CoNGAfy(trex_example, 
