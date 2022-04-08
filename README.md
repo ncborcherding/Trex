@@ -36,7 +36,7 @@ An alternative to this approach above (especially if you want to avoid conda) is
 To run Trex, open R and install Trex from github: 
 
 ```r
-devtools::install_github("ncborcherding/Trex@dev")
+devtools::install_github("ncborcherding/Trex")
 ```
 
 # Usage/Demos
