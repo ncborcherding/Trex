@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "December 15th, 2021"
+date: "March 28,2022"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -101,128 +101,56 @@ data("trex_example")
 
 # Running Trex
 
-The idea behind Trex is to combine TCR cdr3 amino acid information with phenotypic RNA/protein data to direct the use of single-cell sequencing towards antigen-specific discoveries. In doing so, Trex combines multiple layers of TCR information, as selected by the user. These layers are then used to form a multiplexed network using the individual cell barcodes as nodes. The network analysis is simplified, and eigenvectors on the adjacency matrix to produce unique TCR dimensional reduction. This is a growing field - specifically [TESSA](https://github.com/jcao89757/TESSA) uses amino acid characteristics and autoencoder as a means to get a dimensional reduction. Another option is [CoNGA](https://github.com/phbradley/conga), which produces an embedding using TCR and RNA. Trex was designed to make a customizable approach to this combined approach using R.
+The idea behind Trex is to combine TCR cdr3 amino acid information with phenotypic RNA/protein data to direct the use of single-cell sequencing towards antigen-specific discoveries.  This is a growing field - specifically [TESSA](https://github.com/jcao89757/TESSA) uses amino acid characteristics and autoencoder as a means to get a dimensional reduction. Another option is [CoNGA](https://github.com/phbradley/conga), which produces an embedding using TCR and RNA. Trex was designed to make a customizable approach to this combined approach using R.
 
 ## maTrex Function
 
-Trex has 2 major functions - the first being ```maTrex()```, which is the backbone of the algorithm and returns the latent vectors based on the selection of variables. Unlike ```runTrex()``` below, ```maTrex()``` does not filter the input for only T cells with attached TCR data. 
+Trex has 2 major functions - the first being ```maTrex()```, which is the backbone of the algorithm and returns the encoded values based on the selection of variables. Unlike ```runTrex()``` below, ```maTrex()``` does not filter the input for only T cells with attached TCR data. 
 
 **chains**  
 * "TRA" for TCR A  
 * "TRB" for TCR B  
-* "both" for both chains  
 
 **AA.properties**  
 * "AF" to use Atchley factors  
 * "KF" to use Kidera factors  
 * "both" to use both  
-* NULL to not include the amino acid properties in final network
-
-**AA.method** 
-* "mean" to take the mean for each cdr3 sequence based on the selected AA.property  
-* "auto" to embed the AA.properties using an Autoencoder  
-
-**nearest.method**
-* "threshold" to call neighbors by a normalize distance value
-* "nn" to call nearest neighbors
-
 
 ```{r}
 Trex_vectors <- maTrex(trex_example, 
-                       chains = "both",
-                      edit.method = "lv",
-                      AA.method = "mean", 
-                      AA.properties = "KF", 
-                      nearest.method = "nn",
-                      near.neighbor = 20,
-                      add.INKT = FALSE,
-                      add.MAIT = FALSE)
+                       chains = "TRA",
+                      AA.properties = "KF")
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```
 
 ## runTrex
 
-Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single-cells that do not have recovered TCR data in the meta data of the object. 
+Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Experiment object with the Trex vectors and allow for further analysis. Importantly, ```runTrex()``` will remove single cells that do not have recovered TCR data in the metadata of the object. 
 
 ```{r}
 trex_example <- runTrex(trex_example, 
-                    edit.method = "lv",
-                    AA.method = "auto", 
+                    chains = "TRB",
                     AA.properties = "KF", 
-                    nearest.method = "nn",
-                    near.neighbor = 30,
                     reduction.name = "Trex.KF")
 ```
 
-You can also use runTrex to get specific eigenvectors from a layer, for example, if we are interested in the edit distance between TRB chains, we could use:
-
-```{r}
-trex_example <- runTrex(trex_example, 
-                        chains = "TRB",
-                    edit.method = "lv",
-                    AA.method = "NULL", 
-                    nearest.method = "nn",
-                    near.neighbor = 30,
-                    reduction.name = "Trex.TRB")
-```
-
-## Raw Dimensional Reductions
-
-There are two additional functions that will return the outputs of a single layer before the multi-network transformation 1) ```aaReduction()``` and 2) ```distReduction()```. Both of these raw dimensional reductions can be fed into ```clonalCommunity()``` to identify clonal clusters. 
-
-### aaReduction()
-
-The ```aaReduction()``` will return either the 30-dimensional bottleneck layer or the mean value based on the indicated amino acid property for the cdr3 amino acid sequence. 
-
-```{r}
-AA.dim  <- aaReduction(trex_example, 
-                        chains = "TRB", 
-                         AA.properties = "AF",
-                        AA.method = "auto",
-                        n.trim = 0,
-                        c.trim = 0)
-```
-
-
-### distReduction()
-
-The ```distReduction()``` will return an object of distance class (the lower triangle of the distance matrix stored by columns in a single vector) with the pairwise distance calculated for each TCR. This is memory intensive and both ```maTrex()``` and ```runTrex()``` get around this by calculating neighbors in a row-wise fashion.
-
-**warning** if going to form a matrix (calling something like ```as.matrix()```) out of the object returned by ```distReduction()```, keep in mind the memory requirement will be = (Number of TCRs)^2*(2 bytes). So 60,0000 TCRS will equate to 3.6 gigabytes.
-
-```{r}
-dist.dim  <- distReduction(trex_example, 
-                        chains = "TRB", 
-                       edit.method = "lv",
-                        n.trim = 0,
-                        c.trim = 0)
-```
-
-
 ## Using Trex Vectors
 
-After ```runTrex()``` we have the eigenvectors for the TCR layers that we have selected stored under **"Trex..."**. Using the Trex reduction stored in Seurat, we can calculate the nearest neighbor and shared nearest neighbor indexes and generate a UMAP. In general, the nearest-neighbor-based UMAP will have more distributed points for easier visualization compared to directly using ```RunUMAP()``` on the Trex reduction.
+After ```runTrex()``` we have the encoded values stored under **"Trex..."**. Using the Trex reduction stored in Seurat, we can calculate the nearest neighbor and shared nearest neighbor indexes and generate a UMAP.
 
 ```{r}
-neighbors <- FindNeighbors(trex_example@reductions$Trex.KF, 
-                                       annoy.metric = "cosine",
-                                       k.param = 30, 
-                                       verbose = FALSE)
-
-#Adding the Neighbors to the Seurat Object
-names(neighbors) <- paste0("Trex.KF_", names(neighbors))
-graph.names <- names(neighbors)
-for(i in seq_len(length(graph.names))) {
-          suppressWarnings(trex_example[[graph.names[i]]] <- neighbors[[i]])
-  }
-
 #Generating UMAP from Trex Neighbors
-trex_example <- RunUMAP(trex_example, graph = "Trex.KF_snn", 
-                        reduction.name = 'Trex.umap', reduction.key = 'trexUMAP_')
+trex_example <- RunUMAP(trex_example, 
+                        reduction = "Trex.KF",
+                        dims = 1:30,
+                        reduction.name = 'Trex.umap', 
+                        reduction.key = 'trexUMAP_')
 #Trex UMAP
-plot1 <- DimPlot(trex_example) + NoLegend()
-plot2 <- DimPlot(trex_example, group.by = "CTaa") + scale_color_manual(values =viridis::viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot1 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
+plot2 <- DimPlot(trex_example, group.by = "CTaa", reduction = "Trex.umap") + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  NoLegend()
 
 plot1 + plot2
 ```
@@ -235,14 +163,22 @@ trex_example <- FindMultiModalNeighbors(
   trex_example, reduction.list = list("pca", "apca", "Trex.KF"), 
   dims.list = list(1:30, 1:20, 1:30), modality.weight.name = "RNA.weight"
 )
-trex_example <- RunUMAP(trex_example, nn.name = "weighted.nn", 
-                     reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
-trex_example <- FindClusters(trex_example, graph.name = "wsnn", resolution = 0.6,
-                          algorithm = 3, verbose = FALSE)
+trex_example <- RunUMAP(trex_example, 
+                        nn.name = "weighted.nn", 
+                        reduction.name = "wnn.umap", 
+                        reduction.key = "wnnUMAP_")
+
+trex_example <- FindClusters(trex_example, 
+                             graph.name = "wsnn",
+                             resolution = 0.6,
+                             algorithm = 3, 
+                             verbose = FALSE)
 
 #WNN UMAP
 plot3 <- DimPlot(trex_example, reduction = "wnn.umap")
-plot4 <- DimPlot(trex_example, reduction = "wnn.umap", group.by = "CTaa") + scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + NoLegend()
+plot4 <- DimPlot(trex_example, reduction = "wnn.umap", group.by = "CTaa") + 
+  scale_color_manual(values = viridis_pal(option = "B")(length(unique(trex_example$CTaa)))) + 
+  NoLegend()
 
 plot3 + plot4
 ```
@@ -252,11 +188,19 @@ plot3 + plot4
 We can also look at the differences in the UMAP generated from RNA, ADT, or Trex as individual components. Remember, the clusters that we are displaying in UMAP are based on clusters defined by the weighted nearest neighbors calculated above. 
 
 ```{r}
-trex_example <- RunUMAP(trex_example, reduction = 'pca', dims = 1:30, assay = 'RNA', 
-              reduction.name = 'rna.umap', reduction.key = 'rnaUMAP_')
-trex_example <- RunUMAP(trex_example, reduction = 'apca', dims = 1:20, assay = 'ADT', 
-              reduction.name = 'adt.umap', reduction.key = 'adtUMAP_')
+trex_example <- RunUMAP(trex_example, 
+                        reduction = 'pca', 
+                        dims = 1:30, 
+                        assay = 'RNA', 
+                        reduction.name = 'rna.umap', 
+                        reduction.key = 'rnaUMAP_')
 
+trex_example <- RunUMAP(trex_example, 
+                        reduction = 'apca', 
+                        dims = 1:20, 
+                        assay = 'ADT', 
+                        reduction.name = 'adt.umap', 
+                        reduction.key = 'adtUMAP_')
 
 plot5 <- DimPlot(trex_example, reduction = "rna.umap") + NoLegend()
 plot6 <- DimPlot(trex_example, reduction = "adt.umap") + NoLegend()
@@ -288,12 +232,17 @@ trex_example <- RunUMAP(trex_example,
                      reduction.name = "regressClone_RNA")
 
 
-plot8 <- DimPlot(trex_example, reduction = "rna.umap", group.by = "CTaa") + 
-  NoLegend() + 
-  scale_color_viridis(option="B", discrete = TRUE)
-plot9 <- DimPlot(trex_example, reduction = "regressClone_RNA", group.by = "CTaa") + 
-  NoLegend() + 
-  scale_color_viridis(option="B", discrete = TRUE)
+plot8 <- DimPlot(trex_example, 
+                 reduction = "rna.umap", 
+                 group.by = "CTaa") + 
+                 NoLegend() + 
+                 scale_color_viridis(option="B", discrete = TRUE)
+
+plot9 <- DimPlot(trex_example, 
+                 reduction = "regressClone_RNA", 
+                 group.by = "CTaa") + 
+                 NoLegend() + 
+                 scale_color_viridis(option="B", discrete = TRUE)
 
 plot8 + plot9
 ```
@@ -309,12 +258,45 @@ CoNGA.seurat <- CoNGAfy(trex_example,
                          method = "dist")
 
 CoNGA.seurat <- runTrex(CoNGA.seurat, 
-                    edit.method = "lv",
-                    AA.method = "auto", 
                     AA.properties = "KF", 
-                    nearest.method = "nn",
-                    near.neighbor = 30,
                     reduction.name = "Trex.KF")
+
+CoNGA.seurat <- CoNGA.seurat %>%
+                  FindNeighbors(reduction = "Trex.KF") %>%
+                  FindClusters(algorithm = 3, resolution = 0.9)
+
+CoNGA.seurat <- RunUMAP(CoNGA.seurat, 
+                     reduction = "Trex.KF", 
+                     dims = 1:20, 
+                     reduction.name = 'Trex.umap', 
+                     reduction.key = 'trexUMAP_')
+
+DimPlot(CoNGA.seurat, reduction = "Trex.umap") + NoLegend()
+```
+
+# Annotating possible epitopes
+
+Towards find epitope relationships, Trex has a built in data base of TCRA and TCRB sequences associated with epitopes. To append the database to the single-cell object (either before or after ```CoNGAfy()```), you can use ```annotateDB()```. 
+
+The database is collated from multiple sources and represents a great deal of effort from these sources:
+
+1. [VDJdb](https://vdjdb.cdr3.net/) - [citation](https://pubmed.ncbi.nlm.nih.gov/28977646/)
+2. [McPAS-TCR](http://friedmanlab.weizmann.ac.il/McPAS-TCR/) - [citation](https://pubmed.ncbi.nlm.nih.gov/28481982/)
+3. [iedb](https://www.iedb.org/) - [citation](https://pubmed.ncbi.nlm.nih.gov/30357391/)
+4. [TBA](https://db.cngb.org/pird/home/) (now called PIRD) - [citation](https://pubmed.ncbi.nlm.nih.gov/31373607/)
+
+
+```{r}
+CoNGA.seurat <- annotateDB(CoNGA.seurat, 
+                           chains = "TRB")
+
+DimPlot(CoNGA.seurat, 
+        reduction = "Trex.umap", 
+        group.by = "TRB_Epitope.species")
+
+DimPlot(CoNGA.seurat, 
+        reduction = "Trex.umap", 
+        group.by = "TRB_Epitope.sequence")
 ```
 
 ***

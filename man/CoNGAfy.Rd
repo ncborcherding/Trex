@@ -4,7 +4,13 @@
 \alias{CoNGAfy}
 \title{Reduce a single-cell object to representative cells}
 \usage{
-CoNGAfy(sc, method = "mean", features = NULL)
+CoNGAfy(
+  sc,
+  method = "dist",
+  features = NULL,
+  assay = "RNA",
+  meta.carry = c("CTaa", "CTgene")
+)
 }
 \arguments{
 \item{sc}{Single Cell Object in Seurat or Single Cell Experiment format}
@@ -14,6 +20,10 @@ use the PCA reduction to identify the cell with the minimal euclidean distance f
 clonotype group.}
 
 \item{features}{Selected genes for the reduction DEFAULT: null will return all genes}
+
+\item{assay}{The name of the assay or assays to return.}
+
+\item{meta.carry}{Variables to carry over from the meta data of thje single-cell object}
 }
 \value{
 Single-cell Object with 1 cell representing 1 clone
@@ -22,7 +32,7 @@ Single-cell Object with 1 cell representing 1 clone
 Generate a single-cell object that has a representation of
 RNA expression by clonotype. This approach was first introduced
 in \href{https://pubmed.ncbi.nlm.nih.gov/34426704/}{CoNGA} and was 
-adapted to R. Please read and cite the authors work.
+adapted to R. Please read and cite the author's work.
 }
 \examples{
 trex_values <- CoNGAfy(trex_example, 

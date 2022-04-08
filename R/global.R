@@ -12,9 +12,11 @@
     utils::globalVariables ("nn")
     utils::globalVariables ("data")
     utils::globalVariables ("Trex.Data")
+    utils::globalVariables ("Trex.database")
     utils::globalVariables ("colData<-")
     utils::globalVariables ("TR")
     utils::globalVariables ("graph.edgelist")
+    utils::globalVariables ("f")
     
     invisible ()
     

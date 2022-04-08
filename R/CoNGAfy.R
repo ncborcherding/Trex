@@ -3,7 +3,7 @@
 #' Generate a single-cell object that has a representation of
 #' RNA expression by clonotype. This approach was first introduced
 #' in \href{https://pubmed.ncbi.nlm.nih.gov/34426704/}{CoNGA} and was 
-#' adapted to R. Please read and cite the authors work. 
+#' adapted to R. Please read and cite the author's work. 
 #' 
 #' @examples
 #' trex_values <- CoNGAfy(trex_example, 
@@ -16,11 +16,12 @@
 #' clonotype group.
 #' @param features Selected genes for the reduction DEFAULT: null will return all genes
 #' @param assay The name of the assay or assays to return.
+#' @param meta.carry Variables to carry over from the meta data of thje single-cell object
 #' 
 #' @export
 #' @importFrom SeuratObject CreateSeuratObject CreateAssayObject
 #' @importFrom SingleCellExperiment SingleCellExperiment 
-#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment assay assay<-
 #' 
 #' @return Single-cell Object with 1 cell representing 1 clone
 #' 
@@ -114,7 +115,7 @@ CoNGA.dist <- function(sc, features, assay) {
     colnames(data.return) <- data$CTaa[match(barcodes, rownames(data))]
     return(data.return)
 }
-# Adapted from the AverageExperssion() function in Seurat
+# Adapted from the AverageExpression() function in Seurat
 #' @importFrom rlang %||%
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom SummarizedExperiment assay
@@ -133,11 +134,11 @@ CoNGA.mean <- function(sc, features, assay) {
     data <- as.data.frame(meta[,"CTaa"])
     colnames(data) <- "CTaa"
     rownames(data) <- rownames(meta)
-    data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = F]
-    for (i in 1:ncol(x = data)) {
+    data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = FALSE]
+    for (i in seq_len(ncol(x = data))) {
         data[, i] <- as.factor(x = data[, i])
     }
-    num.levels <- sapply(X = 1:ncol(x = data), FUN = function(i) { 
+    num.levels <- sapply(X = seq_len(ncol(x = data)), FUN = function(i) { 
         length(x = levels(x = data[, i]))
     })
     category.matrix <- sparse.model.matrix(object = as.formula(

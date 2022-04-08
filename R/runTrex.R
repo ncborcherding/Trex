@@ -5,102 +5,26 @@
 #' 
 #' @examples
 #' trex_values <- maTrex(trex_example, 
-#'                         chains = "both", 
-#'                         edit.method = "lv",
-#'                         AA.properties = "AF",
-#'                         AA.method = "auto",
-#'                         n.trim = 0,
-#'                         c.trim = 0,
-#'                         nearest.method = "nn",
-#'                         threshold = 0.85,
-#'                         near.neighbor = 40,
-#'                         add.INKT = FALSE,
-#'                         add.MAIT = FALSE, 
-#'                         n.dim = 40,
-#'                         species = "human")
+#'                         chains = "TRA",
+#'                         AA.properties = "AF")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
-#' @param chains TRA, TRB, both
-#' @param edit.method distance measures inherited from \link[stringdist]{stringdist} or NULL
-#' to not include edit distance layer in multiplex network
+#' @param chains TRA or TRB
 #' @param AA.properties Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or NULL to not 
-#' include edit distance layer in multiplex network
-#' @param AA.method method for deriving pairwise distances from amino acid properties, 
-#' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-#' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
-#' the cdr3 sequences.
-#' @param n.trim length from N-terminus to trim on the CDR3 aa sequence
-#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
-#' @param nearest.method method for defining neighbors, either "threshold" for normalized
-#' distances above a certain value or "nn" for nearest neighbor by normalized distances. 
-#' @param threshold If nearest.method = "threshold" -the value for distance measures 
-#' above which simplify for adjacency matrix
-#' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
-#' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
-#' to the clone being compared.
-#' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
-#' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
-#' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
-#' @param species Indicate "human" or "mouse" for gene-based metrics
-#' @param seed seed for the random number generator
+#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
-#' @return Trex eigenvectors calculated from multiplex network
+#' @return Trex encoded values from the autoencoder
 maTrex <- function(sc, 
-                    chains = "both", 
-                    edit.method = "lv",
-                    AA.properties = "AF",
-                    AA.method = "auto",
-                    n.trim = 0,
-                    c.trim = 0,
-                    nearest.method = "nn",
-                    threshold = 0.85,
-                    near.neighbor = 40,
-                    add.INKT = TRUE,
-                    add.MAIT = TRUE, 
-                    n.dim = 40,
-                    species = "human", 
-                    seed = 42) {
-    set.seed(seed)
+                    chains = "TRB", 
+                    AA.properties = "AF") {
     TCR <- getTCR(sc, chains)
-    print("Calculating the Edit Distance for CDR3 AA sequence...")
-    if (!is.null(edit.method)) {
-        network <- distanceMatrix(TCR, edit.method, nearest.method, near.neighbor, threshold, c.trim, n.trim, return.dims = FALSE)
-    } else {
-        network <- NULL
-    }
-    
-    if ((AA.properties %in% c("AF", "KF", "both", "all"))[1]) {
+    if (AA.properties %in% c("AF", "KF", "both", "all")) {
         print("Calculating the Amino Acid Properties...")
-        AA.knn <- aaProperty(TCR, c.trim, n.trim, nearest.method, near.neighbor, threshold, AA.method, AA.properties, return.dims = FALSE)
-        network <- c(network, AA.knn)
+        reduction <- aaProperty(TCR, AA.properties)
     }
-    
-    if (add.INKT) {
-        print("Calculating the INKT gene usage...")
-        tmpscore <- scoreINKT(TCR, species)
-        if (length(which(tmpscore$score > 0)) != 0) {
-            tmp.knn <- gene.to.knn(tmpscore)
-            network <- c(network, tmp.knn)
-            names(network)[length(network)] <- "INKT"
-        }
-    }
-    if (add.MAIT) {
-        print("Calculating the MAIT gene usage...")
-        tmpscore <- scoreMAIT(TCR, species)
-        if (length(which(tmpscore$score > 0)) != 0) {
-            tmp.knn <- gene.to.knn(tmpscore)
-            network <- c(network, tmp.knn)
-            names(network)[length(network)] <- "MAIT"
-        }
-    }
-    print("Calculating Latent Vectors from multiplex network...")
-    barcodes <- rownames(grabMeta(sc))
-    reduction <- multiplex.network(network, n.dim, barcodes)
     return(reduction)
 }
 
@@ -111,84 +35,29 @@ maTrex <- function(sc,
 #' @examples
 #' trex_example <- runTrex(trex_example, 
 #'                         AA.properties = "AF", 
-#'                         nearest.method = "nn",
-#'                         near.neighbor = 40,
-#'                         threshold = 0.85,
 #'                         reduction.name = "Trex.AF")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
-#' @param chains TRA, TRB, both
-#' @param edit.method distance measures inherited from \link[stringdist]{stringdist}
+#' @param chains TRA or TRB
 #' @param AA.properties Amino acid properties to use for distance calculation: 
 #' "AF" = Atchley factors, "KF" = Kidera factors, or "both"
-#' @param AA.method method for deriving pairwise distances from amino acid properties, 
-#' either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-#' for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
-#' the cdr3 sequences.
 #' @param reduction.name Keyword to save Trex reduction. Useful if you want
 #' to try Trex with multiple parameters 
-#' @param n.trim length from N-terminus to trim on the CDR3 aa sequence
-#' @param c.trim length from C-terminus to trim on the CDR3 aa sequence
-#' @param nearest.method method for defining neighbors, either "threshold" for normalized
-#' distances above a certain value or "nn" for nearest neighbor by normalized distances. 
-#' @param threshold If nearest.method = "threshold" -the value for distance measures 
-#' above which simplify for adjacency matrix
-#' @param near.neighbor If nearest.method = "nn" - the number of nearest neighbors to use 
-#' in generating an adjacency matrix. If the number of copies of a clone is greater than the
-#' near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
-#' to the clone being compared.
-#' @param add.INKT Add a additional layer for invariant natural killer T cells based on genes
-#' @param add.MAIT Add a additional layer for Mucosal-associated invariant T cells based on genes
-#' @param n.dim The number of Trex dimensions to return, similar to PCA dimensions
-#' @param species Indicate "human" or "mouse" for gene-based metrics
-#' @param seed seed for the random number generator
 #' @export
 #' @return Seurat or SingleCellExperiment object with Trex dimensions placed 
 #' into the dimensional reduction slot. 
 #' 
 runTrex <- function(sc, 
-                    chains = "both", 
-                    edit.method = "lv",
+                    chains = "TRB", 
                     AA.properties = "AF",
-                    AA.method = "auto",
-                    n.trim = 0,
-                    c.trim = 0,
-                    nearest.method = "nn",
-                    threshold = 0.85,
-                    near.neighbor = 40,
-                    add.INKT = TRUE,
-                    add.MAIT = TRUE, 
-                    n.dim = 40,
-                    species = "human",
-                    reduction.name = "Trex",
-                    seed = 42) {
+                    reduction.name = "Trex") {
 
     cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
     reduction <- maTrex(sc,
                         chains, 
-                        edit.method,
-                        AA.properties,
-                        AA.method,
-                        n.trim, 
-                        c.trim,
-                        nearest.method,
-                        threshold,
-                        near.neighbor,
-                        add.INKT,
-                        add.MAIT,
-                        n.dim,
-                        species, 
-                        seed)
+                        AA.properties)
     TCR <- getTCR(sc, chains)
-    if (add.INKT) {
-        tmpscore <- scoreINKT(TCR, species)
-        sc <- add.meta.data(sc, tmpscore, "IKNT.score")
-    }
-    if (add.MAIT) {
-        tmpscore <- scoreMAIT(TCR, species)
-        sc <- add.meta.data(sc, tmpscore, "MAIT.score")
-    }
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
 }
@@ -274,7 +143,6 @@ clonalCommunity <- function(sc,
             dim.red <- sc
         }
     }
-    set.seed(42)
     clusters <- suppressWarnings(clusterRows(dim.red, BLUSPARAM=cluster.parameter))
     clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
     if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {

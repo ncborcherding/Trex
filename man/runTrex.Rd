@@ -4,67 +4,18 @@
 \alias{runTrex}
 \title{Trex single cell calculation}
 \usage{
-runTrex(
-  sc,
-  chains = "both",
-  edit.method = "lv",
-  AA.properties = "AF",
-  AA.method = "auto",
-  n.trim = 0,
-  c.trim = 0,
-  nearest.method = "nn",
-  threshold = 0.85,
-  near.neighbor = 40,
-  add.INKT = TRUE,
-  add.MAIT = TRUE,
-  n.dim = 40,
-  species = "human",
-  reduction.name = "Trex",
-  seed = 42
-)
+runTrex(sc, chains = "TRB", AA.properties = "AF", reduction.name = "Trex")
 }
 \arguments{
 \item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
 
-\item{chains}{TRA, TRB, both}
-
-\item{edit.method}{distance measures inherited from \link[stringdist]{stringdist}}
+\item{chains}{TRA or TRB}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
 "AF" = Atchley factors, "KF" = Kidera factors, or "both"}
 
-\item{AA.method}{method for deriving pairwise distances from amino acid properties, 
-either "mean" or the average amino acid characteristics for given cdr3 sequence or "auto"
-for using an autoencoder model. The autoencoder selection  will not allow for trimming of 
-the cdr3 sequences.}
-
-\item{n.trim}{length from N-terminus to trim on the CDR3 aa sequence}
-
-\item{c.trim}{length from C-terminus to trim on the CDR3 aa sequence}
-
-\item{nearest.method}{method for defining neighbors, either "threshold" for normalized
-distances above a certain value or "nn" for nearest neighbor by normalized distances.}
-
-\item{threshold}{If nearest.method = "threshold" -the value for distance measures 
-above which simplify for adjacency matrix}
-
-\item{near.neighbor}{If nearest.method = "nn" - the number of nearest neighbors to use 
-in generating an adjacency matrix. If the number of copies of a clone is greater than the
-near.neighbor value used, the near.neighbor will randomly sample unique clones that are nearest
-to the clone being compared.}
-
-\item{add.INKT}{Add a additional layer for invariant natural killer T cells based on genes}
-
-\item{add.MAIT}{Add a additional layer for Mucosal-associated invariant T cells based on genes}
-
-\item{n.dim}{The number of Trex dimensions to return, similar to PCA dimensions}
-
-\item{species}{Indicate "human" or "mouse" for gene-based metrics}
-
 \item{reduction.name}{Keyword to save Trex reduction. Useful if you want
 to try Trex with multiple parameters}
-
-\item{seed}{seed for the random number generator}
 }
 \value{
 Seurat or SingleCellExperiment object with Trex dimensions placed 
@@ -76,9 +27,6 @@ Run Trex algorithm with Seurat or SingleCellExperiment pipelines
 \examples{
 trex_example <- runTrex(trex_example, 
                         AA.properties = "AF", 
-                        nearest.method = "nn",
-                        near.neighbor = 40,
-                        threshold = 0.85,
                         reduction.name = "Trex.AF")
                         
 }

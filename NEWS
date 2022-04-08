@@ -1,8 +1,18 @@
 
+CHANGES IN VERSION 0.99.6
+------------------------
+
+* After comparing the outputs of various calculations Trex offers - by far the best performing is returning the auto encoded values. Removed distance calculations and gene usage statistics. 
+* Expanding auto encoder models to use 288,090 unique TCRs and 455,779 unique TCRBs derived from both single-cell cohorts and bulk databases - VDJdb, McPAS, IEdb, and TRAdb.
+* Plan to add one-hot auto-encoder for sequence information and a database of TCRs
+
+
 CHANGES IN VERSION 0.99.5
 ------------------------
 
 * CoNGAfy now can reduce the size of multiple dimensions using mean or distance. 
+* Moving the auto encoder distance back to cosine distance - per row the calculation will be 1-abs(cos())
+* Modified runTrex() to allow for generating layers without the edit distance (before it just errored out). 
 
 CHANGES IN VERSION 0.99.4
 ------------------------
