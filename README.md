@@ -8,18 +8,12 @@ Single-cell sequencing is now a integral tool in the field of immunology and onc
 like immune cell receptor profiling at the level of an individual cell. Towards this end, we developed the [scRepertoire](https://github.com/ncborcherding/scRepertoire) 
 R package to assist in the interaction of immune receptor and gene expression sequencing. However, utilization of clonal indices for more complex analyses are still lacking, specifically in using clonality in embedding of single-cells. To this end, we developed an R package that uses deep learning to vectorize TCR sequences using order or translating the sequence into amino acid properties.
 
-### Methods
-
-As of right now, there is no citation associated with Trex. If you're interested in the methods used to create the package, please [see the methods](https://ncborcherding.github.io/vignettes/TrexMethods.pdf) for now.
-
 ### TCRex
 If you are looking for the (very cool) TCR-epitope prediction algorithm **TCRex**, check out their website [here](https://tcrex.biodatamining.be/).
 
 # System requirements 
 
 Trex has been tested on R versions >= 4.0. Please consult the DESCRIPTION file for more details on required R packages - it is specifically designed to work with single-cell objects that have had TCRs added using [scRepertoire](https://github.com/ncborcherding/scRepertoire). Trex has been tested on OS X and Windows platforms.
-
-
 
 **keras** is necessary to use the autoencoder function (this includes the set up of the tensorflow environment in R):
 
@@ -39,7 +33,7 @@ install_tensorflow()
 To run Trex, open R and install Trex from github: 
 
 ```r
-devtools::install_github("ncborcherding/Trex")
+devtools::install_github("ncborcherding/Trex@dev")
 ```
 
 # Usage/Demos
