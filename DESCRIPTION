@@ -14,8 +14,7 @@ RoxygenNote: 7.1.2
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
 Depends: 
 	R (>= 4.0)
-Imports: dplyr, 
-	stringr, 
+Imports: stringr, 
 	SeuratObject,
 	SingleCellExperiment,
 	rlang,
