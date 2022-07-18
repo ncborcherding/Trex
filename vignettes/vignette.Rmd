@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "March 28,2022"
+date: "May 9th, 2022"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -115,11 +115,12 @@ Trex has 2 major functions - the first being ```maTrex()```, which is the backbo
 * "AF" to use Atchley factors  
 * "KF" to use Kidera factors  
 * "both" to use both  
+* "OHE" for a One Hot Autoencoder
 
 ```{r}
 Trex_vectors <- maTrex(trex_example, 
                        chains = "TRA",
-                      AA.properties = "KF")
+                      AA.properties = "OHE")
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```

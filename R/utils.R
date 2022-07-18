@@ -108,18 +108,31 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
   range <- Trex.Data[["model.ranges"]][[chain]]
   min <- range[["min"]]
   max <- range[["max"]]
-  ref <- seq(1, 750, 15)
+  ref <- seq(1, 900, 15)
   if (AA.properties == "AF") {
     ref2 <- sort(c(ref, ref+1, ref+2, ref+3, ref+4))
     min <- min[ref2]
     max <- max[ref2]
-  } else if (AA.properties == "AF") {
+  } else if (AA.properties == "KF") {
     ref2 <- sort(c(ref+5, ref+6, ref+7, ref+8, ref+9, ref+10, ref+11, ref+12, ref+13, ref+14))
     min <- min[ref2]
     max <- max[ref2]
   }
   range <- list(min = min, max = max)
   return(range)
+}
+
+one.hot.organizer <- function(refer) {
+  reference <- Trex.Data[[1]]
+  int <- matrix(ncol = length(reference$aa), nrow = length(refer))
+  for(i in seq_along(refer)) {
+    if (is.na(refer[i])) {
+      next()
+    }
+    int[i,which(reference$aa %in% refer[i])] <- 1
+  }
+  int[is.na(int)] <- 0
+  return(int)
 }
 
 
@@ -148,9 +161,12 @@ KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
 #Generates the 30 vector based on autoencoder model 
 #First normalizes the value by the min and max of the autoencoder training data
-auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
-  for(i in seq_len(length(array.reshape))) {
-    (array.reshape[i] - local.min[i])/(local.max[i] - local.min[i])
+auto.embedder <- function(array.reshape, aa.model, local.max, local.min, AA.properties) {
+  #OHE is already min/max normalized - each aa residue has 1 value and 19 0s
+  if(AA.properties != "OHE") {
+    for(i in seq_len(length(array.reshape))) {
+      (array.reshape[i] - local.min[i])/(local.max[i] - local.min[i])
+    }
   }
   array.reshape[is.na(array.reshape)] <- 0
   score <- stats::predict(aa.model, t(array.reshape))

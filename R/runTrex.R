@@ -11,7 +11,8 @@
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA or TRB
 #' @param AA.properties Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.
+#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+#' One Hot Autoencoder
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
@@ -21,7 +22,7 @@ maTrex <- function(sc,
                     chains = "TRB", 
                     AA.properties = "AF") {
     TCR <- getTCR(sc, chains)
-    if (AA.properties %in% c("AF", "KF", "both", "all")) {
+    if (AA.properties %in% c("AF", "KF", "both", "all", "OHE")) {
         print("Calculating the Amino Acid Properties...")
         reduction <- aaProperty(TCR, AA.properties)
     }
@@ -39,8 +40,9 @@ maTrex <- function(sc,
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA or TRB
-#' @param AA.properties Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, or "both"
+#' @param AA.properties  Amino acid properties to use for distance calculation: 
+#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+#' One Hot Autoencoder
 #' @param reduction.name Keyword to save Trex reduction. Useful if you want
 #' to try Trex with multiple parameters 
 #' @export
@@ -74,14 +76,21 @@ runTrex <- function(sc,
 #' x <- trex_example
 #' x <- quietTCRgenes(x)
 #' 
-#' @param sc Single Cell Object in Seurat format or vector of variable genes to use in reduction
+#' @param sc Single-cell object in Seurat format or vector of variable genes to use in reduction
+#' @param assay The Seurat assay slot to use to remove TCR genes from, NULL value will default to
+#' the default assay
+#' @importFrom SeuratObject DefaultAssay
 #' @export
 #' @return Seurat object or vector list with TCR genes removed.
-quietTCRgenes <- function(sc) {
-    unwanted_genes <- "TRBV*|^TRBD*|^TRBJ*|^TRDV*|^TRDD*|^TRDJ*|^TRAV*|^TRAJ*|^TRGV*|^TRGJ*"
+quietTCRgenes <- function(sc, 
+                          assay = NULL) {
+    unwanted_genes <- "TRBV|^TRBD|^TRBJ|^TRDV|^TRDD|^TRDJ|^TRAV|^TRAJ|^TRGV|^TRGJ"
     if (inherits(x=sc, what ="Seurat")) {
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[["RNA"]]@var.features, value = TRUE)
-        sc[["RNA"]]@var.features <- sc[["RNA"]]@var.features[sc[["RNA"]]@var.features %!in% unwanted_genes]
+        if (is.null(assay)) {
+            assay <- DefaultAssay(sc)
+        }
+        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[[assay]]@var.features, value = TRUE)
+        sc[[assay]]@var.features <- sc[[assay]]@var.features[sc[[assay]]@var.features %!in% unwanted_genes]
     } else {
         #Bioconductor scran pipelines uses vector of variable genes for DR
         unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = TRUE)
