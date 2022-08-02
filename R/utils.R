@@ -123,15 +123,21 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
 }
 
 one.hot.organizer <- function(refer) {
-  reference <- Trex.Data[[1]]
-  int <- matrix(ncol = length(reference$aa), nrow = length(refer))
+  aa.int.vals <- Trex.Data[[1]]$aa
+  names(aa.int.vals) <- 1:20
+  intermediate.value <- rep(0,21)
+  
+  int <- matrix(nrow = 21, ncol = length(refer), 0)
   for(i in seq_along(refer)) {
     if (is.na(refer[i])) {
-      next()
+      int[1,i] <- 1
+    } else {
+      val <- as.integer(names(aa.int.vals[which(aa.int.vals == refer[i])]))
+      new.value <- intermediate.value
+      new.value[val+1] <- 1
+      int[,i] <- new.value
     }
-    int[i,which(reference$aa %in% refer[i])] <- 1
   }
-  int[is.na(int)] <- 0
   return(int)
 }
 

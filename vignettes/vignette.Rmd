@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "May 9th, 2022"
+date: "July 29,2022"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -124,6 +124,7 @@ Trex_vectors <- maTrex(trex_example,
 
 qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
 ```
+
 
 ## runTrex
 
