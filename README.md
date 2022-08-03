@@ -65,9 +65,7 @@ You can run Trex within your Seurat or Single-Cell Experiemt workflow. **Importa
 ```r
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
                    chains = "TRB", #Use of "TRA" or "TRB" 
-                   AA.properties = c("AF", "KF", "both"), 
-                   AA.method = "auto", #Use "auto" for Autoencoder or 
-                   #"mean" for mean properties across cdr3 sequence
+                   AA.properties = c("AF", "KF", "both", "OHE"),
                    reduction.name = "Trex", #Name designation for 
                    #the vectors to be added to the single-cell object)
                    
