@@ -82,9 +82,10 @@ runTrex <- function(sc,
 #' @importFrom SeuratObject DefaultAssay
 #' @export
 #' @return Seurat object or vector list with TCR genes removed.
+#' @author Nicky de Vrij Nick Borcherding
 quietTCRgenes <- function(sc, 
                           assay = NULL) {
-    unwanted_genes <- "TRBV|^TRBD|^TRBJ|^TRDV|^TRDD|^TRDJ|^TRAV|^TRAJ|^TRGV|^TRGJ"
+    unwanted_genes <- "^TR[ABDG][VDJ]"
     if (inherits(x=sc, what ="Seurat")) {
         if (is.null(assay)) {
             assay <- DefaultAssay(sc)
