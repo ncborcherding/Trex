@@ -64,10 +64,10 @@ You can run Trex within your Seurat or Single-Cell Experiemt workflow. **Importa
 
 ```r
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
-                   chains = "TRB", #Use of "TRA" or "TRB" 
-                   AA.properties = c("AF", "KF", "both", "OHE"),
-                   reduction.name = "Trex", #Name designation for 
-                   #the vectors to be added to the single-cell object)
+                       chains = "TRB", #Use of "TRA" or "TRB" 
+                       AA.properties = c("AF", "KF", "both", "OHE"),
+                       reduction.name = "Trex", #Name designation for 
+                       #the vectors to be added to the single-cell object)
                    
 seuratObj_Tonly <- runTrex(seuratObj, reduction.name = "Trex")
 ```
@@ -91,11 +91,15 @@ seuratObj <- RunPCA(seuratObj)
 
 ### Running WNN approach
 ```r
-seuratObj <- FindMultiModalNeighbors(
-  seuratObj, reduction.list = list("pca", "Trex"), 
-  dims.list = list(1:30, 1:20), modality.weight.name = "RNA.weight"
-)
-seuratObj <- RunUMAP(seuratObj, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+seuratObj <- FindMultiModalNeighbors(seuratObj, 
+                                     reduction.list = list("pca", "Trex"), 
+                                     dims.list = list(1:30, 1:20), 
+                                     modality.weight.name = "RNA.weight")
+                                     
+seuratObj <- RunUMAP(seuratObj, 
+                     nn.name = "weighted.nn", 
+                     reduction.name = "wnn.umap", 
+                     reduction.key = "wnnUMAP_")
 ```
 ***
 
