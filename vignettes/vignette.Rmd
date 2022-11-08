@@ -4,7 +4,7 @@ author:
 - name: Nick Borcherding
   email: ncborch@gmail.com
   affiliation: Washington University in St. Louis, School of Medicine, St. Louis, MO, USA
-date: "July 29,2022"
+date: "November 8th, 2022"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -47,7 +47,7 @@ suppressMessages(library(scRepertoire))
 #################################
 tmp <-  Read10X("~/Patient17/filtered_feature_bc_matrix")
 
-Pt17 <- Createtrex_exampleect(counts = tmp$`Gene Expression`)
+Pt17 <- CreateSeuratObject(counts = tmp$`Gene Expression`)
 #Removing TCR-specific antibody
 adt_assay <- CreateAssayObject(counts = tmp$`Antibody Capture`[1:37,])
 Pt17[["ADT"]] <- adt_assay
