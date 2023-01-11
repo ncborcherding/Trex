@@ -27,3 +27,6 @@ x <- trex_example
 x <- quietTCRgenes(x)
 
 }
+\author{
+Nicky de Vrij Nick Borcherding
+}

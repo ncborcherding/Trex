@@ -124,17 +124,21 @@ CoNGA.mean <- function(sc, features, assay) {
     
     if (inherits(x=sc, what ="Seurat")) {
         data.use <- sc[[assay]]@data
+        data.use <- expm1(x = data.use)
     } else if (inherits(x=sc, what ="SingleCellExperiment")){
         data.use <- assay(sc, name = assay)
     }
-    
     features.to.avg <- features %||% rownames(x = data.use)
     features.assay <- intersect(x = features.to.avg, y = rownames(x = data.use))
     meta <- grabMeta(sc)
     data <- as.data.frame(meta[,"CTaa"])
     colnames(data) <- "CTaa"
     rownames(data) <- rownames(meta)
+    
+    #Modified to drop any cells without CTaa
+    data.use <- data.use[,!is.na(data[,"CTaa"])]
     data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = FALSE]
+    
     for (i in seq_len(ncol(x = data))) {
         data[, i] <- as.factor(x = data[, i])
     }

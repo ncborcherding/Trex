@@ -20,7 +20,7 @@ annotateDB <- function(sc,
   cdr3.match <- TCR[TCR$cdr3_aa %in% relevent.db[,1],]
   cdr3.match <- merge(cdr3.match, relevent.db, by.x ="cdr3_aa", by.y ="CDR3", all.x = TRUE)
   barcodes <- cdr3.match$barcode
-  cdr3.match <- cdr3.match[,c("Epitope.target", "Epitope.sequence", "Epitope.species", "Tissue", "CellType", "Database")]
+  cdr3.match <- cdr3.match[,c("Epitope.target", "Epitope.sequence", "Epitope.species", "Tissue", "Cell.type", "Database")]
   colnames(cdr3.match) <- paste0(chains, "_", colnames(cdr3.match))
   rownames(cdr3.match) <- barcodes
   sc <- add.meta.data(sc, cdr3.match)
