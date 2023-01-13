@@ -12,7 +12,7 @@ annotateDB(sc, chains = "TRB", edit.distance = 0)
 \item{chains}{TRA or TRB}
 
 \item{edit.distance}{Number of amino acid residues different than reference
-using Levenshtein distance}
+using Levenshtein distance. Distances of <= 2 are optimal.}
 }
 \value{
 Seurat or SingleCellExperiment object with epitope information
