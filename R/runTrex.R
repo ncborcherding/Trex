@@ -22,6 +22,7 @@ maTrex <- function(sc,
                     chains = "TRB", 
                     AA.properties = "AF") {
     TCR <- getTCR(sc, chains)
+    checkLength(TCR[[1]])
     if (AA.properties %in% c("AF", "KF", "both", "all", "OHE")) {
         print("Calculating the Amino Acid Properties...")
         reduction <- aaProperty(TCR, AA.properties)
