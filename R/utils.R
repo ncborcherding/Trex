@@ -90,6 +90,15 @@ checkSingleObject <- function(sc) {
             the correct data.") }
 }
 
+#This is to check that all the cdr3 sequences are < 60 residues
+checkLength <- function(x) {
+  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 60)) {
+    stop("Models have been trained on cdr3 sequences 
+         less than 60 amino acid residues. Please
+         filter the larger sequences before running")
+  }
+}
+
 
 #Returns appropriate model for autoencoder
 #' @importFrom tensorflow tf
