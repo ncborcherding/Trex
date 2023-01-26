@@ -1,5 +1,10 @@
 CHANGES IN VERSION 0.99.8
 ------------------------
+- maTrex() now offers support for scRepertoire combineTCR() output and not just single-cell objects alone.
+
+
+CHANGES IN VERSION 0.99.8
+------------------------
 - update to the database used in annotateDB(), cleaned data extensively
 - Correct CoNGAfy() function to fix mean-based reduction
 - Added edit distance parameter to annotateDB()

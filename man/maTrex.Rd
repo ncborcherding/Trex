@@ -7,7 +7,8 @@
 maTrex(sc, chains = "TRB", AA.properties = "AF")
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
+\item{sc}{Single Cell Object in Seurat or SingleCellExperiment format or
+the output of combineTCR() in scRepertoire}
 
 \item{chains}{TRA or TRB}
 

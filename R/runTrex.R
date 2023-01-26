@@ -8,7 +8,8 @@
 #'                         chains = "TRA",
 #'                         AA.properties = "AF")
 #'                         
-#' @param sc Single Cell Object in Seurat or SingleCell Experiment format
+#' @param sc Single Cell Object in Seurat or SingleCellExperiment format or
+#' the output of combineTCR() in scRepertoire
 #' @param chains TRA or TRB
 #' @param AA.properties Amino acid properties to use for distance calculation: 
 #' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
@@ -54,7 +55,7 @@ runTrex <- function(sc,
                     chains = "TRB", 
                     AA.properties = "AF",
                     reduction.name = "Trex") {
-
+    checkSingleObject(sc)
     cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
     reduction <- maTrex(sc,
