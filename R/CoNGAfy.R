@@ -65,10 +65,10 @@ CoNGAfy <- function(sc,
         sc.output$CTaa <- rownames(sc.output@colData)
         CTge <- data.frame(unique(sc@colData[,c(meta.carry)]))
     }
-    CTge <- CTge[!duplicated(CTge$CTaa),]
+    CTge <- meta.handler(CTge, meta.carry)
     clones <- unique(CTge$CTaa)
     rownames(CTge) <- clones
-    colnames(CTge) <- c("CTaa", "CTgene")
+    colnames(CTge) <- meta.carry
     sc.output <- add.meta.data(sc.output, CTge, colnames(CTge))
     return(sc.output)
 }
@@ -173,4 +173,26 @@ CoNGA.mean <- function(sc, features, assay) {
         })
     data.return <- data.use %*% category.matrix
     return(data.return)
+}
+
+#' @importFrom stringr str_sort
+meta.handler <- function(meta, meta.carry) {
+  unique.clones <- unique(meta[,"CTaa"])
+  duplicated.clones <- na.omit(unique(meta[,"CTaa"][which(duplicated(meta[,"CTaa"]))]))
+  new.meta <- NULL
+  for (i in seq_along(duplicated.clones)) {
+    meta.tmp <- meta[meta[,"CTaa"] == duplicated.clones[i], ]
+    concat.strings <- lapply(meta.carry, function(x) {
+            paste0(str_sort(unique(na.omit(meta.tmp[,x]))), collapse = ";")
+    })
+    new.meta <- rbind(new.meta, unlist(concat.strings))
+  }
+  old.meta <- meta[meta[,"CTaa"] %!in% duplicated.clones, meta.carry]
+  if (length(new.meta) != 0) {
+    colnames(new.meta) <- meta.carry
+    total.meta <- rbind(old.meta, new.meta)
+  } else {
+    total.meta <- old.meta
+  }
+  return(total.meta)
 }
