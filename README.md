@@ -42,7 +42,7 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 
 ## Quick Start 
 
-Check out this [vignette](https://www.borch.dev/uploads/trex) for a quick start tutorial. 
+Check out this [vignette](https://www.borch.dev/uploads/vignette/trex) for a quick start tutorial. 
 
 <img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/graphicalAbstract.png">
 
