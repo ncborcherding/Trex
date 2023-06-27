@@ -21,7 +21,12 @@ if (inherits(x=sc, what ="Seurat")) {
 #Function to pull and organize TCR depending on the chain selected
 #' @importFrom stringr str_split
 getTCR <- function(sc, chains) {
-  meta <- grabMeta(sc)
+  if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {
+    meta <- grabMeta(sc)
+  } else {
+    meta <- do.call(rbind,sc)
+    rownames(meta) <- meta[,"barcode"]
+  }
   tmp <- data.frame(barcode = rownames(meta), 
                     str_split(meta[,"CTaa"], "_", simplify = TRUE), 
                     str_split(meta[,"CTgene"], "_", simplify = TRUE))
@@ -88,6 +93,15 @@ checkSingleObject <- function(sc) {
     stop("Object indicated is not of class 'Seurat' or 
             'SummarizedExperiment', make sure you are using
             the correct data.") }
+}
+
+#This is to check that all the cdr3 sequences are < 60 residues
+checkLength <- function(x) {
+  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 60)) {
+    stop("Models have been trained on cdr3 sequences 
+         less than 60 amino acid residues. Please
+         filter the larger sequences before running")
+  }
 }
 
 

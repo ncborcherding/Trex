@@ -298,6 +298,17 @@ DimPlot(CoNGA.seurat,
         reduction = "Trex.umap", 
         group.by = "TRB_Epitope.sequence")
 ```
+Or ```annotateDB()``` can be used on the full single-cell object and examine the sequence information along the RNA-based UMAP. An added feature to the function allows the annotations to be extended to cdr3 sequences that are within defined edit distances from the reference using **edit.distance**.
+
+```{r}
+trex_example <- annotateDB(trex_example,
+                        chains = "TRB", 
+                        edit.distance = 2)
+
+DimPlot(trex_example, 
+        reduction = "wnn.umap", 
+        group.by = "TRB_Epitope.species")
+```
 
 ***
 # Conclusion

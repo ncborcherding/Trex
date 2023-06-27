@@ -65,10 +65,10 @@ CoNGAfy <- function(sc,
         sc.output$CTaa <- rownames(sc.output@colData)
         CTge <- data.frame(unique(sc@colData[,c(meta.carry)]))
     }
-    CTge <- CTge[!duplicated(CTge$CTaa),]
+    CTge <- meta.handler(CTge, meta.carry)
     clones <- unique(CTge$CTaa)
     rownames(CTge) <- clones
-    colnames(CTge) <- c("CTaa", "CTgene")
+    colnames(CTge) <- meta.carry
     sc.output <- add.meta.data(sc.output, CTge, colnames(CTge))
     return(sc.output)
 }
@@ -117,24 +117,28 @@ CoNGA.dist <- function(sc, features, assay) {
 }
 # Adapted from the AverageExpression() function in Seurat
 #' @importFrom rlang %||%
-#' @importFrom Matrix sparse.model.matrix
+#' @importFrom Matrix sparse.model.matrix colSums
 #' @importFrom SummarizedExperiment assay
 #' @importFrom stats as.formula
 CoNGA.mean <- function(sc, features, assay) {
     
     if (inherits(x=sc, what ="Seurat")) {
         data.use <- sc[[assay]]@data
+        data.use <- expm1(x = data.use)
     } else if (inherits(x=sc, what ="SingleCellExperiment")){
         data.use <- assay(sc, name = assay)
     }
-    
     features.to.avg <- features %||% rownames(x = data.use)
     features.assay <- intersect(x = features.to.avg, y = rownames(x = data.use))
     meta <- grabMeta(sc)
     data <- as.data.frame(meta[,"CTaa"])
     colnames(data) <- "CTaa"
     rownames(data) <- rownames(meta)
+    
+    #Modified to drop any cells without CTaa
+    data.use <- data.use[,!is.na(data[,"CTaa"])]
     data <- data[which(rowSums(x = is.na(x = data)) == 0), , drop = FALSE]
+    
     for (i in seq_len(ncol(x = data))) {
         data[, i] <- as.factor(x = data[, i])
     }
@@ -152,7 +156,7 @@ CoNGA.mean <- function(sc, features, assay) {
             )
         )
     ))
-    colsums <- colSums(x = category.matrix)
+    colsums <-Matrix::colSums(x = category.matrix)
     category.matrix <- category.matrix[, colsums > 0]
     colsums <- colsums[colsums > 0]
     
@@ -169,4 +173,26 @@ CoNGA.mean <- function(sc, features, assay) {
         })
     data.return <- data.use %*% category.matrix
     return(data.return)
+}
+
+#' @importFrom stringr str_sort
+meta.handler <- function(meta, meta.carry) {
+  unique.clones <- unique(meta[,"CTaa"])
+  duplicated.clones <- na.omit(unique(meta[,"CTaa"][which(duplicated(meta[,"CTaa"]))]))
+  new.meta <- NULL
+  for (i in seq_along(duplicated.clones)) {
+    meta.tmp <- meta[meta[,"CTaa"] == duplicated.clones[i], ]
+    concat.strings <- lapply(meta.carry, function(x) {
+            paste0(str_sort(unique(na.omit(meta.tmp[,x]))), collapse = ";")
+    })
+    new.meta <- rbind(new.meta, unlist(concat.strings))
+  }
+  old.meta <- meta[meta[,"CTaa"] %!in% duplicated.clones, meta.carry]
+  if (length(new.meta) != 0) {
+    colnames(new.meta) <- meta.carry
+    total.meta <- rbind(old.meta, new.meta)
+  } else {
+    total.meta <- old.meta
+  }
+  return(total.meta)
 }

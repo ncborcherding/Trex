@@ -1,7 +1,6 @@
 #Transforming the CDR3 sequence into vectors
 #' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
-#' @importFrom dplyr bind_rows
 aaProperty <- function(TCR, 
                        AA.properties = AA.properties) { 
   return <- list() ### Need to add reference data

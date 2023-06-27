@@ -4,10 +4,13 @@
 \alias{quietTCRgenes}
 \title{Remove TCR genes from variable gene results}
 \usage{
-quietTCRgenes(sc)
+quietTCRgenes(sc, assay = NULL)
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat format or vector of variable genes to use in reduction}
+\item{sc}{Single-cell object in Seurat format or vector of variable genes to use in reduction}
+
+\item{assay}{The Seurat assay slot to use to remove TCR genes from, NULL value will default to
+the default assay}
 }
 \value{
 Seurat object or vector list with TCR genes removed.
@@ -23,4 +26,7 @@ the Bioconductor scran workflow.
 x <- trex_example
 x <- quietTCRgenes(x)
 
+}
+\author{
+Nicky de Vrij Nick Borcherding
 }
