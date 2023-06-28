@@ -23,17 +23,20 @@ install.packages("keras")
 
 ##Setting up Tensor Flow
 library(reticulate)
+conda_create("r-reticulate") ##If first time using reticulate
 use_condaenv(condaenv = "r-reticulate", required = TRUE)
 library(tensorflow)
 install_tensorflow()
 ```
+
+An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packahes using ```virtualenv_install()```.
 
 # Installation
 
 To run Trex, open R and install Trex from github: 
 
 ```r
-devtools::install_github("ncborcherding/Trex@dev")
+devtools::install_github("ncborcherding/Trex")
 ```
 
 # Usage/Demos
@@ -61,12 +64,10 @@ You can run Trex within your Seurat or Single-Cell Experiemt workflow. **Importa
 
 ```r
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
-                   chains = "TRB", #Use of "TRA" or "TRB" 
-                   AA.properties = c("AF", "KF", "both"), 
-                   AA.method = "auto", #Use "auto" for Autoencoder or 
-                   #"mean" for mean properties across cdr3 sequence
-                   reduction.name = "Trex", #Name designation for 
-                   #the vectors to be added to the single-cell object)
+                       chains = "TRB", #Use of "TRA" or "TRB" 
+                       AA.properties = c("AF", "KF", "both", "OHE"),
+                       reduction.name = "Trex", #Name designation for 
+                       #the vectors to be added to the single-cell object)
                    
 seuratObj_Tonly <- runTrex(seuratObj, reduction.name = "Trex")
 ```
@@ -90,11 +91,15 @@ seuratObj <- RunPCA(seuratObj)
 
 ### Running WNN approach
 ```r
-seuratObj <- FindMultiModalNeighbors(
-  seuratObj, reduction.list = list("pca", "Trex"), 
-  dims.list = list(1:30, 1:20), modality.weight.name = "RNA.weight"
-)
-seuratObj <- RunUMAP(seuratObj, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+seuratObj <- FindMultiModalNeighbors(seuratObj, 
+                                     reduction.list = list("pca", "Trex"), 
+                                     dims.list = list(1:30, 1:20), 
+                                     modality.weight.name = "RNA.weight")
+                                     
+seuratObj <- RunUMAP(seuratObj, 
+                     nn.name = "weighted.nn", 
+                     reduction.name = "wnn.umap", 
+                     reduction.key = "wnnUMAP_")
 ```
 ***
 
