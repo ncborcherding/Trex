@@ -27,14 +27,14 @@ aaProperty <- function(TCR,
     for (n in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[n],]$cdr3_aa
       refer <- unlist(strsplit(tmp.CDR, ""))
-      refer <- c(refer, rep(NA, 60 - length(refer)))
+      refer <- c(refer, rep(NA, 70 - length(refer)))
       if(AA.properties == "OHE") {
         int <- one.hot.organizer(refer)
-        array.reshape.tmp <- array_reshape(int, 1260)
+        array.reshape.tmp <- array_reshape(int, 1470)
       }else {
         int <- reference[match(refer, reference$aa),c(1,col.ref)]
         int <- as.matrix(int[,-1])
-        array.reshape.tmp <- array_reshape(int, length(col.ref)*60)
+        array.reshape.tmp <- array_reshape(int, length(col.ref)*70)
       }
       score.tmp <- auto.embedder(array.reshape.tmp, aa.model, local.max, local.min, AA.properties)
       score <- rbind(score, score.tmp)
