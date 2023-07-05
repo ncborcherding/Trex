@@ -31,6 +31,7 @@ aaProperty <- function(TCR,
       if(AA.properties == "OHE") {
         int <- one.hot.organizer(refer)
         array.reshape.tmp <- array_reshape(int, 1470)
+        array.reshape.tmp[is.na(array.reshape.tmp)] <- 0
       }else {
         int <- reference[match(refer, reference$aa),c(1,col.ref)]
         int <- as.matrix(int[,-1])
