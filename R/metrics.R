@@ -7,10 +7,10 @@ aaProperty <- function(TCR,
   reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(AA.properties, collapse = "|")), colnames(reference))
   length <- NULL
-  if (AA.properties == " both") {
-    column.ref <- unique(sort(c(AF.col, KF.col)))
+  if (AA.properties == "both") {
+    col.ref <- unique(sort(c(AF.col, KF.col)))
   } else {
-    column.ref <- unique(sort(col.ref))
+    col.ref <- unique(sort(col.ref))
   }
   chain <- names(TCR)
   for (i in seq_along(TCR)) {

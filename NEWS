@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.99.10
+------------------------
+- fixed issuer with TRB OHE encoder returning NaN or zero values
+- "both" call now pulls all AF/KF without error
+
 CHANGES IN VERSION 0.99.9
 ------------------------
 - maTrex() now offers support for scRepertoire combineTCR() output and not just single-cell objects alone.
