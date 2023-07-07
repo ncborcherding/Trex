@@ -27,10 +27,17 @@ aaProperty <- function(TCR,
     for (n in seq_len(length(cells))) {
       tmp.CDR <- membership[membership$barcode == cells[n],]$cdr3_aa
       refer <- unlist(strsplit(tmp.CDR, ""))
-      refer <- c(refer, rep(NA, 50 - length(refer))) ###Will need to expand to 60 for new model
-      int <- reference[match(refer, reference$aa),c(1,col.ref)]
-      array.reshape.tmp <- array_reshape(as.matrix(int[,-1]), length(col.ref)*50) ###Will need to expand to 60 for new model
-      score.tmp <- auto.embedder(array.reshape.tmp, aa.model, local.max, local.min)
+      refer <- c(refer, rep(NA, 70 - length(refer)))
+      if(AA.properties == "OHE") {
+        int <- one.hot.organizer(refer)
+        array.reshape.tmp <- array_reshape(int, 1470)
+        array.reshape.tmp[is.na(array.reshape.tmp)] <- 0
+      }else {
+        int <- reference[match(refer, reference$aa),c(1,col.ref)]
+        int <- as.matrix(int[,-1])
+        array.reshape.tmp <- array_reshape(int, length(col.ref)*70)
+      }
+      score.tmp <- auto.embedder(array.reshape.tmp, aa.model, local.max, local.min, AA.properties)
       score <- rbind(score, score.tmp)
     }
     score <- data.frame(unique(membership[,"barcode"]), score)

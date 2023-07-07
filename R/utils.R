@@ -95,9 +95,9 @@ checkSingleObject <- function(sc) {
             the correct data.") }
 }
 
-#This is to check that all the cdr3 sequences are < 60 residues
+#This is to check that all the cdr3 sequences are < 70 residues
 checkLength <- function(x) {
-  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 60)) {
+  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 70)) {
     stop("Models have been trained on cdr3 sequences 
          less than 60 amino acid residues. Please
          filter the larger sequences before running")
@@ -109,7 +109,6 @@ checkLength <- function(x) {
 #' @importFrom tensorflow tf
 #' @importFrom keras load_model_hdf5
 aa.model.loader <- function(chain, AA.properties) {
-  quiet(tensorflow::tf$compat$v1$disable_eager_execution())
     select  <- system.file("extdata", paste0(chain, "_", 
                                AA.properties, "_Encoder.h5"), 
                           package = "Trex")
@@ -122,18 +121,37 @@ aa.range.loader <- function(chain, AA.properties, Trex.Data) {
   range <- Trex.Data[["model.ranges"]][[chain]]
   min <- range[["min"]]
   max <- range[["max"]]
-  ref <- seq(1, 750, 15)
+  ref <- seq(1, 900, 15)
   if (AA.properties == "AF") {
     ref2 <- sort(c(ref, ref+1, ref+2, ref+3, ref+4))
     min <- min[ref2]
     max <- max[ref2]
-  } else if (AA.properties == "AF") {
+  } else if (AA.properties == "KF") {
     ref2 <- sort(c(ref+5, ref+6, ref+7, ref+8, ref+9, ref+10, ref+11, ref+12, ref+13, ref+14))
     min <- min[ref2]
     max <- max[ref2]
   }
   range <- list(min = min, max = max)
   return(range)
+}
+
+one.hot.organizer <- function(refer) {
+  aa.int.vals <- Trex.Data[[1]]$aa
+  names(aa.int.vals) <- 1:20
+  intermediate.value <- rep(0,21)
+  
+  int <- matrix(nrow = 21, ncol = length(refer), 0)
+  for(i in seq_along(refer)) {
+    if (is.na(refer[i])) {
+      int[1,i] <- 1
+    } else {
+      val <- as.integer(names(aa.int.vals[which(aa.int.vals == refer[i])]))
+      new.value <- intermediate.value
+      new.value[val+1] <- 1
+      int[,i] <- new.value
+    }
+  }
+  return(int)
 }
 
 
@@ -162,12 +180,15 @@ KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
 #Generates the 30 vector based on autoencoder model 
 #First normalizes the value by the min and max of the autoencoder training data
-auto.embedder <- function(array.reshape, aa.model, local.max, local.min) {
-  for(i in seq_len(length(array.reshape))) {
-    (array.reshape[i] - local.min[i])/(local.max[i] - local.min[i])
+auto.embedder <- function(array.reshape, aa.model, local.max, local.min, AA.properties) {
+  #OHE is already min/max normalized - each aa residue has 1 value and 19 0s
+  if(AA.properties != "OHE") {
+    for(i in seq_len(length(array.reshape))) {
+      (array.reshape[i] - local.min[i])/(local.max[i] - local.min[i])
+    }
   }
   array.reshape[is.na(array.reshape)] <- 0
-  score <- stats::predict(aa.model, t(array.reshape))
+  score <- stats::predict(aa.model, t(array.reshape), verbose = 0)
   return(score)
 }
 

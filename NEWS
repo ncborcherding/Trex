@@ -1,3 +1,20 @@
+CHANGES IN VERSION 0.99.9
+------------------------
+- maTrex() now offers support for scRepertoire combineTCR() output and not just single-cell objects alone.
+- CoNGAfy() function modified for additional meta variable support - will automatically check the duplicated clones for multiple values and condense with ";"
+- New format of encoder models to reduce size of package
+
+
+CHANGES IN VERSION 0.99.8
+------------------------
+- update to the database used in annotateDB(), cleaned data extensively
+- Correct CoNGAfy() function to fix mean-based reduction
+- Added edit distance parameter to annotateDB()
+
+CHANGES IN VERSION 0.99.7
+------------------------
+- Added one hot auto encoder to model options
+
 
 CHANGES IN VERSION 0.99.7
 ------------------------

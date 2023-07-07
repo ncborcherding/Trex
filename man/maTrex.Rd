@@ -13,7 +13,8 @@ the output of combineTCR() in scRepertoire}
 \item{chains}{TRA or TRB}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF.}
+"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+One Hot Autoencoder}
 }
 \value{
 Trex encoded values from the autoencoder

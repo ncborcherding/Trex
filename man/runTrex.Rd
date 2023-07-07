@@ -12,7 +12,8 @@ runTrex(sc, chains = "TRB", AA.properties = "AF", reduction.name = "Trex")
 \item{chains}{TRA or TRB}
 
 \item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, or "both"}
+"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+One Hot Autoencoder}
 
 \item{reduction.name}{Keyword to save Trex reduction. Useful if you want
 to try Trex with multiple parameters}

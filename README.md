@@ -11,6 +11,8 @@ R package to assist in the interaction of immune receptor and gene expression se
 ### TCRex
 If you are looking for the (very cool) TCR-epitope prediction algorithm **TCRex**, check out their website [here](https://tcrex.biodatamining.be/).
 
+<img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/graphicalAbstract.png">
+
 # System requirements 
 
 Trex has been tested on R versions >= 4.0. Please consult the DESCRIPTION file for more details on required R packages - it is specifically designed to work with single-cell objects that have had TCRs added using [scRepertoire](https://github.com/ncborcherding/scRepertoire). Trex has been tested on OS X and Windows platforms.
@@ -31,6 +33,11 @@ install_tensorflow()
 
 An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packahes using ```virtualenv_install()```.
 
+# Training Information 
+<img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/training_info.png">
+
+Each of the models available in Trex follow similar architecture with depth and width of input layers, epochs, learning rate, batch size, and early stopping calls (**A**). The major difference is the size of the input layer, depending on the method chosen with **AA.properties**. In addition, the one-hot approach utilized an RMSprop optimization, while the amino acid matrices used RAdam, this difference was selected due to tendency towards gradient explosion on the one-hot approach. The training and validation mean square error is availble in **B**.
+
 # Installation
 
 To run Trex, open R and install Trex from github: 
@@ -38,7 +45,6 @@ To run Trex, open R and install Trex from github:
 ```r
 devtools::install_github("ncborcherding/Trex")
 ```
-
 # Usage/Demos
 
 Trex should be able to be run in popular R-based single-cell workflows, including Seurat and Bioconductor/Single-Cell Experiment formats.
@@ -46,8 +52,6 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 ## Quick Start 
 
 Check out this [vignette](https://www.borch.dev/uploads/vignette/trex) for a quick start tutorial. 
-
-<img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/graphicalAbstract.png">
 
 ## Autoencoded Matrix
 
