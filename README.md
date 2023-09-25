@@ -107,6 +107,8 @@ seuratObj <- RunUMAP(seuratObj,
                      reduction.key = "wnnUMAP_")
 ```
 ***
+### Citation
+More information on Trex is available at our ResearchSquare [preprint](https://www.researchsquare.com/article/rs-3304466/v1). Please contact us (below) if you have any suggestions!
 
 ### Contact
 Questions, comments, suggestions, please feel free to contact Nick Borcherding via this repository, [email](mailto:ncborch@gmail.com), or using [twitter](https://twitter.com/theHumanBorch). 
