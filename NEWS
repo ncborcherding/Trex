@@ -1,3 +1,27 @@
+
+CHANGES IN VERSION 0.99.11
+------------------------
+* Added geometric encoding using the BLOSUM62 matrix
+* Sequence input: 
+	- TRA: 905611
+	- TRB: 1276462
+* Trained classical and variational autoencoders for TRA/TRB chains
+ 	- Architecture: 256-128-30-128-256
+	- Parameters: 
+		Batch Size = 64
+		Latent Dimensions = 30
+		Epochs = 100
+		Loss = Mean Squared Error
+	- Optimizers: Adam
+	- Early stopping was set to patients of 10 for minimal validation loss and restoration of best weights
+	- learn rate varied by models
+	- classical auto encoders have batch normalization layers between the dense layers. 
+
+DEPRECATED AND DEFUNCT
+
+* Deprecate clonalCommunity() 
+
+
 CHANGES IN VERSION 0.99.10
 ------------------------
 - fixed issuer with TRB OHE encoder returning NaN or zero values

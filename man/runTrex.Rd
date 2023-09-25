@@ -4,16 +4,30 @@
 \alias{runTrex}
 \title{Trex single cell calculation}
 \usage{
-runTrex(sc, chains = "TRB", AA.properties = "AF", reduction.name = "Trex")
+runTrex(
+  sc,
+  chains = "TRA",
+  method = "encoder",
+  encoder.model = "VAE",
+  encoder.input = "AF",
+  theta = pi,
+  reduction.name = "Trex"
+)
 }
 \arguments{
 \item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
 
 \item{chains}{TRA or TRB}
 
-\item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+\item{method}{"encoder" = using deep learning autoencoders or 
+"geometric" = geomteric transformations based on BLOSUM62 matrix}
+
+\item{encoder.model}{"AE" = dense autoencoder or "VAE" = variation autoencoder}
+
+\item{encoder.input}{"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
 One Hot Autoencoder}
+
+\item{theta}{angle to use for geometric transformation}
 
 \item{reduction.name}{Keyword to save Trex reduction. Useful if you want
 to try Trex with multiple parameters}
@@ -27,7 +41,9 @@ Run Trex algorithm with Seurat or SingleCellExperiment pipelines
 }
 \examples{
 trex_example <- runTrex(trex_example, 
-                        AA.properties = "AF", 
-                        reduction.name = "Trex.AF")
+                        chains = "TRA",
+                        method = "encoder",
+                        encoder.model = "VAE",
+                        encoder.input = "AF")
                         
 }

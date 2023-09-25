@@ -1,32 +1,48 @@
 #' Main Trex interface
 #' 
 #' Use this to run the Trex algorithm to return latent vectors in 
-#' the form of a matrix or if you prefer, a maTrex.
+#' the form of a matrix or if you prefer.
 #' 
 #' @examples
-#' trex_values <- maTrex(trex_example, 
-#'                         chains = "TRA",
-#'                         AA.properties = "AF")
+#'Trex_values <- maTrex(trex_example, 
+#'                      chains = "TRA",
+#'                      method = "encoder",
+#'                      encoder.model = "VAE",
+#'                      encoder.input = "AF")
+#'                           
+#'Trex_values <- maTrex(trex_example, 
+#'                      chains = "TRA",
+#'                      method = "geometric",
+#'                      theta = pi)
 #'                         
-#' @param sc Single Cell Object in Seurat or SingleCellExperiment format or
+#' @param sc Single Cell Object in Seurat or SingleCell Experiment format or
 #' the output of combineTCR() in scRepertoire
 #' @param chains TRA or TRB
-#' @param AA.properties Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+#' @param method "encoder" = using deep learning autoencoders or 
+#' "geometric" = geomteric transformations based on BLOSUM62 matrix
+#' @param encoder.model "AE" = dense autoencoder or "VAE" = variation autoencoder
+#' @param encoder.input "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
 #' One Hot Autoencoder
+#' @param theta angle to use for geometric transformation
 #' 
 #' @export
 #' @importFrom SeuratObject CreateDimReducObject
 #' 
 #' @return Trex encoded values from the autoencoder
 maTrex <- function(sc, 
-                    chains = "TRB", 
-                    AA.properties = "AF") {
+                   chains = "TRA", 
+                   method = "encoder",
+                   encoder.model = "VAE", 
+                   encoder.input = "AF",
+                   theta = pi) {
     TCR <- getTCR(sc, chains)
     checkLength(TCR[[1]])
-    if (AA.properties %in% c("AF", "KF", "both", "all", "OHE")) {
-        print("Calculating the Amino Acid Properties...")
-        reduction <- aaProperty(TCR, AA.properties)
+    if (method == "encoder" && encoder.input %in% c("AF", "KF", "both", "all", "OHE")) {
+        print("Calculating the encoding values...")
+        reduction <- .encoder(TCR, encoder.input, encoder.model)
+    } else if (method == "geometric") {
+        print("Performing geometric transformation...")
+        reduction <- .geometric.encoding(TCR, theta)
     }
     return(reduction)
 }
@@ -37,14 +53,19 @@ maTrex <- function(sc,
 #'
 #' @examples
 #' trex_example <- runTrex(trex_example, 
-#'                         AA.properties = "AF", 
-#'                         reduction.name = "Trex.AF")
+#'                         chains = "TRA",
+#'                         method = "encoder",
+#'                         encoder.model = "VAE",
+#'                         encoder.input = "AF")
 #'                         
 #' @param sc Single Cell Object in Seurat or SingleCell Experiment format
 #' @param chains TRA or TRB
-#' @param AA.properties  Amino acid properties to use for distance calculation: 
-#' "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+#' @param method "encoder" = using deep learning autoencoders or 
+#' "geometric" = geomteric transformations based on BLOSUM62 matrix
+#' @param encoder.model "AE" = dense autoencoder or "VAE" = variation autoencoder
+#' @param encoder.input "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
 #' One Hot Autoencoder
+#' @param theta angle to use for geometric transformation
 #' @param reduction.name Keyword to save Trex reduction. Useful if you want
 #' to try Trex with multiple parameters 
 #' @export
@@ -52,116 +73,22 @@ maTrex <- function(sc,
 #' into the dimensional reduction slot. 
 #' 
 runTrex <- function(sc, 
-                    chains = "TRB", 
-                    AA.properties = "AF",
+                    chains = "TRA", 
+                    method = "encoder",
+                    encoder.model = "VAE", 
+                    encoder.input = "AF",
+                    theta = pi,
                     reduction.name = "Trex") {
     checkSingleObject(sc)
     cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
     sc <- subset(sc, cells = cells.chains)
-    reduction <- maTrex(sc,
-                        chains, 
-                        AA.properties)
+    reduction <- maTrex(sc = sc,
+                        chains = chains, 
+                        method = method,
+                        encoder.model = encoder.model, 
+                        encoder.input = encoder.input,
+                        theta = theta)
     TCR <- getTCR(sc, chains)
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
-}
-
-#' Remove TCR genes from variable gene results
-#'
-#'Most single-cell workflows use highly-expressed and highly-variable
-#'genes for the initial calculation of PCA and subsequent dimensional
-#'reduction. This function will remove the TCR genes from the variable
-#'features in the Seurat object or from a vector generated by
-#'the Bioconductor scran workflow. 
-#'
-#' @examples
-#' x <- trex_example
-#' x <- quietTCRgenes(x)
-#' 
-#' @param sc Single-cell object in Seurat format or vector of variable genes to use in reduction
-#' @param assay The Seurat assay slot to use to remove TCR genes from, NULL value will default to
-#' the default assay
-#' @importFrom SeuratObject DefaultAssay
-#' @export
-#' @return Seurat object or vector list with TCR genes removed.
-#' @author Nicky de Vrij Nick Borcherding
-quietTCRgenes <- function(sc, 
-                          assay = NULL) {
-    unwanted_genes <- "^TR[ABDG][VDJ]"
-    if (inherits(x=sc, what ="Seurat")) {
-        if (is.null(assay)) {
-            assay <- DefaultAssay(sc)
-        }
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc[[assay]]@var.features, value = TRUE)
-        sc[[assay]]@var.features <- sc[[assay]]@var.features[sc[[assay]]@var.features %!in% unwanted_genes]
-    } else {
-        #Bioconductor scran pipelines uses vector of variable genes for DR
-        unwanted_genes <- grep(pattern = unwanted_genes, x = sc, value = TRUE)
-        sc <- sc[sc %!in% unwanted_genes]
-    }
-    return(sc)
-}
-
-#' Cluster clones using the Trex dimensional reductions
-#' 
-#' Use this to return clusters for clonotypes based on 
-#' the \link[bluster]{bluster} clustering parameters.
-#' 
-#' @examples
-#' \dontrun{
-#' sc <- clonalCommunity(sc, 
-#'                       reduction.name = NULL, 
-#'                       cluster.parameter = KNNGraphParam())
-#' }
-#' @param sc Single Cell Object in Seurat or SingleCell Experiment format. In addition, the outputs of distReduction()
-#' and aaReduction() can be used.
-#' @param reduction.name Name of the dimensional reduction output from runTrex()
-#' @param cluster.parameter The community detection algorithm in \link[bluster]{bluster}
-#' @param ... For the generic, further arguments to pass to specific methods.
-#' @importFrom bluster clusterRows NNGraphParam HclustParam KmeansParam KNNGraphParam PamParam SNNGraphParam SomParam DbscanParam
-#' @importFrom igraph simplify spectrum graph_from_edgelist E `E<-`
-#' @importFrom SingleCellExperiment reducedDim
-#' @export
-#' @return Single-Cell Object with trex.clusters in the meta.data
-clonalCommunity <- function(sc, 
-                            reduction.name = NULL, 
-                            cluster.parameter=KNNGraphParam(k=30, ...), 
-                            ...) {
-    if (inherits(x=sc, what ="Seurat")) { 
-        dim.red <- sc[[reduction.name]] 
-        dim.red <- dim.red@cell.embeddings
-    } else if (inherits(x=sc, what ="SingleCellExperiment")){
-        dim.red <- reducedDim(sc, reduction.name)
-    } else {
-        if(inherits(x=sc, what ="dist")) {
-            mat <- sc
-            #mat[is.na(mat)] <- 0
-            dimension <- attr(mat, "Size")
-            edge <- NULL
-            for (j in seq_len(dimension)[-1]) {
-                row <- dist.convert(mat,j)
-                tmp.edge <- data.frame("from" = j, "to" = seq_len(j)[-j], weight = row)
-                edge <- rbind(edge, tmp.edge)
-            }
-            edge <- na.omit(edge)
-            g <- graph.edgelist(as.matrix(edge[,c(1,2)]), directed = FALSE)
-            E(g)$weights <- edge$weight
-            g <- simplify(g)
-            eigen <- spectrum(g, 
-                              which = list(howmany = 30), 
-                              algorithm = "arpack")
-            dim.red <- eigen$vectors
-        } else {
-            dim.red <- sc
-        }
-    }
-    clusters <- suppressWarnings(clusterRows(dim.red, BLUSPARAM=cluster.parameter))
-    clus.df <- data.frame("trex.clusters" = paste0("trex.", clusters))
-    if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {
-        rownames(clus.df) <- rownames(dim.red)
-        sc <- add.meta.data(sc, clus.df, colnames(clus.df))
-        return(sc)
-    } 
-    return(clus.df)
-    
 }
