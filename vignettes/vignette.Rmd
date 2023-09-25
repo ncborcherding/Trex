@@ -108,21 +108,44 @@ The idea behind Trex is to combine TCR cdr3 amino acid information with phenotyp
 Trex has 2 major functions - the first being ```maTrex()```, which is the backbone of the algorithm and returns the encoded values based on the selection of variables. Unlike ```runTrex()``` below, ```maTrex()``` does not filter the input for only T cells with attached TCR data. In addition, ```maTrex()``` is compatible with the list output from the ```combineTCR()``` function from the [scRepertoire](https://github.com/ncborcherding/scRepertoire) R package, while ```runTrex()``` must be performed on a single-cell object.
 
 **chains**  
-* "TRA" for TCR A  
-* "TRB" for TCR B  
+* "TRA" for TCR Alpha Chain
+* "TRB" for TCR Beta Chain
 
-**AA.properties**  
+**method**  
+* "encoder" for a convolution neural network (CNN) based encoding. 
+* "geometric" for a geometric transformation  
+
+**encoder.model**  
+* "VAE" for a variational autoencoder  
+* "AE" for a traditional autoencoder  
+
+**encoder.input**  
 * "AF" to use Atchley factors  
 * "KF" to use Kidera factors  
 * "both" to use both  
 * "OHE" for a One Hot Autoencoder
 
+**theta**  
+If choosing the geometric transformation, what value of theta to use (default is pi)
+
 ```{r}
 Trex_vectors <- maTrex(trex_example, 
                        chains = "TRA",
-                      AA.properties = "OHE")
+                       encoder.model = "VAE", 
+                       encoder.input = "AF")
 
-qplot(data = as.data.frame(Trex_vectors), Trex_2, Trex_3) + theme_classic()
+ggplot(data = as.data.frame(Trex_vectors), aes(Trex_1, Trex_2)) + 
+  geom_point() + 
+  theme_classic()
+
+Trex_vectors2 <- maTrex(trex_example, 
+                       chains = "TRB",
+                       method = "geometric",
+                       theta = pi)
+
+ggplot(as.data.frame(Trex_vectors2), aes(x = Trex_1, y = Trex_2)) + 
+  geom_point() + 
+  theme_classic()
 ```
 
 
@@ -133,7 +156,8 @@ Additionally, ```runTrex()``` can be used to append the Seurat or Single-cell Ex
 ```{r}
 trex_example <- runTrex(trex_example, 
                     chains = "TRB",
-                    AA.properties = "KF", 
+                    encoder.model = "VAE", 
+                    encoder.input = "KF",
                     reduction.name = "Trex.KF")
 ```
 
@@ -211,44 +235,6 @@ plot7 <- DimPlot(trex_example, reduction = "Trex.umap") + NoLegend()
 plot5 + plot6 + plot7
 ```
 
-## Regressing shared feature space
-
-There is a high degree of overlap in the feature space of expanded clonotypes, not only in the adaptive receptor genes that form the clonotype, but also in potentially functional genes. To identify divergent clusters in shared clonotypes using ```clonalCommunity()```, we can use the Trex dimensions to identify clusters in order to then regress out closely associated clonotypes.
-
-```{r}
-library(harmony)
-library(bluster)
-
-#Cluster clones
-trex_example <- clonalCommunity(trex_example, 
-                            reduction.name = "Trex.KF", 
-                            cluster.parameter=NNGraphParam(k=20))
-
-#Run Harmony and new UMAP for RNA
-DefaultAssay(trex_example) <- "RNA"
-trex_example<- RunHarmony(trex_example, "trex.clusters", verbose = FALSE)
-trex_example <- RunUMAP(trex_example, 
-                     reduction = "harmony", 
-                     dims = 1:20, 
-                     reduction.key = "RC_UMAP_", 
-                     reduction.name = "regressClone_RNA")
-
-
-plot8 <- DimPlot(trex_example, 
-                 reduction = "rna.umap", 
-                 group.by = "CTaa") + 
-                 NoLegend() + 
-                 scale_color_viridis(option="B", discrete = TRUE)
-
-plot9 <- DimPlot(trex_example, 
-                 reduction = "regressClone_RNA", 
-                 group.by = "CTaa") + 
-                 NoLegend() + 
-                 scale_color_viridis(option="B", discrete = TRUE)
-
-plot8 + plot9
-```
-
 # CoNGA Reduction
 
 Recent [work](https://pubmed.ncbi.nlm.nih.gov/34426704/) has proposed using representative cells for the characterization of clonotype and gene expression relationships. In order to generate these representative cells, either a mean expression across a clone or using the PCA dimensional space to identify a single cell that has the minimum euclidean distance across a clone. 
@@ -256,11 +242,13 @@ Recent [work](https://pubmed.ncbi.nlm.nih.gov/34426704/) has proposed using repr
 In order to generate a single-cell object based on the CoNGA approach, Trex offers the function ```CoNGAfy()```. For **method**, select either "mean" or "dist" as described above. After performing ```CoNGAfy()```, the user can use any of the above reduction strategies. 
 
 ```{r}
+library(dplyr, include.only = c("%>%"))
 CoNGA.seurat <- CoNGAfy(trex_example, 
                          method = "dist")
 
 CoNGA.seurat <- runTrex(CoNGA.seurat, 
-                    AA.properties = "KF", 
+                    encoder.model = "VAE", 
+                    encoder.input = "KF",
                     reduction.name = "Trex.KF")
 
 CoNGA.seurat <- CoNGA.seurat %>%

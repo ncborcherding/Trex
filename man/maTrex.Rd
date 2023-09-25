@@ -4,28 +4,48 @@
 \alias{maTrex}
 \title{Main Trex interface}
 \usage{
-maTrex(sc, chains = "TRB", AA.properties = "AF")
+maTrex(
+  sc,
+  chains = "TRA",
+  method = "encoder",
+  encoder.model = "VAE",
+  encoder.input = "AF",
+  theta = pi
+)
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat or SingleCellExperiment format or
+\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format or
 the output of combineTCR() in scRepertoire}
 
 \item{chains}{TRA or TRB}
 
-\item{AA.properties}{Amino acid properties to use for distance calculation: 
-"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
+\item{method}{"encoder" = using deep learning autoencoders or 
+"geometric" = geomteric transformations based on BLOSUM62 matrix}
+
+\item{encoder.model}{"AE" = dense autoencoder or "VAE" = variation autoencoder}
+
+\item{encoder.input}{"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
 One Hot Autoencoder}
+
+\item{theta}{angle to use for geometric transformation}
 }
 \value{
 Trex encoded values from the autoencoder
 }
 \description{
 Use this to run the Trex algorithm to return latent vectors in 
-the form of a matrix or if you prefer, a maTrex.
+the form of a matrix or if you prefer.
 }
 \examples{
-trex_values <- maTrex(trex_example, 
-                        chains = "TRA",
-                        AA.properties = "AF")
+Trex_values <- maTrex(trex_example, 
+                     chains = "TRA",
+                     method = "encoder",
+                     encoder.model = "VAE",
+                     encoder.input = "AF")
+                          
+Trex_values <- maTrex(trex_example, 
+                     chains = "TRA",
+                     method = "geometric",
+                     theta = pi)
                         
 }

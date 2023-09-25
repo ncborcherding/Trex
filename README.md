@@ -33,10 +33,10 @@ install_tensorflow()
 
 An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packahes using ```virtualenv_install()```.
 
-# Training Information 
+# Model Information 
 <img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/training_info.png">
 
-Each of the models available in Trex follow similar architecture with depth and width of input layers, epochs, learning rate, batch size, and early stopping calls (**A**). The major difference is the size of the input layer, depending on the method chosen with **AA.properties**. In addition, the one-hot approach utilized an RMSprop optimization, while the amino acid matrices used RAdam, this difference was selected due to tendency towards gradient explosion on the one-hot approach. The training and validation mean square error is availble in **B**.
+Each of the models available in Trex follow similar architecture with depth and width of input layers, epochs, batch size, and early stopping calls. The major difference is the size of the input layer, depending on the method chosen with **encoder.input**. 
 
 # Installation
 
@@ -69,9 +69,10 @@ You can run Trex within your Seurat or Single-Cell Experiemt workflow. **Importa
 ```r
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
                        chains = "TRB", #Use of "TRA" or "TRB" 
-                       AA.properties = c("AF", "KF", "both", "OHE"),
-                       reduction.name = "Trex", #Name designation for 
-                       #the vectors to be added to the single-cell object)
+                       method = "encoder", #Use "encoder" for CNNs or "geometric" geometric-based transformation
+                       encoder.model = "VAE" #"VAE" (variational autoencoder) or "AE" (autoencoder)
+                       encoder.input = "AF" #Inputs into encoder - "AF", "KF", "both", "OHE
+                       reduction.name = "Trex", #Name designation for slot in single-cell object)
                    
 seuratObj_Tonly <- runTrex(seuratObj, reduction.name = "Trex")
 ```

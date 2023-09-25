@@ -17,7 +17,7 @@ if (inherits(x=sc, what ="Seurat")) {
 }
   return(sc)
 }
-  
+
 #Function to pull and organize TCR depending on the chain selected
 #' @importFrom stringr str_split
 getTCR <- function(sc, chains) {
@@ -31,15 +31,15 @@ getTCR <- function(sc, chains) {
                     str_split(meta[,"CTaa"], "_", simplify = TRUE), 
                     str_split(meta[,"CTgene"], "_", simplify = TRUE))
   if (length(chains) == 1 && chains != "both") {
-    if (chains %in% c("TRA", "TRD")) {
+    if (chains %in% c("TRA")) { #here
       pos <- list(c(2,4))
-    } else if (chains %in% c("TRB", "TRG")) {
+    } else if (chains %in% c("TRB")) { #here
       pos <- list(c(3,5))
     }
   } else {
     pos <- list(one = c(2,4), two = c(3,5))
-    ch.1 <- grep("TRB|TRA",sc[[]]$CTgene[1])
-    chains <- c("TRA", "TRB")
+    ch.1 <- grep("IGH|IGL",sc[[]]$CTgene[1]) #here
+    chains <- c("TRA", "TRB") #here
   }
   TCR <- NULL
   for (i in seq_along(pos)) {
@@ -95,62 +95,35 @@ checkSingleObject <- function(sc) {
             the correct data.") }
 }
 
-#This is to check that all the cdr3 sequences are < 70 residues
+#This is to check that all the cdr3 sequences are < 60 residues
 checkLength <- function(x) {
-  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 70)) {
+  if(any(na.omit(nchar(x[,"cdr3_aa"])) > 60)) {
     stop("Models have been trained on cdr3 sequences 
          less than 60 amino acid residues. Please
          filter the larger sequences before running")
   }
 }
-
-
 #Returns appropriate model for autoencoder
 #' @importFrom tensorflow tf
 #' @importFrom keras load_model_hdf5
-aa.model.loader <- function(chain, AA.properties) {
+aa.model.loader <- function(chain, encoder.input, encoder.model) {
     select  <- system.file("extdata", paste0(chain, "_", 
-                               AA.properties, "_Encoder.h5"), 
+                               encoder.input, "_", encoder.model, ".h5"), 
                           package = "Trex")
   model <- quiet(load_model_hdf5(select, compile = FALSE))
   return(model)
 }
 
-#Selects columns to normalize input data based on the inputs to the model
-aa.range.loader <- function(chain, AA.properties, Trex.Data) {
-  range <- Trex.Data[["model.ranges"]][[chain]]
-  min <- range[["min"]]
-  max <- range[["max"]]
-  ref <- seq(1, 900, 15)
-  if (AA.properties == "AF") {
-    ref2 <- sort(c(ref, ref+1, ref+2, ref+3, ref+4))
-    min <- min[ref2]
-    max <- max[ref2]
-  } else if (AA.properties == "KF") {
-    ref2 <- sort(c(ref+5, ref+6, ref+7, ref+8, ref+9, ref+10, ref+11, ref+12, ref+13, ref+14))
-    min <- min[ref2]
-    max <- max[ref2]
-  }
-  range <- list(min = min, max = max)
-  return(range)
-}
-
 one.hot.organizer <- function(refer) {
-  aa.int.vals <- Trex.Data[[1]]$aa
-  names(aa.int.vals) <- 1:20
-  intermediate.value <- rep(0,21)
-  
-  int <- matrix(nrow = 21, ncol = length(refer), 0)
+  reference <- Trex.Data[[1]]
+  int <- matrix(ncol = length(reference$aa) + 1, nrow = length(refer))
   for(i in seq_along(refer)) {
     if (is.na(refer[i])) {
-      int[1,i] <- 1
-    } else {
-      val <- as.integer(names(aa.int.vals[which(aa.int.vals == refer[i])]))
-      new.value <- intermediate.value
-      new.value[val+1] <- 1
-      int[,i] <- new.value
+      next()
     }
+    int[i,which(reference$aa %in% refer[i])] <- 1
   }
+  int[is.na(int)] <- 0
   return(int)
 }
 
@@ -179,27 +152,9 @@ AF.col <- c(2,3,4,5,6)
 KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
 #Generates the 30 vector based on autoencoder model 
-#First normalizes the value by the min and max of the autoencoder training data
-auto.embedder <- function(array.reshape, aa.model, local.max, local.min, AA.properties) {
-  #OHE is already min/max normalized - each aa residue has 1 value and 19 0s
-  if(AA.properties != "OHE") {
-    for(i in seq_len(length(array.reshape))) {
-      (array.reshape[i] - local.min[i])/(local.max[i] - local.min[i])
-    }
-  }
+auto.embedder <- function(array.reshape, aa.model, encoder.input) {
   array.reshape[is.na(array.reshape)] <- 0
   score <- stats::predict(aa.model, t(array.reshape), verbose = 0)
   return(score)
-}
-
-dist.convert <- function(dist_obj, k) {
-  if (length(k) > 1) stop("The function is not 'vectorized'!")
-  n <- attr(dist_obj, "Size")
-  if (k < 1 || k > n) stop("k out of bound!")
-  ##
-  i <- 1:(k - 1)
-  j <- rep.int(k, k - 1)
-  v1 <- dist_obj[f(j, i, dist_obj)]
-  return(v1)
 }
 
