@@ -1,7 +1,7 @@
 # Trex
 Using TCR sequences for graph embedding
 
-<img align="right" src="https://github.com/ncborcherding/Trex/blob/main/www/trex_hex.png" width="352" height="352">
+<img align="right" src="https://github.com/ncborcherding/Trex/blob/main/www/trex_hex.png" width="305" height="352">
 
 ## Introduction
 Single-cell sequencing is now a integral tool in the field of immunology and oncology that allows researchers to couple RNA quantification and other modalities, 
@@ -51,7 +51,7 @@ Trex should be able to be run in popular R-based single-cell workflows, includin
 
 ## Quick Start 
 
-Check out this [vignette](https://www.borch.dev/uploads/vignette/trex) for a quick start tutorial. 
+Check out this [vignette](https://www.borch.dev/uploads/screpertoire/articles/trex) for a quick start tutorial. 
 
 ## Autoencoded Matrix
 
