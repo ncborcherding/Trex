@@ -37,7 +37,7 @@ library(tensorflow)
 install_tensorflow()
 ```
 
-An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packahes using ```virtualenv_install()```.
+An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packages using ```virtualenv_install()```.
 
 # Model Information 
 <img align="center" src="https://github.com/ncborcherding/Trex/blob/dev/www/training_info.png">
@@ -70,7 +70,7 @@ my_trex <- maTrex(singleObject)
 
 ## Seurat or Single-Cell Experiment
 
-You can run Trex within your Seurat or Single-Cell Experiemt workflow. **Importantly** `runTrex()` will automatically filter single-cells that do not contain TCR information in the meta data of the single-cell object. 
+You can run Trex within your Seurat or Single-Cell Experiment workflow. **Importantly** `runTrex()` will automatically filter single-cells that do not contain TCR information in the meta data of the single-cell object. 
 
 ```r
 seuratObj_Tonly <- runTrex(seuratObj, #The single cell object
@@ -94,7 +94,7 @@ seuratObj <- RunUMAP(seuratObj, reduction = "Trex",  reduction.key = "Trex_")
 
 If using Seurat package, the Trex embedding information and gene expression PCA can be used to find the [Weighted Nearest Neighbors](https://pubmed.ncbi.nlm.nih.gov/34062119/). Before applying the WNN approach, best practice would be to remove the TCR-related genes from the list of variable genes and rerunning the PCA analysis. 
 
-### Recaluclate PCA without TCR genes with queitTCRgenes() function in Trex.
+### Recalculate PCA without TCR genes with queitTCRgenes() function in Trex.
 ```r
 seuratObj <- quietTCRgenes(seuratObj)
 seuratObj <- RunPCA(seuratObj)

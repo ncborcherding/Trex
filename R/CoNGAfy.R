@@ -7,8 +7,8 @@
 #' 
 #' @examples
 #' trex_values <- CoNGAfy(trex_example, 
-#'                         method = "dist",
-#'                         features = NULL)
+#'                        method = "dist",
+#'                        features = NULL)
 #'                         
 #' @param sc Single Cell Object in Seurat or Single Cell Experiment format
 #' @param method "mean" or "dist" Generate a mean value across features by clonotype or 
@@ -16,14 +16,14 @@
 #' clonotype group.
 #' @param features Selected genes for the reduction DEFAULT: null will return all genes
 #' @param assay The name of the assay or assays to return.
-#' @param meta.carry Variables to carry over from the meta data of thje single-cell object
+#' @param meta.carry Variables to carry over from the meta data of the single-cell object
 #' 
 #' @export
 #' @importFrom SeuratObject CreateSeuratObject CreateAssayObject
 #' @importFrom SingleCellExperiment SingleCellExperiment 
 #' @importFrom SummarizedExperiment assay assay<-
 #' 
-#' @return Single-cell Object with 1 cell representing 1 clone
+#' @return Single-cell Object with one cell representing a single clone
 #' 
 #' 
 CoNGAfy <- function(sc, 

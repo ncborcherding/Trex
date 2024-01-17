@@ -23,10 +23,10 @@ clonotype group.}
 
 \item{assay}{The name of the assay or assays to return.}
 
-\item{meta.carry}{Variables to carry over from the meta data of thje single-cell object}
+\item{meta.carry}{Variables to carry over from the meta data of the single-cell object}
 }
 \value{
-Single-cell Object with 1 cell representing 1 clone
+Single-cell Object with one cell representing a single clone
 }
 \description{
 Generate a single-cell object that has a representation of
@@ -36,7 +36,7 @@ adapted to R. Please read and cite the author's work.
 }
 \examples{
 trex_values <- CoNGAfy(trex_example, 
-                        method = "dist",
-                        features = NULL)
+                       method = "dist",
+                       features = NULL)
                         
 }

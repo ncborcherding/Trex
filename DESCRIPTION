@@ -25,16 +25,20 @@ Imports: stringr,
 	matrixStats,
 	SummarizedExperiment,
         stats,
-	stringdist,
-	dplyr
+	stringdist
 Suggests: 
 	knitr, 
 	rmarkdown, 
+	dplyr,
 	markdown,
 	BiocStyle,  
 	Seurat,
 	viridis,
 	patchwork,
 	ggplot2,
-	harmony
+	spelling,
+        testthat (>= 3.0.0),
 VignetteBuilder: knitr
+Language: en-US
+URL: https://github.com/ncborcherding/Trex/
+BugReports: https://github.com/ncborcherding/Trex/issues

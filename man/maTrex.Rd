@@ -14,18 +14,18 @@ maTrex(
 )
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format or
+\item{sc}{Single-cell object or
 the output of combineTCR() in scRepertoire}
 
-\item{chains}{TRA or TRB}
+\item{chains}{TCR chain to use - \strong{TRA} or \strong{TRB}.}
 
 \item{method}{"encoder" = using deep learning autoencoders or 
 "geometric" = geomteric transformations based on BLOSUM62 matrix}
 
 \item{encoder.model}{"AE" = dense autoencoder or "VAE" = variation autoencoder}
 
-\item{encoder.input}{"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
-One Hot Autoencoder}
+\item{encoder.input}{Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})), 
+Atchley and Kidera factors ((\strong{both})), or One-Hot Encoder (\strong{OHE}).}
 
 \item{theta}{angle to use for geometric transformation}
 }
