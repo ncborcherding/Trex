@@ -37,7 +37,7 @@ Suggests:
 	patchwork,
 	ggplot2,
 	spelling,
-        testthat (>= 3.0.0),
+        testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Language: en-US
 URL: https://github.com/ncborcherding/Trex/
