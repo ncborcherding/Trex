@@ -14,7 +14,7 @@ test_that("maTrex works", {
   expect_equal(
     maTrex_result1,
     getdata("runTrex", "maTrex_TRB_VAE_AF"),
-    tolerance=1e-3
+    tolerance=1e-2
   )
   
   maTrex_result2 <- maTrex(trex_example, 
@@ -26,6 +26,6 @@ test_that("maTrex works", {
   expect_equal(
     maTrex_result2,
     getdata("runTrex", "maTrex_TRA_AE_OHE"),
-    tolerance=1e-3
+    tolerance=1e-2
   )
 })

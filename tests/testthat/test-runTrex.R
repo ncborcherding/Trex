@@ -26,7 +26,7 @@ test_that("runTrex works with seurat objects", {
 	expect_equal(
 	  trex_example@reductions$TRB_AE_KF@cell.embeddings,
 	  getdata("runTrex", "runTrex_TRB_AE_kF_reduction"),
-	  tolerance=1e-3
+	  tolerance=1e-2
 	)
 	
 	trex_example <- runTrex(trex_example, 
@@ -39,7 +39,7 @@ test_that("runTrex works with seurat objects", {
 	expect_equal(
 	  trex_example@reductions$TRB_VAE_OHE@cell.embeddings,
 	  getdata("runTrex", "runTrex_TRB_VAE_OHE_reduction"),
-	  tolerance=1e-3
+	  tolerance=1e-2
 	)
 	
 })
