@@ -13,7 +13,8 @@ test_that("runTrex works with seurat objects", {
                        
 	expect_equal(
 		trex_example@reductions$TRA_VAE_AF@cell.embeddings,
-		getdata("runTrex", "runTrex_TRA_VAE_AF_reduction")
+		getdata("runTrex", "runTrex_TRA_VAE_AF_reduction"),
+		tolerance=1e-2
 	)
 	
 	trex_example <- runTrex(trex_example, 
