@@ -28,4 +28,16 @@ test_that("maTrex works", {
     getdata("runTrex", "maTrex_TRA_AE_OHE"),
     tolerance=1e-2
   )
+  
+  maTrex_result3 <- maTrex(trex_example, 
+                           chains = "TRA",
+                           method = "geometric",
+                           encoder.model = "AE",
+                           encoder.input = "OHE")
+  
+  expect_equal(
+    maTrex_result3,
+    getdata("runTrex", "maTrex_Geometric"),
+    tolerance=1e-2
+  )
 })

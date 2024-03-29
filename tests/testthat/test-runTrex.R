@@ -43,4 +43,15 @@ test_that("runTrex works with seurat objects", {
 	  tolerance=1e-2
 	)
 	
+	trex_example <- runTrex(trex_example, 
+	                        chains = "TRB",
+	                        method = "geometric",
+	                        reduction.name = "TRB_Geometric")
+	
+	expect_equal(
+	  trex_example@reductions$TRB_Geometric@cell.embeddings,
+	  getdata("runTrex", "runTrex_TRB_geometric_reduction"),
+	  tolerance=1e-2
+	)
+	
 })

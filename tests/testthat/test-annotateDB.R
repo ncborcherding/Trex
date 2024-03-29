@@ -11,7 +11,7 @@ test_that("annotateDB works", {
     getdata("annotateDB", "annotateDB_TRB_meta.data")
   )
   
-  data("trex_example")
+  
   
   trex_example <- annotateDB(trex_example, 
                              chains = "TRA",

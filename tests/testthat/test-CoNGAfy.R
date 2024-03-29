@@ -4,6 +4,7 @@ test_that("CoNGAfy works", {
   
   data("trex_example")
   
+  
   conga_reduction <- CoNGAfy(trex_example)
   
   expect_equal(
@@ -30,5 +31,4 @@ test_that("CoNGAfy works", {
     getdata("CoNGAfy", "CoNGAfy_mean_counts"),
     tolerance=1e-2
   )
-  
 })
