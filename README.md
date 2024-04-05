@@ -3,7 +3,7 @@ Using TCR sequences for graph embedding
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ncborcherding/Trex/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ncborcherding/Trex/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/ncborcherding/Trex/branch/master/graph/badge.svg)](https://app.codecov.io/gh/ncborcherding/Trex?branch=master)
+[![Codecov test coverage](https://codecov.io/gh/ncborcherding/Trex/graph/badge.svg)](https://app.codecov.io/gh/ncborcherding/Trex?branch=master)
 [![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://www.borch.dev/uploads/screpertoire/articles/trex)
 <!-- badges: end -->
 
