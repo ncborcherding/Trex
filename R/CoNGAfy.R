@@ -21,7 +21,7 @@
 #' @export
 #' @importFrom SeuratObject CreateSeuratObject CreateAssayObject
 #' @importFrom SingleCellExperiment SingleCellExperiment 
-#' @importFrom SummarizedExperiment assay assay<-
+#' @importFrom SummarizedExperiment assay assay<- colData<-
 #' 
 #' @return Single-cell Object with one cell representing a single clone
 #' 
@@ -31,8 +31,7 @@ CoNGAfy <- function(sc,
                     features = NULL, 
                     assay = "RNA", 
                     meta.carry = c("CTaa", "CTgene")) {
-    cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
-    sc <- subset(sc, cells = cells.chains)
+    sc <- filter.object(sc)
     conga <- NULL
     if(method == "mean") {
         for (x in seq_along(assay)) {
@@ -72,6 +71,8 @@ CoNGAfy <- function(sc,
     sc.output <- add.meta.data(sc.output, CTge, colnames(CTge))
     return(sc.output)
 }
+
+
 
 #For all single clones, will use true RNA scaled values
 #For multiplets will use the cell with the minimal distance in PCA

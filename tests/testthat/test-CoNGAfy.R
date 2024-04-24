@@ -31,4 +31,18 @@ test_that("CoNGAfy works", {
     getdata("CoNGAfy", "CoNGAfy_mean_counts"),
     tolerance=1e-2
   )
+  
+  conga_ADT_reduction <- CoNGAfy(trex_example,
+                                 assay = "ADT")
+  
+  expect_equal(
+    conga_ADT_reduction@assays$ADT@layers$counts,
+    getdata("CoNGAfy", "CoNGAfy_ADT_counts"),
+    tolerance=1e-2
+  )
+  
+  sce <- getdata("runTrex", "SCE.object")
+  conga_SCE_reduction <- CoNGAfy(sce,
+                                 assay = "RNA")
+
 })

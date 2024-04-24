@@ -54,4 +54,17 @@ test_that("runTrex works with seurat objects", {
 	  tolerance=1e-2
 	)
 	
+
+	sce <- getdata("runTrex", "SCE.object")
+	sce <- runTrex(sce, 
+	               chains = "TRA",
+	               method = "geometric",
+	               reduction.name = "TRA_Geometric")
+	
+	expect_equal(
+	  sce@int_colData$reducedDims$TRA_Geometric,
+	  getdata("runTrex", "runTrex_SCE_TRA_geometric_reduction"),
+	  tolerance=1e-2
+	)
+	
 })
