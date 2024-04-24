@@ -129,7 +129,7 @@ one.hot.organizer <- function(refer) {
 
 #Add the eigenvectors to single cell object
 #' @importFrom SeuratObject CreateDimReducObject
-#' @importFrom SingleCellExperiment reducedDim
+#' @importFrom SingleCellExperiment reducedDim<- reducedDim
 adding.DR <- function(sc, reduction, reduction.name) {
   if (inherits(sc, "Seurat")) {
     DR <- suppressWarnings(CreateDimReducObject(
