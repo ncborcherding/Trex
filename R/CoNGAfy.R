@@ -7,8 +7,8 @@
 #' 
 #' @examples
 #' trex_values <- CoNGAfy(trex_example, 
-#'                         method = "dist",
-#'                         features = NULL)
+#'                        method = "dist",
+#'                        features = NULL)
 #'                         
 #' @param sc Single Cell Object in Seurat or Single Cell Experiment format
 #' @param method "mean" or "dist" Generate a mean value across features by clonotype or 
@@ -23,7 +23,7 @@
 #' @importFrom SingleCellExperiment SingleCellExperiment 
 #' @importFrom SummarizedExperiment assay assay<- colData<-
 #' 
-#' @return Single-cell Object with 1 cell representing 1 clone
+#' @return Single-cell Object with one cell representing a single clone
 #' 
 #' 
 CoNGAfy <- function(sc, 

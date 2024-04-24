@@ -7,9 +7,9 @@
 annotateDB(sc, chains = "TRB", edit.distance = 0)
 }
 \arguments{
-\item{sc}{Single Cell Object in Seurat or SingleCell Experiment format}
+\item{sc}{Single Cell Object in Seurat or Single-Cell Experiment format}
 
-\item{chains}{TRA or TRB}
+\item{chains}{TCR chain to use - \strong{TRA} or \strong{TRB}}
 
 \item{edit.distance}{Number of amino acid residues different than reference
 using Levenshtein distance. Distances of <= 2 are optimal.}

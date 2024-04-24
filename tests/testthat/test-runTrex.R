@@ -54,6 +54,7 @@ test_that("runTrex works with seurat objects", {
 	  tolerance=1e-2
 	)
 	
+
 	sce <- getdata("runTrex", "SCE.object")
 	sce <- runTrex(sce, 
 	               chains = "TRA",

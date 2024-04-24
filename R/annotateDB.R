@@ -6,8 +6,8 @@
 #' @examples
 #' trex_example <- annotateDB(trex_example, 
 #'                         chains = "TRB")
-#' @param sc Single Cell Object in Seurat or SingleCell Experiment format
-#' @param chains TRA or TRB
+#' @param sc Single Cell Object in Seurat or Single-Cell Experiment format
+#' @param chains TCR chain to use - \strong{TRA} or \strong{TRB}
 #' @param edit.distance Number of amino acid residues different than reference
 #' using Levenshtein distance. Distances of <= 2 are optimal.
 #' @importFrom stringdist stringdist
