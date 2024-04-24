@@ -80,8 +80,7 @@ runTrex <- function(sc,
                     theta = pi,
                     reduction.name = "Trex") {
     checkSingleObject(sc)
-    cells.chains <- rownames(sc[[]][!is.na(sc[["CTaa"]]),])
-    sc <- subset(sc, cells = cells.chains)
+    sc <- filter.object(sc)
     reduction <- maTrex(sc = sc,
                         chains = chains, 
                         method = method,

@@ -65,8 +65,7 @@ grabMeta <- function(sc) {
     } else {
       colnames(meta)[length(meta)] <- "cluster"
     }
-  }
-  else if (inherits(x=sc, what ="SingleCellExperiment")){
+  } else if (inherits(x=sc, what ="SingleCellExperiment")){
     meta <- data.frame(colData(sc))
     rownames(meta) <- sc@colData@rownames
     clu <- which(colnames(meta) == "ident")
@@ -158,3 +157,14 @@ auto.embedder <- function(array.reshape, aa.model, encoder.input) {
   return(score)
 }
 
+#Working with only barcodes that have CTaa
+filter.object <- function(sc) {
+  meta <- grabMeta(sc)
+  cells.chains <- rownames(meta[!is.na(meta[["CTaa"]]),])
+  if (inherits(x=sc, what ="Seurat")) {
+    sc <- subset(sc, cells = cells.chains)
+  } else if (inherits(x=sc, what ="SingleCellExperiment")){
+    sc <- sc[,colnames(sc) %in% cells.chains]
+  }
+  return(sc)
+}
