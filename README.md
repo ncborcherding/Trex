@@ -1,5 +1,5 @@
 # Trex
-Using TCR sequences for graph embedding
+Using TCR sequences for sequence embedding
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ncborcherding/Trex/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ncborcherding/Trex/actions/workflows/R-CMD-check.yaml)
