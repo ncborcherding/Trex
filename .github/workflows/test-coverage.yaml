@@ -8,9 +8,6 @@ on:
 
 name: test-coverage
 
-ignore: 
-- R/global.R
-
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
