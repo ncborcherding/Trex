@@ -15,10 +15,10 @@
 #' @importFrom SeuratObject DefaultAssay
 #' @export
 #' @return Seurat object or vector list with TCR genes removed.
-#' @author Nicky de Vrij Nick Borcherding
+#' @author Nicky de Vrij Nikolaj Pagh Nick Borcherding
 quietTCRgenes <- function(sc, 
                           assay = NULL) {
-  unwanted_genes <- "^TR[ABDG][VDJ]"
+  unwanted_genes <- "^TR[ABDG][VDJ][^D]"
   if (inherits(x=sc, what ="Seurat")) {
     if (is.null(assay)) {
       assay <- DefaultAssay(sc)
