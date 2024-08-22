@@ -34,8 +34,8 @@ install.packages("keras")
 library(reticulate)
 conda_create("r-reticulate") ##If first time using reticulate
 use_condaenv(condaenv = "r-reticulate", required = TRUE)
-library(tensorflow)
-install_tensorflow()
+library(keras)
+install_keras()
 ```
 
 An alternative to this approach above (especially if you want to avoid conda) is to use reticulate to generate a virtualenv, using ```virtualenv_create()``` and subsequently installing the above python packages using ```virtualenv_install()```.
