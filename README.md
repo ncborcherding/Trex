@@ -127,6 +127,6 @@ be extremely helpful.
 #### [Pull Requests](https://github.com/ncborcherding/Trex/pulls) are welcome for bug fixes, new features, or enhancements.
 
 ## Citation
-More information on Trex is available at our ResearchSquare [preprint](https://www.researchsquare.com/article/rs-3304466/v1). 
+If using the Trex package, please cite our [manuscript](https://pubmed.ncbi.nlm.nih.gov/39164479/). This is also a good place to find more information about the models.
 
 
