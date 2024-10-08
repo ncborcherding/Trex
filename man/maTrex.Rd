@@ -24,8 +24,8 @@ the output of combineTCR() in scRepertoire}
 
 \item{encoder.model}{"AE" = dense autoencoder or "VAE" = variation autoencoder}
 
-\item{encoder.input}{Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})), 
-Atchley and Kidera factors ((\strong{both})), or One-Hot Encoder (\strong{OHE}).}
+\item{encoder.input}{Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})),
+or or One-Hot Encoder (\strong{OHE}).}
 
 \item{theta}{angle to use for geometric transformation}
 }

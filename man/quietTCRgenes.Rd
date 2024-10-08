@@ -27,5 +27,5 @@ quietTCRgenes(trex_example)
 
 }
 \author{
-Nicky de Vrij Nick Borcherding
+Nicky de Vrij Nikolaj Pagh Nick Borcherding
 }

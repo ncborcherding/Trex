@@ -24,8 +24,8 @@ runTrex(
 
 \item{encoder.model}{"AE" = dense autoencoder or "VAE" = variation autoencoder}
 
-\item{encoder.input}{"AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
-One Hot Autoencoder}
+\item{encoder.input}{Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})),
+or or One-Hot Encoder (\strong{OHE}).}
 
 \item{theta}{angle to use for geometric transformation}
 

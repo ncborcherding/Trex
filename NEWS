@@ -1,4 +1,11 @@
 
+CHANGES IN VERSION 0.99.12
+------------------------
+* Incorporating immApex Usage
+* Update ```CoNGAfy()``` to support all versions of Seurat
+* Update trex_example to Seurat v5
+
+
 CHANGES IN VERSION 0.99.11
 ------------------------
 * Added geometric encoding using the BLOSUM62 matrix
