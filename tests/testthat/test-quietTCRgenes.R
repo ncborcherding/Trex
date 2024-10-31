@@ -12,13 +12,12 @@ test_that("quietTCRgenes works", {
     getdata("quietTCRgenes", "quietTCRgenes_feature.vector")
   )
   
-  Seurat::VariableFeatures(trex_example) <- features
+  SeuratObject::VariableFeatures(trex_example) <- features
   
   trex_example <- quietTCRgenes(trex_example)
   
-  
   expect_equal(
     quietTCRgenes(features),
-    Seurat::VariableFeatures(trex_example)
+    SeuratObject::VariableFeatures(trex_example)
   )
 })
