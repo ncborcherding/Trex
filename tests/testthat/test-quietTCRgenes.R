@@ -11,7 +11,7 @@ test_that("quietTCRgenes works", {
     getdata("quietTCRgenes", "quietTCRgenes_feature.vector")
   )
   
-  trex_example@assays$RNA@var.features <- features
+  Seurat::VariableFeatures(trex_example) <- features
   Seurat::DefaultAssay(trex_example) <- "RNA"
   
   trex_example <- quietTCRgenes(trex_example)
@@ -19,6 +19,6 @@ test_that("quietTCRgenes works", {
   
   expect_equal(
     quietTCRgenes(features),
-    trex_example@assays$RNA@var.features
+    Seurat::VariableFeatures(trex_example)
   )
 })
