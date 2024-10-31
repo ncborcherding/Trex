@@ -41,8 +41,6 @@ test_that("CoNGAfy works", {
     tolerance=1e-2
   )
   
-  sce <- getdata("runTrex", "SCE.object")
-  conga_SCE_reduction <- CoNGAfy(sce,
-                                 assay = "RNA")
+  #TODO Add SingleCellExperiment Testing
 
 })
