@@ -7,17 +7,19 @@
 #'the Bioconductor scran workflow. 
 #'
 #' @examples
-#' quietTCRgenes(trex_example)
+#' trex_example <- quietTCRgenes(trex_example)
 #' 
 #' @param sc Single-cell object in Seurat format or vector of variable genes to use in reduction
 #' @param assay The Seurat assay slot to use to remove TCR genes from, NULL value will default to
 #' the default assay
 #' @importFrom SeuratObject DefaultAssay VariableFeatures
+#' @importFrom utils getFromNamespace
 #' @export
 #' @return Seurat object or vector list with TCR genes removed.
 #' @author Nicky de Vrij Nikolaj Pagh Nick Borcherding
 quietTCRgenes <- function(sc, 
                           assay = NULL) {
+  'VariableFeatures<-'<-utils::getFromNamespace("VariableFeatures<-", "SeuratObject")
   unwanted_genes <- "^TR[ABDG][VDJ][^D]"
   if (inherits(x=sc, what ="Seurat")) {
     if (is.null(assay)) {

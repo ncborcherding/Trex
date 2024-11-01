@@ -25,7 +25,8 @@ Imports: stringr,
 	matrixStats,
 	SummarizedExperiment,
         stats,
-	stringdist
+	stringdist, 
+	utils
 Suggests: 
 	knitr, 
 	rmarkdown, 

@@ -3,7 +3,6 @@
 test_that("quietTCRgenes works", {
   library(SeuratObject)
   data("trex_example")
-  DefaultAssay(trex_example) <- "RNA"
   
   features <- rownames(trex_example@assays$RNA$counts)
   

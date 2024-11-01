@@ -62,7 +62,7 @@ CoNGAfy <- function(input.data,
             }
         }
         sc.output$CTaa <- rownames(sc.output@colData)
-        CTge <- data.frame(unique(sc@colData[,c(meta.carry)]))
+        CTge <- data.frame(unique(input.data@colData[,c(meta.carry)]))
     }
     CTge <- meta.handler(CTge, meta.carry)
     clones <- unique(CTge$CTaa)
