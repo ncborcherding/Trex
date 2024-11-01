@@ -1,7 +1,7 @@
 # test script for quietTCRgenes.R - testcases are NOT comprehensive!
 
 test_that("quietTCRgenes works", {
-  
+  library(SeuratObject)
   data("trex_example")
   
   features <- rownames(trex_example@assays$RNA$counts)
@@ -11,14 +11,12 @@ test_that("quietTCRgenes works", {
     getdata("quietTCRgenes", "quietTCRgenes_feature.vector")
   )
   
-  trex_example@assays$RNA@var.features <- features
-  Seurat::DefaultAssay(trex_example) <- "RNA"
+  VariableFeatures(trex_example) <- features
   
   trex_example <- quietTCRgenes(trex_example)
   
-  
   expect_equal(
     quietTCRgenes(features),
-    trex_example@assays$RNA@var.features
+    VariableFeatures(trex_example)
   )
 })

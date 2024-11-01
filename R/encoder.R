@@ -8,11 +8,8 @@
   reference <- Trex.Data[[1]] #AA properties
   col.ref <- grep(tolower(paste(encoder.input, collapse = "|")), colnames(reference))
   length <- NULL
-  if (encoder.input == " both") {
-    column.ref <- unique(sort(c(AF.col, KF.col)))
-  } else {
-    column.ref <- unique(sort(col.ref))
-  }
+  column.ref <- unique(sort(col.ref))
+
   chain <- names(TCR)
   aa.model <- quiet(aa.model.loader(chain, encoder.input, encoder.model))
   membership <- TCR[[1]]

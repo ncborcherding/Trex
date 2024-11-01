@@ -21,8 +21,8 @@
 #' @param method "encoder" = using deep learning autoencoders or 
 #' "geometric" = geomteric transformations based on BLOSUM62 matrix
 #' @param encoder.model "AE" = dense autoencoder or "VAE" = variation autoencoder
-#' @param encoder.input  Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})), 
-#' Atchley and Kidera factors ((\strong{both})), or One-Hot Encoder (\strong{OHE}).
+#' @param encoder.input  Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})),
+#'  or or One-Hot Encoder (\strong{OHE}).
 #' @param theta angle to use for geometric transformation
 #' 
 #' @export
@@ -63,8 +63,8 @@ maTrex <- function(sc,
 #' @param method "encoder" = using deep learning autoencoders or 
 #' "geometric" = geomteric transformations based on BLOSUM62 matrix
 #' @param encoder.model "AE" = dense autoencoder or "VAE" = variation autoencoder
-#' @param encoder.input "AF" = Atchley factors, "KF" = Kidera factors, "both" = AF and KF, or "OHE" for
-#' One Hot Autoencoder
+#' @param encoder.input  Atchley factors (\strong{AF}), Kidera factors ((\strong{AF})),
+#'  or or One-Hot Encoder (\strong{OHE}).
 #' @param theta angle to use for geometric transformation
 #' @param reduction.name Keyword to save Trex reduction. Useful if you want
 #' to try Trex with multiple parameters 

@@ -1,7 +1,7 @@
 Package: Trex
 Title: Methods for TCR single-cell embedding 
-Version: 0.99.11
-Date: 2022-07-05
+Version: 0.99.12
+Date: 2024-10-08
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre"), email = "ncborch@gmail.com"),
     person(given = "Drew", family = "Voigt", role = c("aut"), email = "drewvoigt@gmail.com"))
@@ -10,7 +10,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
 Depends: 
 	R (>= 4.0)
@@ -25,7 +25,8 @@ Imports: stringr,
 	matrixStats,
 	SummarizedExperiment,
         stats,
-	stringdist
+	stringdist, 
+	utils
 Suggests: 
 	knitr, 
 	rmarkdown, 
