@@ -4,3 +4,5 @@
 ^www$
 ^\.github$
 ^LICENSE\.md$
+inst/extdata/*.h5
+inst/extdata/metadata.csv

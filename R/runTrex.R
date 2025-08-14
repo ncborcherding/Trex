@@ -35,14 +35,16 @@ maTrex <- function(sc,
                    encoder.model = "VAE", 
                    encoder.input = "AF",
                    theta = pi) {
-    TCR <- getTCR(sc, chains)
+    TCR <- getIR(sc, chains, sequence.type = "aa")
     checkLength(TCR[[1]])
     if (method == "encoder" && encoder.input %in% c("AF", "KF", "both", "all", "OHE")) {
         print("Calculating the encoding values...")
         reduction <- .encoder(TCR, encoder.input, encoder.model)
     } else if (method == "geometric") {
         print("Performing geometric transformation...")
-        reduction <- .geometric.encoding(TCR, theta)
+        reduction <- geometricEncoder(TCR[[1]][,"cdr3_aa"], theta = theta)[[3]]
+        rownames(reduction) <- TCR[[1]]$barcode
+        colnames(reduction) <- paste0("Trex_", seq_len(ncol(reduction)))
     }
     return(reduction)
 }
@@ -87,7 +89,7 @@ runTrex <- function(sc,
                         encoder.model = encoder.model, 
                         encoder.input = encoder.input,
                         theta = theta)
-    TCR <- getTCR(sc, chains)
+    TCR <- getIR(sc, chains, sequence.type = "aa")
     sc <- adding.DR(sc, reduction, reduction.name)
     return(sc)
 }

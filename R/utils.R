@@ -18,42 +18,6 @@ if (inherits(x=sc, what ="Seurat")) {
   return(sc)
 }
 
-#Function to pull and organize TCR depending on the chain selected
-#' @importFrom stringr str_split
-getTCR <- function(sc, chains) {
-  if (inherits(x=sc, what ="Seurat") | inherits(x=sc, what ="SingleCellExperiment")) {
-    meta <- grabMeta(sc)
-  } else {
-    meta <- do.call(rbind,sc)
-    rownames(meta) <- meta[,"barcode"]
-  }
-  tmp <- data.frame(barcode = rownames(meta), 
-                    str_split(meta[,"CTaa"], "_", simplify = TRUE), 
-                    str_split(meta[,"CTgene"], "_", simplify = TRUE))
-  if (length(chains) == 1 && chains != "both") {
-    if (chains %in% c("TRA")) { #here
-      pos <- list(c(2,4))
-    } else if (chains %in% c("TRB")) { #here
-      pos <- list(c(3,5))
-    }
-  } else {
-    pos <- list(one = c(2,4), two = c(3,5))
-    ch.1 <- grep("IGH|IGL",sc[[]]$CTgene[1]) #here
-    chains <- c("TRA", "TRB") #here
-  }
-  TCR <- NULL
-  for (i in seq_along(pos)) {
-    sub <- as.data.frame(tmp[,c(1,pos[[i]])])
-    colnames(sub) <- c("barcode", "cdr3_aa", "genes")
-    sub$v <- str_split(sub$genes, "[.]", simplify = TRUE)[,1]
-    sub$j <- str_split(sub$genes, "[.]", simplify = TRUE)[,2]
-    sub[sub == ""] <- NA
-    TCR[[i]] <- sub
-    sub <- NULL
-  }
-  names(TCR) <- chains
-  return(TCR)
-}
 
 #This is to grab the metadata from a Seurat or SCE object
 #' @importFrom SingleCellExperiment colData 
@@ -103,27 +67,50 @@ checkLength <- function(x) {
   }
 }
 #Returns appropriate model for autoencoder
-#' @importFrom tensorflow tf
-#' @importFrom keras load_model_hdf5
-aa.model.loader <- function(chain, encoder.input, encoder.model) {
-    select  <- system.file("extdata", paste0(chain, "_", 
-                               encoder.input, "_", encoder.model, ".h5"), 
-                          package = "Trex")
-  model <- quiet(load_model_hdf5(select, compile = FALSE))
-  return(model)
-}
+#' @importFrom utils download.file read.csv
+#' @importFrom tools R_user_dir
+aa.model.loader <- function(chain,
+                            encoder.input,
+                            encoder.model) {
 
-one.hot.organizer <- function(refer) {
-  reference <- Trex.Data[[1]]
-  int <- matrix(ncol = length(reference$aa) + 1, nrow = length(refer))
-  for(i in seq_along(refer)) {
-    if (is.na(refer[i])) {
-      next()
-    }
-    int[i,which(reference$aa %in% refer[i])] <- 1
+  ## 1. Expected filename
+  file_name <- paste0(chain, "_", encoder.input, "_", encoder.model, ".h5")
+
+  ## 2. Sanity-check against metadata.csv
+  meta <- read.csv(
+    system.file("extdata", "metadata.csv", package = "Trex"),
+    stringsAsFactors = FALSE
+  )
+
+  if (!file_name %in% meta[[1]])
+    stop("Model '", file_name, "' is not listed in metadata.csv.")
+
+  ## 3. Cache directory
+  cache_dir <- tools::R_user_dir("Trex", which = "cache")
+  if (!dir.exists(cache_dir))
+    dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+
+  local_path <- file.path(cache_dir, file_name)
+
+  ## 4. Download if we have never seen this model before
+  if (!file.exists(local_path)) {
+    message("Downloading model '", file_name, " ...")
+    #I am using a placeholder for the Zenodo record ID.
+    #The user will need to provide the correct ID.
+    base_url <- "https://zenodo.org/record/PLACEHOLDER/files"
+    status   <- utils::download.file(
+      url      = file.path(base_url, file_name),
+      destfile = local_path,
+      mode     = "wb",
+      quiet    = TRUE
+    )
+    if (status != 0)
+      stop("Download of model '", file_name,
+           "' failed (status ", status, ").")
   }
-  int[is.na(int)] <- 0
-  return(int)
+
+  ## 5. Done return the path for use in basiliskRun()
+  normalizePath(local_path, winslash = "/")
 }
 
 
@@ -150,12 +137,6 @@ adding.DR <- function(sc, reduction, reduction.name) {
 AF.col <- c(2,3,4,5,6)
 KF.col <- c(7,8,9,10,11,12,13,14,15,16)
 
-#Generates the 30 vector based on autoencoder model 
-auto.embedder <- function(array.reshape, aa.model, encoder.input) {
-  array.reshape[is.na(array.reshape)] <- 0
-  score <- stats::predict(aa.model, t(array.reshape), verbose = 0)
-  return(score)
-}
 
 #Working with only barcodes that have CTaa
 filter.object <- function(sc) {

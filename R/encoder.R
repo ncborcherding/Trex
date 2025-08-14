@@ -1,44 +1,57 @@
 # Transforming the CDR3 sequence into vectors
-#' @importFrom keras load_model_hdf5
 #' @importFrom reticulate array_reshape
 .encoder <- function(TCR, 
                      encoder.input = encoder.input, 
                      encoder.model = encoder.model) { 
-  return <- list() ### Need to add reference data
-  reference <- Trex.Data[[1]] #AA properties
-  col.ref <- grep(tolower(paste(encoder.input, collapse = "|")), colnames(reference))
-  length <- NULL
-  column.ref <- unique(sort(col.ref))
 
+  #Get model path
   chain <- names(TCR)
-  aa.model <- quiet(aa.model.loader(chain, encoder.input, encoder.model))
-  membership <- TCR[[1]]
-  names <- membership$barcode
-  array.reshape <- NULL
-    
-  cells <- unique(membership[,"barcode"])
-  score <- NULL
-  for (n in seq_len(length(cells))) {
-      tmp.CDR <- membership[membership$barcode == cells[n],]$cdr3_aa
-      refer <- unlist(strsplit(tmp.CDR, ""))
-      refer <- c(refer, rep(NA, 60 - length(refer)))
-      if(encoder.input == "OHE") {
-        int <- one.hot.organizer(refer)
-        array.reshape.tmp <- array_reshape(int, 1260)
-      }else {
-        int <- reference[match(refer, reference$aa),c(1,col.ref)]
-        int <- as.matrix(int[,-1])
-        array.reshape.tmp <- array_reshape(int, length(col.ref)*60)
-      }
-      score.tmp <- auto.embedder(array.reshape.tmp, aa.model, encoder.input)
-      score <- rbind(score, score.tmp)
-    }
-    score <- data.frame(unique(membership[,"barcode"]), score)
-    barcodes <- score[,1]
-    score <- score[,-1]
-    rownames(score) <- barcodes
-    colnames(score) <- paste0("Trex_", seq_len(ncol(score)))
-    return(score)
+  model.path <- aa.model.loader(chain, encoder.input, encoder.model)
+
+  #Get sequences
+  sequences <- TCR[[1]]$cdr3_aa
+  barcodes <- TCR[[1]]$barcode
+
+  #Encode sequences
+  property.set <- switch(encoder.input,
+                         "AF" = "atchleyFactors",
+                         "KF" = "kideraFactors",
+                         "OHE" = "OHE")
+
+  if (property.set == "OHE") {
+      encoded.values <- onehotEncoder(sequences, max.length = 60)[[2]]
+  } else {
+      encoded.values <- propertyEncoder(sequences, max.length = 60, property.set = property.set)[[2]]
+  }
+
+  #Get reduction
+  reduction <- basiliskRun(
+    env = TrexEnv,
+    fun = function(mpath, xmat) {
+      keras <- reticulate::import("keras", delay_load = FALSE)
+      model <- NULL
+      pred <- NULL
+
+      tryCatch({
+        model <- keras$models$load_model(mpath)
+        pred  <- model$predict(xmat)
+        as.array(pred) # This will be the return value
+      }, finally = {
+        rm(pred)
+        rm(model)
+        # Clear the Keras/TensorFlow backend session
+        keras$backend$clear_session()
+        gc()
+      })
+    },
+    mpath = model.path,
+    xmat  = encoded.values
+  )
+
+  reduction <- as.data.frame(reduction)
+  rownames(reduction) <- barcodes
+  colnames(reduction) <- paste0("Trex_", seq_len(ncol(reduction)))
+  return(reduction)
 }
 
 

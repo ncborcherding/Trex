@@ -18,7 +18,7 @@
 annotateDB <- function(sc,
                        chains = "TRB",
                        edit.distance = 0) {
-  TCR <- getTCR(sc, chains)
+  TCR <- getIR(sc, chains, sequence.type = "aa")
   relevent.db <- as.data.frame(Trex.database[[chains]])
   TCR <- TCR[[1]]
   cdr3.match <- TCR[TCR$cdr3_aa %in% relevent.db[,1],]

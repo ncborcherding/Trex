@@ -11,22 +11,24 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 RoxygenNote: 7.3.2
-biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing
+biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing, ExperimentHubSoftware
 Depends: 
 	R (>= 4.0)
-Imports: stringr, 
+Imports:
+    basilisk,
+    immApex,
+    stringr,
 	SeuratObject,
 	SingleCellExperiment,
 	rlang,
-	keras,
-	tensorflow,
 	reticulate, 
 	Matrix, 
 	matrixStats,
 	SummarizedExperiment,
-        stats,
+    stats,
 	stringdist, 
 	utils
+SystemRequirements: Python (via basilisk)
 Suggests: 
 	knitr, 
 	rmarkdown, 
